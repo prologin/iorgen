@@ -1,0 +1,47 @@
+name: structs
+subject: This will generate a program reading structs.
+structs:
+    - name: struct 1
+      comment: A simple struct
+      fields:
+          - type: int
+            name: foo
+            comment: a field
+          - type: int
+            name: bar
+            comment: a field
+    - name: position
+      comment: Represents a position
+      fields:
+          - type: int
+            name: x
+            comment: X
+          - type: int
+            name: y
+            comment: Y
+          - type: int
+            name: z
+            comment: Z
+    - name: point
+      comment: A point's name and position
+      fields:
+          - type: char
+            name: name
+            comment: the point's name (single character)
+          - type: "@position"
+            name: pos
+            comment: the point's position
+input:
+    - type: "@struct 1"
+      name: struct
+      comment: a struct 1 instance
+    - type: int
+      name: n
+      comment: a number
+    - type: List[@struct 1](n)
+      name: struct list
+      comment: a list a struct 1
+    - type: List[@point](3)
+      name: triangle
+      comment: a triangle
+output: Look at them structs.
