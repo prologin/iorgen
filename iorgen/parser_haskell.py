@@ -6,7 +6,7 @@ import textwrap
 from collections import OrderedDict
 from typing import List, Set, Tuple  # pylint: disable=unused-import
 
-from iorgen.types import Input, Type, TypeEnum, Variable
+from iorgen.types import Input, Struct, Type, TypeEnum, Variable
 
 
 def pascal_case(name: str) -> str:
@@ -65,6 +65,41 @@ def type_str(type_: Type) -> str:
         return "[{}]".format(type_str(type_.encapsulated))
     assert False
     return ""
+
+
+def print_var_content(type_: Type, structs: List[Struct]) -> str:
+    """Return Haskell function to print a variable of given type"""
+    # pylint: disable=too-many-return-statements
+    if type_.main == TypeEnum.INT:
+        return '(++ "\\n") . show'
+    if type_.main == TypeEnum.CHAR:
+        return '(: "\\n")'
+    if type_.main == TypeEnum.STR:
+        return '(++ "\\n")'
+    if type_.main == TypeEnum.STRUCT:
+        struct = next(x for x in structs if x.name == type_.struct_name)
+        if type_.fits_it_one_line(structs):
+            fields = []
+            for i in struct.fields:
+                if i[1].main == TypeEnum.INT:
+                    fields.append("(show $ {} r)".format(var_name(i[0])))
+                else:
+                    assert i[1].main == TypeEnum.CHAR
+                    fields.append('((: "") $ {} r)'.format(var_name(i[0])))
+            return '(\\r -> {} ++ "\\n")'.format(' ++ " " ++ '.join(fields))
+        return "(\\r -> {})".format(" ++ ".join("({} $ {} r)".format(
+            print_var_content(i[1], structs), var_name(i[0]))
+                                                for i in struct.fields))
+    if type_.main == TypeEnum.LIST:
+        assert type_.encapsulated
+        if type_.encapsulated.main == TypeEnum.INT:
+            return '(++ "\\n") . unwords . (map show)'
+        if type_.encapsulated.main == TypeEnum.CHAR:
+            return '(++ "\\n")'
+        return 'foldr (++) "" . (map $ {})'.format(
+            print_var_content(type_.encapsulated, structs))
+    assert False
+    return ''
 
 
 class ParserHaskell():
@@ -141,7 +176,7 @@ class ParserHaskell():
         self.main.append("{} <- {}".format(
             var_name(var.name), self.read_lines(var.type)))
 
-    def call(self) -> None:
+    def call(self, reprint: bool) -> None:
         """Declare and call the function take all inputs in arguments"""
         name = var_name(self.input.name)
         length = len(name)
@@ -160,9 +195,18 @@ class ParserHaskell():
         args = " ".join([var_name(i.name) for i in self.input.input])
         self.method.extend(
             ["-- " + i for i in textwrap.wrap(self.input.output, 76)])
-        self.method.append("{} {} = \"TODO\"".format(name, args))
-        self.main.append("putStrLn $ {} {}".format(
-            name, " ".join([var_name(i.name) for i in self.input.input])))
+        self.method.append("{} {} ={}".format(
+            name, args, ' "TODO"' if not reprint else ""))
+        self.main.append("{} $ {} {}".format(
+            "putStrLn" if not reprint else "putStr", name,
+            " ".join([var_name(i.name) for i in self.input.input])))
+        if reprint:
+            for var in self.input.input:
+                self.method.append("{}({} $ {}) ++".format(
+                    " " * self.indentation,
+                    print_var_content(var.type, self.input.structs),
+                    var_name(var.name)))
+            self.method.append(" " * self.indentation + '""')
 
     def read_struct(self, name: str, oneline: bool) -> List[str]:
         """Generate the function to read a struct"""
@@ -219,10 +263,10 @@ class ParserHaskell():
         return output
 
 
-def gen_haskell(input_data: Input) -> str:
+def gen_haskell(input_data: Input, reprint: bool = False) -> str:
     """Generate a Haskell code to parse input"""
     parser = ParserHaskell(input_data)
     for var in input_data.input:
         parser.read_var(var)
-    parser.call()
+    parser.call(reprint)
     return parser.content()
