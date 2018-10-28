@@ -35,6 +35,19 @@ def print_color(lines: Iterator[str]) -> None:
             print(line, end='')
 
 
+def gen_is_same_as_sample(input_data: Input, prefix_path: str, extension: str,
+                          gen_func) -> bool:
+    filename = prefix_path + extension
+    generated = gen_func(input_data).splitlines(True)
+    ref = Path(filename).read_text().splitlines(True)
+    if generated != ref:
+        print_color(
+            unified_diff(
+                ref, generated, fromfile=filename, tofile='generated'))
+        return False
+    return True
+
+
 def test_samples() -> None:
     """Test all the samples"""
     for name in os.listdir("samples"):
@@ -42,21 +55,8 @@ def test_samples() -> None:
         input_data = read_input(prefix + "yaml")
         assert input_data is not None
 
-        cpp = gen_cpp(input_data).splitlines(True)
-        cpp_ref = Path(prefix + "cpp").read_text().splitlines(True)
-        if cpp != cpp_ref:
-            print_color(
-                unified_diff(
-                    cpp_ref, cpp, fromfile=(prefix + "cpp"), tofile='gen'))
-        assert cpp == cpp_ref
-
-        hs = gen_haskell(input_data).splitlines(True)
-        hs_ref = Path(prefix + "hs").read_text().splitlines(True)
-        if hs != hs_ref:
-            print_color(
-                unified_diff(
-                    hs_ref, hs, fromfile=(prefix + "hs"), tofile='gen'))
-        assert hs == hs_ref
+        assert gen_is_same_as_sample(input_data, prefix, "cpp", gen_cpp)
+        assert gen_is_same_as_sample(input_data, prefix, "hs", gen_haskell)
 
         print("OK", name)
 
