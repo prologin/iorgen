@@ -189,7 +189,7 @@ class ParserCpp():
             output += ' ' * self.indentation + line + "\n"
         for line in self.call_site:
             output += ' ' * self.indentation + line + "\n"
-        output += "}"
+        output += "}\n"
         return output
 
 

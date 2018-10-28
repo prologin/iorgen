@@ -253,13 +253,13 @@ class ParserHaskell():
             output += line + "\n"
         if self.method:
             output += "\n"
-        output += "main :: IO ()\nmain = do"
+        output += "main :: IO ()\nmain = do\n"
         for line in self.main:
-            output += "\n" + ' ' * self.indentation + line
+            output += ' ' * self.indentation + line + "\n"
         if where:
-            output += "\n" + ' ' * self.indentation + "where"
+            output += ' ' * self.indentation + "where\n"
             for line in where:
-                output += "\n" + ' ' * self.indentation * 2 + line
+                output += ' ' * self.indentation * 2 + line + "\n"
         return output
 
 

@@ -42,7 +42,7 @@ def test_samples() -> None:
         input_data = read_input(prefix + "yaml")
         assert input_data is not None
 
-        cpp = (gen_cpp(input_data) + "\n").splitlines(True)
+        cpp = gen_cpp(input_data).splitlines(True)
         cpp_ref = Path(prefix + "cpp").read_text().splitlines(True)
         if cpp != cpp_ref:
             print_color(
@@ -50,7 +50,7 @@ def test_samples() -> None:
                     cpp_ref, cpp, fromfile=(prefix + "cpp"), tofile='gen'))
         assert cpp == cpp_ref
 
-        hs = (gen_haskell(input_data) + "\n").splitlines(True)
+        hs = gen_haskell(input_data).splitlines(True)
         hs_ref = Path(prefix + "hs").read_text().splitlines(True)
         if hs != hs_ref:
             print_color(
