@@ -5,6 +5,7 @@
 
 import os
 import subprocess
+import shutil
 import sys
 from difflib import unified_diff
 from pathlib import Path
@@ -85,6 +86,10 @@ def run_on_input(input_data: Input, name: str, extension: str, gen_func,
 
 def test_samples() -> None:
     """Test all the samples"""
+    try:
+        shutil.rmtree("/tmp/iorgen/tests/")
+    except FileNotFoundError:
+        pass
     for name in os.listdir("samples"):
         prefix = "samples/{0}/{0}.".format(name)
         input_data = read_input(prefix + "yaml")
