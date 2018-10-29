@@ -9,7 +9,7 @@ import shutil
 import sys
 from difflib import unified_diff
 from pathlib import Path
-from typing import Iterator, List, Optional
+from typing import Callable, Iterator, List, Optional
 
 import yaml
 
@@ -38,7 +38,7 @@ def print_color(lines: Iterator[str]) -> None:
 
 
 def gen_is_same_as_sample(input_data: Input, prefix_path: str, extension: str,
-                          gen_func) -> bool:
+                          gen_func: Callable[[Input], str]) -> bool:
     filename = prefix_path + extension
     generated = gen_func(input_data).splitlines(True)
     ref = Path(filename).read_text().splitlines(True)
@@ -50,7 +50,8 @@ def gen_is_same_as_sample(input_data: Input, prefix_path: str, extension: str,
     return True
 
 
-def run_on_input(input_data: Input, name: str, extension: str, gen_func,
+def run_on_input(input_data: Input, name: str, extension: str,
+                 gen_func: Callable[[Input, bool], str],
                  command: List[str]) -> bool:
     filename = "/tmp/iorgen/tests/{0}/{1}.{0}".format(extension, name)
     generated = gen_func(input_data, True)
@@ -71,13 +72,13 @@ def run_on_input(input_data: Input, name: str, extension: str, gen_func,
             stdin=sample_input,
             stdout=subprocess.PIPE)
         out = res.stdout.decode()
-    generated = out.splitlines(True)
+    reprint = out.splitlines(True)
     ref = Path(reffile).read_text().splitlines(True)
-    if generated != ref:
+    if reprint != ref:
         print_color(
             unified_diff(
                 ref,
-                generated,
+                reprint,
                 fromfile=reffile,
                 tofile='generated from ' + extension))
         return False
