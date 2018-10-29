@@ -96,6 +96,7 @@ def test_samples() -> None:
         input_data = read_input(prefix + "yaml")
         assert input_data is not None
 
+        assert gen_is_same_as_sample(input_data, prefix, "c", gen_c)
         assert gen_is_same_as_sample(input_data, prefix, "cpp", gen_cpp)
         assert gen_is_same_as_sample(input_data, prefix, "hs", gen_haskell)
 
@@ -106,6 +107,10 @@ def test_samples() -> None:
         assert run_on_input(
             input_data, name, "cpp", gen_cpp,
             ["g++", "-Wall", "-Wextra", "-o", name])
+
+        assert run_on_input(
+            input_data, name, "c", gen_c,
+            ["gcc", "-Wall", "-Wextra", "-o", name])
 
         print("OK", name)
 
