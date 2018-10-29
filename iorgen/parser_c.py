@@ -5,12 +5,7 @@
 import textwrap
 from typing import List, Set  # pylint: disable=unused-import
 from iorgen.types import Input, Type, TypeEnum, Variable
-
-
-def snake_case(name: str) -> str:
-    """Format a name with snake case style"""
-    return "_".join(i.lower() for i in name.split())
-
+from iorgen.utils import snake_case
 
 KEYWORDS = [
     "auto", "break", "case", "char", "const", "continue", "default", "do",

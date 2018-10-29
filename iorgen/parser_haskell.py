@@ -7,18 +7,7 @@ from collections import OrderedDict
 from typing import List, Set, Tuple  # pylint: disable=unused-import
 
 from iorgen.types import Input, Struct, Type, TypeEnum, Variable
-
-
-def pascal_case(name: str) -> str:
-    """Format a name with pascal case style"""
-    return "".join(i.lower().capitalize() for i in name.split())
-
-
-def camel_case(name: str) -> str:
-    """Format a name with camel case style"""
-    pascal = pascal_case(name)
-    return pascal[0].lower() + pascal[1:]
-
+from iorgen.utils import camel_case, pascal_case
 
 # keywords taken from wiki.haskell.org on 2018-10-26
 KEYWORDS = [
