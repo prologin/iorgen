@@ -4,10 +4,11 @@
 """Generate c++ parser for the given input"""
 
 import os
+import subprocess
 import sys
 from difflib import unified_diff
 from pathlib import Path
-from typing import Iterator, Optional
+from typing import Iterator, List, Optional
 
 import yaml
 
@@ -48,6 +49,21 @@ def gen_is_same_as_sample(input_data: Input, prefix_path: str, extension: str,
     return True
 
 
+def run_on_input(input_data: Input, name: str, extension: str,
+        gen_func, command: List[str]) -> bool:
+    filename = "/tmp/iorgen/tests/{0}/{1}.{0}".format(extension, name)
+    generated = gen_func(input_data, True)
+
+    Path(os.path.dirname(filename)).mkdir(parents=True, exist_ok=True)
+    Path(filename).write_text(generated)
+
+    cwd = os.getcwd()
+    os.chdir(os.path.dirname(filename))
+    subprocess.run(command + [filename])
+    os.chdir(cwd)
+    return True
+
+
 def test_samples() -> None:
     """Test all the samples"""
     for name in os.listdir("samples"):
@@ -57,6 +73,8 @@ def test_samples() -> None:
 
         assert gen_is_same_as_sample(input_data, prefix, "cpp", gen_cpp)
         assert gen_is_same_as_sample(input_data, prefix, "hs", gen_haskell)
+
+        run_on_input(input_data, name, "hs", gen_haskell, ["ghc", "-dynamic"])
 
         print("OK", name)
 
