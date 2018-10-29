@@ -49,8 +49,8 @@ def gen_is_same_as_sample(input_data: Input, prefix_path: str, extension: str,
     return True
 
 
-def run_on_input(input_data: Input, name: str, extension: str,
-        gen_func, command: List[str]) -> bool:
+def run_on_input(input_data: Input, name: str, extension: str, gen_func,
+                 command: List[str]) -> bool:
     filename = "/tmp/iorgen/tests/{0}/{1}.{0}".format(extension, name)
     generated = gen_func(input_data, True)
 
@@ -59,8 +59,27 @@ def run_on_input(input_data: Input, name: str, extension: str,
 
     cwd = os.getcwd()
     os.chdir(os.path.dirname(filename))
-    subprocess.run(command + [filename])
+    subprocess.run(command + [filename], stdout=subprocess.DEVNULL)
     os.chdir(cwd)
+
+    reffile = "samples/{0}/{0}.sample_input".format(name)
+    out = ""
+    with open(reffile) as sample_input:
+        res = subprocess.run(
+            ["/tmp/iorgen/tests/{0}/{1}".format(extension, name)],
+            stdin=sample_input,
+            stdout=subprocess.PIPE)
+        out = res.stdout.decode()
+    generated = out.splitlines(True)
+    ref = Path(reffile).read_text().splitlines(True)
+    if generated != ref:
+        print_color(
+            unified_diff(
+                ref,
+                generated,
+                fromfile=reffile,
+                tofile='generated from ' + extension))
+        return False
     return True
 
 
@@ -74,7 +93,8 @@ def test_samples() -> None:
         assert gen_is_same_as_sample(input_data, prefix, "cpp", gen_cpp)
         assert gen_is_same_as_sample(input_data, prefix, "hs", gen_haskell)
 
-        run_on_input(input_data, name, "hs", gen_haskell, ["ghc", "-dynamic"])
+        assert run_on_input(input_data, name, "hs", gen_haskell,
+                            ["ghc", "-dynamic"])
 
         print("OK", name)
 
