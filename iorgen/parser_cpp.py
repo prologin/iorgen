@@ -146,7 +146,7 @@ class ParserCpp():
             self.type_str(var.type), var_name(var.name), size, var.comment))
         self.read_lines(var_name(var.name), var.type)
 
-    def call(self) -> None:
+    def call(self, reprint: bool) -> None:
         """Declare and call the function take all inputs in arguments"""
         name = var_name(self.input.name)
         arguments = []
@@ -161,14 +161,66 @@ class ParserCpp():
                 arguments.append("{} {}".format(
                     self.type_str(arg.type), arg_name))
         self.method.append("void {}({}) {{".format(name, ", ".join(arguments)))
-        self.method.extend([
-            " " * self.indentation + i
-            for i in textwrap.wrap("/* TODO " + self.input.output + " */", 79 -
-                                   self.indentation)
-        ])
+        if reprint:
+            for var in self.input.input:
+                self.print_lines(var_name(var.name), var.type, 1)
+        else:
+            self.method.extend([
+                " " * self.indentation + i
+                for i in textwrap.wrap("/* TODO " + self.input.output +
+                                       " */", 79 - self.indentation)
+            ])
         self.method.append("}")
         self.call_site.append("{}({});".format(
             name, ", ".join([var_name(i.name) for i in self.input.input])))
+
+    def print_line(self, name: str, type_: Type, indent_lvl: int) -> None:
+        """Print the content of a var that holds in one line"""
+        assert type_.fits_it_one_line(self.input.structs)
+        indent = ' ' * (self.indentation * indent_lvl)
+        if type_.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.STR):
+            self.method.append(indent +
+                               "std::cout << {} << std::endl;".format(name))
+        elif type_.main == TypeEnum.LIST:
+            assert type_.encapsulated is not None
+            inner_name = "{}_elem".format(name)
+            self.method.append(indent +
+                               "for (size_t {0} = 0; {0} < {1}.size(); ++{0})".
+                               format(inner_name, name))
+            self.method.append(
+                ' ' * self.indentation + indent +
+                'std::cout << {0}[{1}] << ({1} < {0}.size() - 1 ? "{2}" : "\\n");'
+                .format(
+                    name, inner_name, "" if type_.encapsulated.main ==
+                    TypeEnum.CHAR else " "))
+        elif type_.main == TypeEnum.STRUCT:
+            struct = self.input.get_struct(type_.struct_name)
+            self.method.append(indent + "std::cout << {} << std::endl;".format(
+                " << ' ' << ".join("{}.{}".format(name, x[0])
+                                   for x in struct.fields)))
+        else:
+            assert False
+
+    def print_lines(self, name: str, type_: Type, indent_lvl: int = 0) -> None:
+        """Print the content of a var that holds in one or more lines"""
+        if type_.fits_it_one_line(self.input.structs):
+            self.print_line(name, type_, indent_lvl)
+        else:
+            if type_.main == TypeEnum.STRUCT:
+                for field in self.input.get_struct(type_.struct_name).fields:
+                    self.print_lines("{}.{}".format(name, field[0]), field[1],
+                                     indent_lvl)
+            elif type_.main == TypeEnum.LIST:
+                assert type_.encapsulated is not None
+                inner_name = "{}_elem".format(name)
+                self.method.append("{}for (const {}& {} : {}) {{".format(
+                    " " * self.indentation * indent_lvl,
+                    self.type_str(type_.encapsulated), inner_name, name))
+                self.print_lines(inner_name, type_.encapsulated,
+                                 indent_lvl + 1)
+                self.method.append(" " * self.indentation * indent_lvl + "}")
+            else:
+                assert False
 
     def content(self) -> str:
         """Return the parser content"""
@@ -197,10 +249,10 @@ class ParserCpp():
         return output
 
 
-def gen_cpp(input_data: Input) -> str:
+def gen_cpp(input_data: Input, reprint: bool = False) -> str:
     """Generate a C++ code to parse input"""
     parser = ParserCpp(input_data)
     for var in input_data.input:
         parser.read_var(var)
-    parser.call()
+    parser.call(reprint)
     return parser.content()

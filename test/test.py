@@ -103,6 +103,10 @@ def test_samples() -> None:
             input_data, name, "hs", gen_haskell,
             ["ghc", "-Wall", "-Wno-name-shadowing", "-dynamic"])
 
+        assert run_on_input(
+            input_data, name, "cpp", gen_cpp,
+            ["g++", "-Wall", "-Wextra", "-o", name])
+
         print("OK", name)
 
 
