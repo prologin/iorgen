@@ -99,8 +99,9 @@ def test_samples() -> None:
         assert gen_is_same_as_sample(input_data, prefix, "cpp", gen_cpp)
         assert gen_is_same_as_sample(input_data, prefix, "hs", gen_haskell)
 
-        assert run_on_input(input_data, name, "hs", gen_haskell,
-                            ["ghc", "-dynamic"])
+        assert run_on_input(
+            input_data, name, "hs", gen_haskell,
+            ["ghc", "-Wall", "-Wno-name-shadowing", "-dynamic"])
 
         print("OK", name)
 
