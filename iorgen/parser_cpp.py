@@ -113,6 +113,9 @@ class ParserCpp():
 
     def read_lines(self, name: str, type_: Type, indent_lvl: int = 0) -> None:
         """Read one or several lines and store them into the right place(s)"""
+        if type_.main == TypeEnum.LIST and indent_lvl != 0:
+            self.main.append("{}{}.resize({});".format(
+                " " * self.indentation * indent_lvl, name, type_.size))
         if type_.fits_it_one_line(self.input.structs):
             self.read_line(name, type_, indent_lvl)
         else:
@@ -123,10 +126,11 @@ class ParserCpp():
             elif type_.main == TypeEnum.LIST:
                 assert type_.encapsulated is not None
                 inner_name = "{}_elem".format(name)
-                self.main.append("for ({}& {} : {}) {{".format(
+                self.main.append("{}for ({}& {} : {}) {{".format(
+                    " " * self.indentation * indent_lvl,
                     self.type_str(type_.encapsulated), inner_name, name))
                 self.read_lines(inner_name, type_.encapsulated, indent_lvl + 1)
-                self.main.append("}")
+                self.main.append(" " * self.indentation * indent_lvl + "}")
             else:
                 assert False
 

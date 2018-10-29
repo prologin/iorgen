@@ -30,6 +30,7 @@ int main() {
     }
     std::vector<std::vector<int>> matrix(size); ///< a matrix of int
     for (std::vector<int>& matrix_elem : matrix) {
+        matrix_elem.resize(size);
         for (int& matrix_elem_elem : matrix_elem)
             std::cin >> matrix_elem_elem;
     }
