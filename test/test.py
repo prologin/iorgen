@@ -50,27 +50,31 @@ def gen_is_same_as_sample(input_data: Input, prefix_path: str, extension: str,
     return True
 
 
-def run_on_input(input_data: Input, name: str, extension: str,
+def run_on_input(input_data: Input,
+                 name: str,
+                 extension: str,
                  gen_func: Callable[[Input, bool], str],
-                 command: List[str]) -> bool:
+                 command: List[str],
+                 prefix: List[str] = []) -> bool:
     filename = "/tmp/iorgen/tests/{0}/{1}.{0}".format(extension, name)
     generated = gen_func(input_data, True)
 
     Path(os.path.dirname(filename)).mkdir(parents=True, exist_ok=True)
     Path(filename).write_text(generated)
 
-    cwd = os.getcwd()
-    os.chdir(os.path.dirname(filename))
-    subprocess.run(command + [filename], stdout=subprocess.DEVNULL)
-    os.chdir(cwd)
+    exe = filename
+    if command:
+        cwd = os.getcwd()
+        os.chdir(os.path.dirname(filename))
+        subprocess.run(command + [filename], stdout=subprocess.DEVNULL)
+        os.chdir(cwd)
+        exe = "/tmp/iorgen/tests/{0}/{1}".format(extension, name)
 
     reffile = "samples/{0}/{0}.sample_input".format(name)
     out = ""
     with open(reffile) as sample_input:
         res = subprocess.run(
-            ["/tmp/iorgen/tests/{0}/{1}".format(extension, name)],
-            stdin=sample_input,
-            stdout=subprocess.PIPE)
+            prefix + [exe], stdin=sample_input, stdout=subprocess.PIPE)
         out = res.stdout.decode()
     reprint = out.splitlines(True)
     ref = Path(reffile).read_text().splitlines(True)
@@ -99,18 +103,17 @@ def test_samples() -> None:
         assert gen_is_same_as_sample(input_data, prefix, "c", gen_c)
         assert gen_is_same_as_sample(input_data, prefix, "cpp", gen_cpp)
         assert gen_is_same_as_sample(input_data, prefix, "hs", gen_haskell)
+        assert gen_is_same_as_sample(input_data, prefix, "py", gen_python)
 
+        assert run_on_input(input_data, name, "c", gen_c,
+                            ["gcc", "-Wall", "-Wextra", "-o", name])
+        assert run_on_input(input_data, name, "cpp", gen_cpp,
+                            ["g++", "-Wall", "-Wextra", "-o", name])
         assert run_on_input(
             input_data, name, "hs", gen_haskell,
             ["ghc", "-Wall", "-Wno-name-shadowing", "-dynamic"])
-
-        assert run_on_input(
-            input_data, name, "cpp", gen_cpp,
-            ["g++", "-Wall", "-Wextra", "-o", name])
-
-        assert run_on_input(
-            input_data, name, "c", gen_c,
-            ["gcc", "-Wall", "-Wextra", "-o", name])
+        assert run_on_input(input_data, name, "py", gen_python, [],
+                            ["python3"])
 
         print("OK", name)
 
