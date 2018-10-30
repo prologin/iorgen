@@ -6,4 +6,5 @@ from iorgen.types import Input, Struct, Variable
 from iorgen.parser_c import gen_c
 from iorgen.parser_cpp import gen_cpp
 from iorgen.parser_haskell import gen_haskell
+from iorgen.parser_php import gen_php
 from iorgen.parser_python import gen_python
