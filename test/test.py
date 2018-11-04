@@ -103,6 +103,7 @@ def test_samples() -> None:
         assert gen_is_same_as_sample(input_data, prefix, "c", gen_c)
         assert gen_is_same_as_sample(input_data, prefix, "cpp", gen_cpp)
         assert gen_is_same_as_sample(input_data, prefix, "hs", gen_haskell)
+        assert gen_is_same_as_sample(input_data, prefix, "ml", gen_ocaml)
         assert gen_is_same_as_sample(input_data, prefix, "php", gen_php)
         assert gen_is_same_as_sample(input_data, prefix, "py", gen_python)
 
@@ -113,10 +114,11 @@ def test_samples() -> None:
         assert run_on_input(
             input_data, name, "hs", gen_haskell,
             ["ghc", "-Wall", "-Wno-name-shadowing", "-dynamic"])
-        assert run_on_input(input_data, name, "php", gen_php, [],
-                            ["php"])
+        assert run_on_input(input_data, name, "php", gen_php, [], ["php"])
         assert run_on_input(input_data, name, "py", gen_python, [],
                             ["python3"])
+        assert run_on_input(input_data, name, "ml", gen_ocaml,
+                            ["ocamlopt", "-w", "A", "-o", name])
 
         print("OK", name)
 
