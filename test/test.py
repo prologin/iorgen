@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright 2018 Sacha Delanoue
-"""Generate c++ parser for the given input"""
+"""Check that parsers are the same as before, and parse correctly"""
 
 import os
-import subprocess
 import shutil
 import sys
 from difflib import unified_diff
 from pathlib import Path
-from typing import Callable, Iterator, List, Optional
+from typing import Iterator, List, Optional
 
 import yaml
 
 sys.path.insert(0, "..")
-from iorgen import *
+# pylint: disable=wrong-import-position
+from iorgen import Input, ALL_LANGUAGES, Language
 
 
 def read_input(filename: str) -> Optional[Input]:
@@ -24,6 +24,7 @@ def read_input(filename: str) -> Optional[Input]:
 
 
 def print_color(lines: Iterator[str]) -> None:
+    """Print a diff with some console colors"""
     for i, line in enumerate(lines):
         if i < 2:
             print('\033[1m' + line + '\033[0m', end='')
@@ -37,56 +38,37 @@ def print_color(lines: Iterator[str]) -> None:
             print(line, end='')
 
 
-def gen_is_same_as_sample(input_data: Input, prefix_path: str, extension: str,
-                          gen_func: Callable[[Input], str]) -> bool:
-    filename = prefix_path + extension
-    generated = gen_func(input_data).splitlines(True)
+def check_diff(generated: List[str], filename: str,
+               tofile: str = 'generated') -> bool:
+    """Check if a generated result is the same as a reference file"""
     ref = Path(filename).read_text().splitlines(True)
     if generated != ref:
         print_color(
-            unified_diff(
-                ref, generated, fromfile=filename, tofile='generated'))
+            unified_diff(ref, generated, fromfile=filename, tofile=tofile))
         return False
     return True
 
 
-def run_on_input(input_data: Input,
-                 name: str,
-                 extension: str,
-                 gen_func: Callable[[Input, bool], str],
-                 command: List[str],
-                 prefix: List[str] = []) -> bool:
-    filename = "/tmp/iorgen/tests/{0}/{1}.{0}".format(extension, name)
-    generated = gen_func(input_data, True)
+def gen_is_same_as_sample(input_data: Input, prefix_path: str,
+                          language: Language) -> bool:
+    """Check that the generated parser is the same as the reference file"""
+    filename = prefix_path + language.extension
+    generated = language.generate(input_data).splitlines(True)
+    return check_diff(generated, filename)
+
+
+def run_on_input(input_data: Input, name: str, language: Language) -> bool:
+    """Check that the generated parser prints the input is it fed in"""
+    filename = "/tmp/iorgen/tests/{0}/{1}.{0}".format(language.extension, name)
+    generated = language.generator(input_data, True)
 
     Path(os.path.dirname(filename)).mkdir(parents=True, exist_ok=True)
     Path(filename).write_text(generated)
 
-    exe = filename
-    if command:
-        cwd = os.getcwd()
-        os.chdir(os.path.dirname(filename))
-        subprocess.run(command + [filename], stdout=subprocess.DEVNULL)
-        os.chdir(cwd)
-        exe = "/tmp/iorgen/tests/{0}/{1}".format(extension, name)
-
     reffile = "samples/{0}/{0}.sample_input".format(name)
-    out = ""
-    with open(reffile) as sample_input:
-        res = subprocess.run(
-            prefix + [exe], stdin=sample_input, stdout=subprocess.PIPE)
-        out = res.stdout.decode()
+    out = language.compile_and_run(filename, reffile)
     reprint = out.splitlines(True)
-    ref = Path(reffile).read_text().splitlines(True)
-    if reprint != ref:
-        print_color(
-            unified_diff(
-                ref,
-                reprint,
-                fromfile=reffile,
-                tofile='generated from ' + extension))
-        return False
-    return True
+    return check_diff(reprint, reffile, 'generated from ' + language.extension)
 
 
 def test_samples() -> None:
@@ -100,28 +82,9 @@ def test_samples() -> None:
         input_data = read_input(prefix + "yaml")
         assert input_data is not None
 
-        assert gen_is_same_as_sample(input_data, prefix, "c", gen_c)
-        assert gen_is_same_as_sample(input_data, prefix, "cpp", gen_cpp)
-        assert gen_is_same_as_sample(input_data, prefix, "hs", gen_haskell)
-        assert gen_is_same_as_sample(input_data, prefix, "ml", gen_ocaml)
-        assert gen_is_same_as_sample(input_data, prefix, "php", gen_php)
-        assert gen_is_same_as_sample(input_data, prefix, "py", gen_python)
-        assert gen_is_same_as_sample(input_data, prefix, "rs", gen_rust)
-
-        assert run_on_input(input_data, name, "c", gen_c,
-                            ["gcc", "-Wall", "-Wextra", "-o", name])
-        assert run_on_input(input_data, name, "cpp", gen_cpp,
-                            ["g++", "-Wall", "-Wextra", "-o", name])
-        assert run_on_input(
-            input_data, name, "hs", gen_haskell,
-            ["ghc", "-Wall", "-Wno-name-shadowing", "-dynamic"])
-        assert run_on_input(input_data, name, "ml", gen_ocaml,
-                            ["ocamlopt", "-w", "A", "-o", name])
-        assert run_on_input(input_data, name, "php", gen_php, [], ["php"])
-        assert run_on_input(input_data, name, "py", gen_python, [],
-                            ["python3"])
-        assert run_on_input(input_data, name, "rs", gen_rust,
-                            ["rustc", "-W", "warnings", "-O"])
+        for language in ALL_LANGUAGES:
+            assert gen_is_same_as_sample(input_data, prefix, language)
+            assert run_on_input(input_data, name, language)
 
         print("OK", name)
 
