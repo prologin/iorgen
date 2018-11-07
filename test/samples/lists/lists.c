@@ -15,24 +15,24 @@ int main() {
     int n; ///< the first list's size
     scanf("%d\n", &n);
     int* list_int = calloc(n, sizeof(int)); ///< a list containing ints
-    for (int list_int_index = 0; list_int_index < n; ++list_int_index)
-        scanf("%d ", &list_int[list_int_index]);
+    for (int i = 0; i < n; ++i)
+        scanf("%d ", &list_int[i]);
     int size; ///< an other size
     scanf("%d\n", &size);
     char* list_char = calloc(size + 1, sizeof(char)); ///< a list of char
     fgets(list_char, size + 1, stdin);
     getchar(); // \n
     char** list_string4 = calloc(size, sizeof(char*)); ///< a list of strings of size 4
-    for (int list_string4_index = 0; list_string4_index < size; ++list_string4_index) {
-        list_string4[list_string4_index] = calloc(4 + 1, sizeof(char));
-        fgets(list_string4[list_string4_index], 4 + 1, stdin);
+    for (int i = 0; i < size; ++i) {
+        list_string4[i] = calloc(4 + 1, sizeof(char));
+        fgets(list_string4[i], 4 + 1, stdin);
         getchar(); // \n
     }
     int** matrix = calloc(size, sizeof(int*)); ///< a matrix of int
-    for (int matrix_index = 0; matrix_index < size; ++matrix_index) {
-        matrix[matrix_index] = calloc(size, sizeof(int*));
-        for (int matrix_index_index = 0; matrix_index_index < size; ++matrix_index_index)
-            scanf("%d ", &matrix[matrix_index][matrix_index_index]);
+    for (int i = 0; i < size; ++i) {
+        matrix[i] = calloc(size, sizeof(int*));
+        for (int j = 0; j < size; ++j)
+            scanf("%d ", &matrix[i][j]);
     }
     lists(n, list_int, size, list_char, list_string4, matrix);
 

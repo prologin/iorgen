@@ -34,14 +34,14 @@ int main() {
     int n; ///< a number
     scanf("%d\n", &n);
     struct struct_1* struct_list = calloc(n, sizeof(struct struct_1)); ///< a list a struct 1
-    for (int struct_list_index = 0; struct_list_index < n; ++struct_list_index) {
-        scanf("%d %d\n", &struct_list[struct_list_index].foo, &struct_list[struct_list_index].bar);
+    for (int i = 0; i < n; ++i) {
+        scanf("%d %d\n", &struct_list[i].foo, &struct_list[i].bar);
     }
     struct point* triangle = calloc(3, sizeof(struct point)); ///< a triangle
-    for (int triangle_index = 0; triangle_index < 3; ++triangle_index) {
-        triangle[triangle_index].name = getchar();
+    for (int i = 0; i < 3; ++i) {
+        triangle[i].name = getchar();
         getchar(); // \n
-        scanf("%d %d %d\n", &triangle[triangle_index].pos.x, &triangle[triangle_index].pos.y, &triangle[triangle_index].pos.z);
+        scanf("%d %d %d\n", &triangle[i].pos.x, &triangle[i].pos.y, &triangle[i].pos.z);
     }
     structs(struct_, n, struct_list, triangle);
 

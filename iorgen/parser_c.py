@@ -5,7 +5,7 @@
 import textwrap
 from typing import List, Set  # pylint: disable=unused-import
 from iorgen.types import Input, Type, TypeEnum, Variable
-from iorgen.utils import snake_case
+from iorgen.utils import snake_case, IteratorName
 
 KEYWORDS = [
     "auto", "break", "case", "char", "const", "continue", "default", "do",
@@ -21,8 +21,6 @@ def var_name(name: str) -> str:
     candidate = snake_case(name)
     if candidate in KEYWORDS:
         return candidate + "_"
-    if candidate.endswith("_index"):  # could cause conflict for iterations
-        return candidate + "_"
     return candidate
 
 
@@ -34,13 +32,6 @@ def struct_name(name: str) -> str:
     return candidate
 
 
-def index_name(name: str) -> str:
-    """Return a name for an index for a given variable name"""
-    if '[' in name:
-        return name[name.find('[') + 1:-1] + "_index"
-    return name + "_index"
-
-
 class ParserC():
     """Create the C code to parse an input"""
 
@@ -50,8 +41,8 @@ class ParserC():
         self.includes = set()  # type: Set[str]
         self.main = []  # type: List[str]
         self.method = []  # type: List[str]
-        self.call_site = []  # type: List[str]
         self.garbage_ws = False
+        self.iterator = IteratorName([var.name for var in input_data.input])
 
         self.indentation = 4
 
@@ -93,11 +84,12 @@ class ParserC():
                     name, var_name(type_.size)))
                 self.main.append(indent + "getchar(); // \\n")
             elif type_.encapsulated.main == TypeEnum.INT:
-                index = index_name(name)
+                index = self.iterator.new_it()
                 self.main.append(indent + "for (int {0} = 0; {0} < {1}; ++{0})"
                                  .format(index, var_name(type_.size)))
                 self.main.append(' ' * self.indentation + indent +
                                  'scanf("%d ", &{}[{}]);'.format(name, index))
+                self.iterator.pop_it()
             else:
                 assert False
         elif type_.main == TypeEnum.STRUCT:
@@ -132,7 +124,7 @@ class ParserC():
                                     indent_lvl)
             elif type_.main == TypeEnum.LIST:
                 assert type_.encapsulated is not None
-                index = index_name(name)
+                index = self.iterator.new_it()
                 self.main.append(
                     "{0}for (int {1} = 0; {1} < {2}; ++{1}) {{".format(
                         " " * self.indentation * indent_lvl, index,
@@ -140,6 +132,7 @@ class ParserC():
                 self.read_lines("{}[{}]".format(name, index),
                                 type_.encapsulated, indent_lvl + 1)
                 self.main.append(" " * self.indentation * indent_lvl + "}")
+                self.iterator.pop_it()
             else:
                 assert False
 
@@ -180,8 +173,6 @@ class ParserC():
                                        " */", 79 - self.indentation)
             ])
         self.method.append("}")
-        self.call_site.append("{}({});".format(
-            name, ", ".join([var_name(i.name) for i in self.input.input])))
 
     def print_line(self, name: str, type_: Type, indent_lvl: int) -> None:
         """Print the content of a var that holds in one line"""
@@ -199,7 +190,7 @@ class ParserC():
                 self.method.append(indent +
                                    'printf("%s\\n", {});'.format(name))
             else:
-                index = index_name(name)
+                index = self.iterator.new_it()
                 self.method.append(indent +
                                    "for (int {0} = 0; {0} < {1}; ++{0})".
                                    format(index, var_name(type_.size)))
@@ -207,6 +198,7 @@ class ParserC():
                     ' ' * self.indentation + indent +
                     'printf("%d%c", {0}[{1}], {1} < {2} - 1 ? \' \' : \'\\n\');'
                     .format(name, index, var_name(type_.size)))
+                self.iterator.pop_it()
         elif type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)
             self.method.append(indent + 'printf("{}\\n", {});'.format(
@@ -228,7 +220,7 @@ class ParserC():
                                      indent_lvl)
             elif type_.main == TypeEnum.LIST:
                 assert type_.encapsulated is not None
-                index = index_name(name)
+                index = self.iterator.new_it()
                 self.method.append(
                     "{0}for (int {1} = 0; {1} < {2}; ++{1}) {{".format(
                         " " * self.indentation * indent_lvl, index,
@@ -236,6 +228,7 @@ class ParserC():
                 self.print_lines("{}[{}]".format(name, index),
                                  type_.encapsulated, indent_lvl + 1)
                 self.method.append(" " * self.indentation * indent_lvl + "}")
+                self.iterator.pop_it()
             else:
                 assert False
 
@@ -260,8 +253,9 @@ class ParserC():
         output += "int main() {\n"
         for line in self.main:
             output += ' ' * self.indentation + line + "\n"
-        for line in self.call_site:
-            output += ' ' * self.indentation + line + "\n"
+        output += ' ' * self.indentation + "{}({});\n".format(
+            var_name(self.input.name), ", ".join(
+                [var_name(i.name) for i in self.input.input]))
         output += "\n" + ' ' * self.indentation + "return 0;\n}\n"
         return output
 
