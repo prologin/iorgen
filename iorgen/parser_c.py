@@ -196,8 +196,8 @@ class ParserC():
                                    format(index, var_name(type_.size)))
                 self.method.append(
                     ' ' * self.indentation + indent +
-                    'printf("%d%c", {0}[{1}], {1} < {2} - 1 ? \' \' : \'\\n\');'
-                    .format(name, index, var_name(type_.size)))
+                    "printf(\"%d%c\", {0}[{1}], {1} < {2} - 1 ? ' ' : '\\n');".
+                    format(name, index, var_name(type_.size)))
                 self.iterator.pop_it()
         elif type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)

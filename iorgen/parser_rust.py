@@ -194,15 +194,15 @@ class ParserRust():
             return 'print!("{{}}\\n", {});'.format(name)
         if type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
-            join = ""
+            to_string = ""
             if type_.encapsulated.main == TypeEnum.INT:
-                join = '{}.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(" ")'.format(
-                    name)
+                to_string = 'iter().map(|x| x.to_string())' + \
+                            '.collect::<Vec<String>>().join(" ")'
             elif type_.encapsulated.main == TypeEnum.CHAR:
-                join = '{}.into_iter().collect::<String>()'.format(name)
+                to_string = 'into_iter().collect::<String>()'
             else:
                 assert False
-            return 'print!("{{}}\\n", {});'.format(join)
+            return 'print!("{{}}\\n", {}.{});'.format(name, to_string)
         if type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)
             return 'print!("{}\\n", {});'.format(

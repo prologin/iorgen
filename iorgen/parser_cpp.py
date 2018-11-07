@@ -183,9 +183,8 @@ class ParserCpp():
                                "for (size_t {0} = 0; {0} < {1}.size(); ++{0})".
                                format(inner_name, name))
             self.method.append(
-                ' ' * self.indentation + indent +
-                'std::cout << {0}[{1}] << ({1} < {0}.size() - 1 ? "{2}" : "\\n");'
-                .format(
+                ' ' * self.indentation + indent + "std::cout << " +
+                '{0}[{1}] << ({1} < {0}.size() - 1 ? "{2}" : "\\n");'.format(
                     name, inner_name, "" if type_.encapsulated.main ==
                     TypeEnum.CHAR else " "))
         elif type_.main == TypeEnum.STRUCT:
