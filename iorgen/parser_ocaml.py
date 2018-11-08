@@ -147,8 +147,8 @@ def print_lines(name: str, type_: Type, input_data: Input) -> str:
     if type_.main == TypeEnum.STRUCT:
         struct = input_data.get_struct(type_.struct_name)
         return "{} ()".format(" ".join("let () = {} in".format(
-            print_line("{}.{}".format(name, var_name(field[0])), field[1],
-                       input_data)) for field in struct.fields))
+            print_lines("{}.{}".format(name, var_name(field[0])), field[1],
+                        input_data)) for field in struct.fields))
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
         inner_name = name + "_it"
