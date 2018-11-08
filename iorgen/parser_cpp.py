@@ -5,7 +5,7 @@
 import textwrap
 from typing import List, Set  # pylint: disable=unused-import
 from iorgen.types import Input, Type, TypeEnum, Variable
-from iorgen.utils import snake_case
+from iorgen.utils import pascal_case, snake_case
 
 # keywords taken from cppreference on 2018-10-25
 KEYWORDS = [
@@ -38,10 +38,7 @@ def var_name(name: str) -> str:
 
 def struct_name(name: str) -> str:
     """Transform a struct name into a valid one for C++"""
-    candidate = snake_case(name)  # We make want an other style
-    if candidate in KEYWORDS:
-        return candidate + "_"
-    return candidate
+    return pascal_case(name)
 
 
 class ParserCpp():
