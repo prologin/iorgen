@@ -1,0 +1,50 @@
+name: Keywords
+subject: The names used here are often keywords in many languages
+structs:
+    - name: console
+      comment: may conflict in c#
+      fields:
+          - type: int
+            name: a
+            comment: the first letter of the alphabet
+          - type: int
+            name: static
+            comment: an integer
+    - name: system
+      comment: may conflict in c#
+      fields:
+          - type: int
+            name: return
+            comment: not the end of the function
+          - type: List[int](3)
+            name: void
+            comment: not nothing
+    - name: main
+      comment: not the main function
+      fields:
+          - type: "@system"
+            name: int
+            comment: not an integer
+          - type: int
+            name: if true
+            comment: should not cause conflict
+input:
+    - type: int
+      name: if
+      comment: not a condition
+    - type: char
+      name: class
+      comment: not a class
+    - type: str(8)
+      name: i
+      comment: just a string
+    - type: "@console"
+      name: in
+      comment: not in
+    - type: List[int](if)
+      name: for
+      comment: not a loop
+    - type: List[@main](2)
+      name: words
+      comment: contains lots of things
+output: If this compiles, it is already a good step!
