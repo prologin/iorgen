@@ -34,13 +34,13 @@ int main() {
     int n; ///< a number
     std::cin >> n;
     std::vector<Struct1> struct_list(n); ///< a list a struct 1
-    for (Struct1& struct_list_elem : struct_list) {
-        std::cin >> struct_list_elem.foo >> struct_list_elem.bar;
+    for (Struct1& i : struct_list) {
+        std::cin >> i.foo >> i.bar;
     }
     std::vector<Point> triangle(3); ///< a triangle
-    for (Point& triangle_elem : triangle) {
-        std::cin >> triangle_elem.name;
-        std::cin >> triangle_elem.pos.x >> triangle_elem.pos.y >> triangle_elem.pos.z;
+    for (Point& i : triangle) {
+        std::cin >> i.name;
+        std::cin >> i.pos.x >> i.pos.y >> i.pos.z;
     }
     structs(struct_, n, struct_list, triangle);
 }

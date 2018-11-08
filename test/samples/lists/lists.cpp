@@ -17,22 +17,22 @@ int main() {
     int n; ///< the first list's size
     std::cin >> n;
     std::vector<int> list_int(n); ///< a list containing ints
-    for (int& list_int_elem : list_int)
-        std::cin >> list_int_elem;
+    for (int& i : list_int)
+        std::cin >> i;
     int size; ///< an other size
     std::cin >> size;
     std::vector<char> list_char(size); ///< a list of char
-    for (char& list_char_elem : list_char)
-        std::cin >> list_char_elem;
+    for (char& i : list_char)
+        std::cin >> i;
     std::vector<std::string> list_string4(size); ///< a list of strings of size 4
-    for (std::string& list_string4_elem : list_string4) {
-        std::getline(std::cin >> std::ws, list_string4_elem);
+    for (std::string& i : list_string4) {
+        std::getline(std::cin >> std::ws, i);
     }
     std::vector<std::vector<int>> matrix(size); ///< a matrix of int
-    for (std::vector<int>& matrix_elem : matrix) {
-        matrix_elem.resize(size);
-        for (int& matrix_elem_elem : matrix_elem)
-            std::cin >> matrix_elem_elem;
+    for (std::vector<int>& i : matrix) {
+        i.resize(size);
+        for (int& j : i)
+            std::cin >> j;
     }
     lists(n, list_int, size, list_char, list_string4, matrix);
 }

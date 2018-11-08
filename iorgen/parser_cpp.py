@@ -5,7 +5,7 @@
 import textwrap
 from typing import List, Set  # pylint: disable=unused-import
 from iorgen.types import Input, Type, TypeEnum, Variable
-from iorgen.utils import pascal_case, snake_case
+from iorgen.utils import pascal_case, snake_case, IteratorName
 
 # keywords taken from cppreference on 2018-10-25
 KEYWORDS = [
@@ -31,8 +31,6 @@ def var_name(name: str) -> str:
     candidate = snake_case(name)
     if candidate in KEYWORDS:
         return candidate + "_"
-    if candidate.endswith("_elem"):  # could cause conflict in range-base loop
-        return candidate + "_"
     return candidate
 
 
@@ -50,7 +48,7 @@ class ParserCpp():
         self.includes = set()  # type: Set[str]
         self.main = []  # type: List[str]
         self.method = []  # type: List[str]
-        self.call_site = []  # type: List[str]
+        self.iterator = IteratorName([var.name for var in input_data.input])
         self.garbage_ws = False
 
         self.indentation = 4
@@ -90,11 +88,12 @@ class ParserCpp():
                              "std::getline({}, {});".format(cin, name))
         elif type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
-            inner_name = "{}_elem".format(name)
+            inner_name = self.iterator.new_it()
             self.main.append(indent + "for ({}& {} : {})".format(
                 self.type_str(type_.encapsulated), inner_name, name))
             self.main.append(' ' * self.indentation + indent +
                              "std::cin >> {};".format(inner_name))
+            self.iterator.pop_it()
         elif type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)
             self.main.append(indent + "std::cin >> {};".format(" >> ".join(
@@ -117,12 +116,13 @@ class ParserCpp():
                                     field[1], indent_lvl)
             elif type_.main == TypeEnum.LIST:
                 assert type_.encapsulated is not None
-                inner_name = "{}_elem".format(name)
+                inner_name = self.iterator.new_it()
                 self.main.append("{}for ({}& {} : {}) {{".format(
                     " " * self.indentation * indent_lvl,
                     self.type_str(type_.encapsulated), inner_name, name))
                 self.read_lines(inner_name, type_.encapsulated, indent_lvl + 1)
                 self.main.append(" " * self.indentation * indent_lvl + "}")
+                self.iterator.pop_it()
             else:
                 assert False
 
@@ -163,8 +163,6 @@ class ParserCpp():
                                        " */", 79 - self.indentation)
             ])
         self.method.append("}")
-        self.call_site.append("{}({});".format(
-            name, ", ".join([var_name(i.name) for i in self.input.input])))
 
     def print_line(self, name: str, type_: Type, indent_lvl: int) -> None:
         """Print the content of a var that holds in one line"""
@@ -175,7 +173,7 @@ class ParserCpp():
                                "std::cout << {} << std::endl;".format(name))
         elif type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
-            inner_name = "{}_elem".format(name)
+            inner_name = self.iterator.new_it()
             self.method.append(indent +
                                "for (size_t {0} = 0; {0} < {1}.size(); ++{0})".
                                format(inner_name, name))
@@ -184,6 +182,7 @@ class ParserCpp():
                 '{0}[{1}] << ({1} < {0}.size() - 1 ? "{2}" : "\\n");'.format(
                     name, inner_name, "" if type_.encapsulated.main ==
                     TypeEnum.CHAR else " "))
+            self.iterator.pop_it()
         elif type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)
             self.method.append(indent + "std::cout << {} << std::endl;".format(
@@ -203,13 +202,14 @@ class ParserCpp():
                                      field[1], indent_lvl)
             elif type_.main == TypeEnum.LIST:
                 assert type_.encapsulated is not None
-                inner_name = "{}_elem".format(name)
+                inner_name = self.iterator.new_it()
                 self.method.append("{}for (const {}& {} : {}) {{".format(
                     " " * self.indentation * indent_lvl,
                     self.type_str(type_.encapsulated), inner_name, name))
                 self.print_lines(inner_name, type_.encapsulated,
                                  indent_lvl + 1)
                 self.method.append(" " * self.indentation * indent_lvl + "}")
+                self.iterator.pop_it()
             else:
                 assert False
 
@@ -234,8 +234,9 @@ class ParserCpp():
         output += "int main() {\n"
         for line in self.main:
             output += ' ' * self.indentation + line + "\n"
-        for line in self.call_site:
-            output += ' ' * self.indentation + line + "\n"
+        output += ' ' * self.indentation + "{}({});\n".format(
+            var_name(self.input.name), ", ".join(
+                [var_name(i.name) for i in self.input.input]))
         output += "}\n"
         return output
 
