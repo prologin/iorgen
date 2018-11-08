@@ -9,6 +9,7 @@ from typing import Callable, Optional, List
 from iorgen.types import Input
 from iorgen.parser_c import gen_c
 from iorgen.parser_cpp import gen_cpp
+from iorgen.parser_csharp import gen_csharp
 from iorgen.parser_haskell import gen_haskell
 from iorgen.parser_ocaml import gen_ocaml
 from iorgen.parser_php import gen_php
@@ -64,6 +65,7 @@ ALL_LANGUAGES = [
         ["gcc", "-std=c11", "-Wall", "-Wextra", "-O2", "-lm", "-o", "{name}"]),
     Language("cpp", gen_cpp,
              ["g++", "-std=c++17", "-Wall", "-Wextra", "-O2", "-o", "{name}"]),
+    Language("cs", gen_csharp, ["mcs", "-optimize", "-out:{name}"], ["mono"]),
     Language("hs", gen_haskell,
              ["ghc", "-Wall", "-Wno-name-shadowing", "-dynamic", "-O2"]),
     Language("ml", gen_ocaml, ["ocamlopt", "-w", "A", "-o", "{name}"]),

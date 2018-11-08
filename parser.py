@@ -8,7 +8,7 @@ from typing import TextIO
 
 import yaml
 
-from iorgen import gen_haskell, Input
+from iorgen import gen_csharp, Input
 
 
 def generate_cpp(stream: TextIO) -> str:
@@ -17,7 +17,7 @@ def generate_cpp(stream: TextIO) -> str:
     if not input_data:
         print("Could not parse input data")
         exit(1)
-    return gen_haskell(input_data)
+    return gen_csharp(input_data)
 
 
 if __name__ == "__main__":
