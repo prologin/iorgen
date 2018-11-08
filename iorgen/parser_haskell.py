@@ -17,14 +17,50 @@ KEYWORDS = [
     "qualified", "rec", "type", "where"
 ]
 
+# from autocompletion in GHCi version 8.6.1
+PRELUDE = [
+    "Applicative", "Bool", "Bounded", "Char", "Double", "EQ", "Either", "Enum",
+    "Eq", "False", "FilePath", "Float", "Floating", "Foldable", "Fractional",
+    "Functor", "GT", "IO", "IOError", "Int", "Integer", "Integral", "Just",
+    "LT", "Left", "Maybe", "Monad", "Monoid", "Nothing", "Num", "Ord",
+    "Ordering", "Rational", "Read", "ReadS", "Real", "RealFloat", "RealFrac",
+    "Right", "Semigroup", "Show", "ShowS", "String", "Traversable", "True",
+    "Word", "^", "^^", "abs", "acos", "acosh", "all", "and", "any",
+    "appendFile", "asTypeOf", "asin", "asinh", "atan", "atan2", "atanh",
+    "break", "ceiling", "compare", "concat", "concatMap", "const", "cos",
+    "cosh", "curry", "cycle", "decodeFloat", "div", "divMod", "drop",
+    "dropWhile", "either", "elem", "encodeFloat", "enumFrom", "enumFromThen",
+    "enumFromThenTo", "enumFromTo", "error", "errorWithoutStackTrace", "even",
+    "exp", "exponent", "fail", "filter", "flip", "floatDigits", "floatRadix",
+    "floatRange", "floor", "fmap", "foldMap", "foldl", "foldl1", "foldr",
+    "foldr1", "fromEnum", "fromInteger", "fromIntegral", "fromRational", "fst",
+    "gcd", "getChar", "getContents", "getLine", "head", "id", "init",
+    "interact", "ioError", "isDenormalized", "isIEEE", "isInfinite", "isNaN",
+    "isNegativeZero", "iterate", "last", "lcm", "length", "lex", "lines",
+    "log", "logBase", "lookup", "map", "mapM", "mapM_", "mappend", "max",
+    "maxBound", "maximum", "maybe", "mconcat", "mempty", "min", "minBound",
+    "minimum", "mod", "negate", "not", "notElem", "null", "odd", "or",
+    "otherwise", "pi", "pred", "print", "product", "properFraction", "pure",
+    "putChar", "putStr", "putStrLn", "quot", "quotRem", "read", "readFile",
+    "readIO", "readList", "readLn", "readParen", "reads", "readsPrec",
+    "realToFrac", "recip", "rem", "repeat", "replicate", "return", "reverse",
+    "round", "scaleFloat", "scanl", "scanl1", "scanr", "scanr1", "seq",
+    "sequence", "sequenceA", "sequence_", "show", "showChar", "showList",
+    "showParen", "showString", "shows", "showsPrec", "significand", "signum",
+    "sin", "sinh", "snd", "span", "splitAt", "sqrt", "subtract", "succ", "sum",
+    "tail", "take", "takeWhile", "tan", "tanh", "toEnum", "toInteger",
+    "toRational", "traverse", "truncate", "uncurry", "undefined", "unlines",
+    "until", "unwords", "unzip", "unzip3", "userError", "words", "writeFile",
+    "zip", "zip3", "zipWith", "zipWith3"
+]
+
 
 def var_name(name: str) -> str:
     """Transform a variable name into a valid one for Haskell"""
     candidate = camel_case(name)
     if candidate in KEYWORDS:
         return candidate + "'"
-    if candidate in ("fmap", "map", "getLine", "head", "putStrLn", "read",
-                     "replicateM", "words"):
+    if candidate in PRELUDE + ["replicateM", "main"]:
         return candidate + "'"
     if candidate.startswith("read") and candidate[4].isupper():
         return candidate + "'"
@@ -34,7 +70,7 @@ def var_name(name: str) -> str:
 def data_name(name: str) -> str:
     """Transform a data name into a valid one for Haskell"""
     candidate = pascal_case(name)
-    if candidate in ("Char", "Int", "String", "IO"):  # We use those types
+    if candidate in PRELUDE:
         return candidate + "'"
     return candidate
 
