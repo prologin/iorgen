@@ -41,7 +41,6 @@ class ParserC():
         self.includes = set()  # type: Set[str]
         self.main = []  # type: List[str]
         self.method = []  # type: List[str]
-        self.garbage_ws = False
         self.iterator = IteratorName([var.name for var in input_data.input])
 
         self.indentation = 4
@@ -101,27 +100,27 @@ class ParserC():
                              for i in struct.fields)))
         else:
             assert False
-        self.garbage_ws = type_.main != TypeEnum.STR
 
     def read_lines(self, name: str, type_: Type, indent_lvl: int = 0) -> None:
         """Read one or several lines and store them into the right place(s)"""
         if type_.main == TypeEnum.LIST and indent_lvl != 0:
             self.includes.add("stdlib.h")
             self.main.append("{}{} = calloc({}{}, sizeof({}));".format(
-                " " * self.indentation * indent_lvl, name, type_.size,
-                " + 1" if type_.main == TypeEnum.CHAR else "",
+                " " * self.indentation * indent_lvl, name, var_name(
+                    type_.size), " + 1" if type_.main == TypeEnum.CHAR else "",
                 self.type_str(type_)))
         elif type_.main == TypeEnum.STR and indent_lvl != 0:
             self.includes.add("stdlib.h")
             self.main.append("{}{} = calloc({} + 1, sizeof(char));".format(
-                " " * self.indentation * indent_lvl, name, type_.size))
+                " " * self.indentation * indent_lvl, name,
+                var_name(type_.size)))
         if type_.fits_it_one_line(self.input.structs):
             self.read_line(name, type_, indent_lvl)
         else:
             if type_.main == TypeEnum.STRUCT:
                 for field in self.input.get_struct(type_.struct_name).fields:
-                    self.read_lines("{}.{}".format(name, field[0]), field[1],
-                                    indent_lvl)
+                    self.read_lines("{}.{}".format(name, var_name(field[0])),
+                                    field[1], indent_lvl)
             elif type_.main == TypeEnum.LIST:
                 assert type_.encapsulated is not None
                 index = self.iterator.new_it()
@@ -142,6 +141,10 @@ class ParserC():
         if var.type.main == TypeEnum.CHAR:
             self.includes.add("stdio.h")
             init = " = getchar()"
+        elif var.type.main == TypeEnum.STR:
+            self.includes.add("stdlib.h")
+            init = " = calloc({} + 1, sizeof(char));".format(
+                var_name(var.type.size))
         elif var.type.main == TypeEnum.LIST:
             assert var.type.encapsulated is not None
             self.includes.add("stdlib.h")
@@ -216,8 +219,8 @@ class ParserC():
         else:
             if type_.main == TypeEnum.STRUCT:
                 for field in self.input.get_struct(type_.struct_name).fields:
-                    self.print_lines("{}.{}".format(name, field[0]), field[1],
-                                     indent_lvl)
+                    self.print_lines("{}.{}".format(name, var_name(field[0])),
+                                     field[1], indent_lvl)
             elif type_.main == TypeEnum.LIST:
                 assert type_.encapsulated is not None
                 index = self.iterator.new_it()
