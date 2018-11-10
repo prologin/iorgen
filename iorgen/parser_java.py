@@ -91,8 +91,8 @@ class ParserJava():
                 " " if decl else "", name, class_name(type_.struct_name)))
             lines.extend("{}{}.{} = {};".format(
                 indent, name, var_name(
-                    f[0]), "Integer.parseInt({}[{}])".format(words, i) if f[1].
-                main == TypeEnum.INT else "{}[{}][0]".format(words, i))
+                    f.name), "Integer.parseInt({}[{}])".format(words, i) if f.
+                type.main == TypeEnum.INT else "{}[{}][0]".format(words, i))
                          for i, f in enumerate(struct.fields))
             return lines
         type_decl = (type_str(type_) + " ") if decl else ""
@@ -130,7 +130,7 @@ class ParserJava():
             for field in struct.fields:
                 lines.extend(
                     self.read_lines(False, "{}.{}".format(
-                        name, var_name(field[0])), field[1], indent_lvl))
+                        name, var_name(field.name)), field.type, indent_lvl))
             return lines
         if type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
@@ -199,10 +199,10 @@ class ParserJava():
         if type_.main == TypeEnum.STRUCT:
             fields = self.input.get_struct(type_.struct_name).fields
             return 'System.out.printf("{}\\n", {});'.format(
-                " ".join("%d" if f[1].main == TypeEnum.INT else "%c"
+                " ".join("%d" if f.type.main == TypeEnum.INT else "%c"
                          for f in fields),
                 ", ".join(
-                    "{}.{}".format(name, var_name(f[0])) for f in fields))
+                    "{}.{}".format(name, var_name(f.name)) for f in fields))
         assert False
         return ""
 
@@ -216,8 +216,9 @@ class ParserJava():
             lines = []
             for field in struct.fields:
                 lines.extend(
-                    self.print_lines("{}.{}".format(name, var_name(field[0])),
-                                     field[1], indent_lvl))
+                    self.print_lines(
+                        "{}.{}".format(name, var_name(field.name)), field.type,
+                        indent_lvl))
             return lines
         if type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
@@ -243,9 +244,9 @@ class ParserJava():
             output += "class {}\n{{\n".format(class_name(struct.name))
             for field in struct.fields:
                 decl_field = "{0}/**\n{0} * {1}\n{0} */\n{0}public {2} {3};\n"
-                output += decl_field.format(INDENTATION, field[2],
-                                            type_str(field[1]),
-                                            var_name(field[0]))
+                output += decl_field.format(INDENTATION, field.comment,
+                                            type_str(field.type),
+                                            var_name(field.name))
             output += "}\n\n"
         output += "class Main {\n"
         output += "\n".join(self.call(reprint)) + "\n\n"

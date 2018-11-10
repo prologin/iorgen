@@ -65,8 +65,8 @@ def decl_struct(struct: Struct) -> List[str]:
     ]
     for field in struct.fields:
         lines.extend([
-            INDENTATION + "/// " + field[2], "{}{}: {},".format(
-                INDENTATION, var_name(field[0]), type_str(field[1]))
+            INDENTATION + "/// " + field.comment, "{}{}: {},".format(
+                INDENTATION, var_name(field.name), type_str(field.type))
         ])
     return lines + ["}", ""]
 
@@ -95,16 +95,17 @@ class ParserRust():
                 INDENTATION + "{} {{".format(struct_name(struct.name))
             ])
             lines.extend("{}{}: words[{}].parse().unwrap(),".format(
-                2 * INDENTATION, var_name(field[0]), i)
+                2 * INDENTATION, var_name(field.name), i)
                          for i, field in enumerate(struct.fields))
             lines.append(INDENTATION + "}")
         else:
             for field in struct.fields:
                 lines.extend(
-                    self.read_var(Variable(field[0], field[2], field[1])))
+                    self.read_var(
+                        Variable(field.name, field.comment, field.type)))
             lines.append("{}{} {{ {} }}".format(
                 INDENTATION, struct_name(struct.name), ", ".join(
-                    var_name(f[0]) for f in struct.fields)))
+                    var_name(f.name) for f in struct.fields)))
         return lines + ["}"]
 
     def read_line(self, type_: Type) -> str:
@@ -206,8 +207,8 @@ class ParserRust():
         if type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)
             return 'print!("{}\\n", {});'.format(
-                " ".join(["{}"] * len(struct.fields)),
-                ", ".join(name + "." + var_name(f[0]) for f in struct.fields))
+                " ".join(["{}"] * len(struct.fields)), ", ".join(
+                    name + "." + var_name(f.name) for f in struct.fields))
         assert False
         return ""
 
@@ -221,8 +222,8 @@ class ParserRust():
             lines = []
             for field in self.input.get_struct(type_.struct_name).fields:
                 lines.extend(
-                    self.print_lines(name + "." + var_name(field[0]), field[1],
-                                     indent_lvl))
+                    self.print_lines(name + "." + var_name(field.name),
+                                     field.type, indent_lvl))
             return lines
         if type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None

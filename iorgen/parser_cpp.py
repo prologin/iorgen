@@ -97,7 +97,8 @@ class ParserCpp():
         elif type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)
             self.main.append(indent + "std::cin >> {};".format(" >> ".join(
-                "{}.{}".format(name, var_name(x[0])) for x in struct.fields)))
+                "{}.{}".format(name, var_name(x.name))
+                for x in struct.fields)))
         else:
             assert False
         self.garbage_ws = type_.main != TypeEnum.STR
@@ -112,8 +113,8 @@ class ParserCpp():
         else:
             if type_.main == TypeEnum.STRUCT:
                 for field in self.input.get_struct(type_.struct_name).fields:
-                    self.read_lines("{}.{}".format(name, var_name(field[0])),
-                                    field[1], indent_lvl)
+                    self.read_lines("{}.{}".format(name, var_name(field.name)),
+                                    field.type, indent_lvl)
             elif type_.main == TypeEnum.LIST:
                 assert type_.encapsulated is not None
                 inner_name = self.iterator.new_it()
@@ -186,7 +187,7 @@ class ParserCpp():
         elif type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)
             self.method.append(indent + "std::cout << {} << std::endl;".format(
-                " << ' ' << ".join("{}.{}".format(name, var_name(x[0]))
+                " << ' ' << ".join("{}.{}".format(name, var_name(x.name))
                                    for x in struct.fields)))
         else:
             assert False
@@ -198,8 +199,9 @@ class ParserCpp():
         else:
             if type_.main == TypeEnum.STRUCT:
                 for field in self.input.get_struct(type_.struct_name).fields:
-                    self.print_lines("{}.{}".format(name, var_name(field[0])),
-                                     field[1], indent_lvl)
+                    self.print_lines(
+                        "{}.{}".format(name, var_name(field.name)), field.type,
+                        indent_lvl)
             elif type_.main == TypeEnum.LIST:
                 assert type_.encapsulated is not None
                 inner_name = self.iterator.new_it()
@@ -225,7 +227,8 @@ class ParserCpp():
             output += "struct {} {{\n".format(struct_name(struct.name))
             for field in struct.fields:
                 output += " " * self.indentation + "{} {}; ///< {}\n".format(
-                    self.type_str(field[1]), var_name(field[0]), field[2])
+                    self.type_str(field.type), var_name(field.name),
+                    field.comment)
             output += "};\n\n"
         for line in self.method:
             output += line + "\n"

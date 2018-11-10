@@ -106,14 +106,14 @@ def print_var_content(type_: Type, structs: List[Struct]) -> str:
         if type_.fits_it_one_line(structs):
             fields = []
             for i in struct.fields:
-                if i[1].main == TypeEnum.INT:
-                    fields.append("(show $ {} r)".format(var_name(i[0])))
+                if i.type.main == TypeEnum.INT:
+                    fields.append("(show $ {} r)".format(var_name(i.name)))
                 else:
-                    assert i[1].main == TypeEnum.CHAR
-                    fields.append('((: "") $ {} r)'.format(var_name(i[0])))
+                    assert i.type.main == TypeEnum.CHAR
+                    fields.append('((: "") $ {} r)'.format(var_name(i.name)))
             return '(\\r -> {} ++ "\\n")'.format(' ++ " " ++ '.join(fields))
         return "(\\r -> {})".format(" ++ ".join("({} $ {} r)".format(
-            print_var_content(i[1], structs), var_name(i[0]))
+            print_var_content(i.type, structs), var_name(i.name))
                                                 for i in struct.fields))
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated
@@ -146,13 +146,13 @@ class ParserHaskell():
         for data in self.input.structs:
             output += "-- | {}\n".format(data.comment)
             output += "data {0} = {0}\n".format(data_name(data.name))
-            length_type = max(len(type_str(i[1])) for i in data.fields)
-            length_name = max(len(var_name(i[0])) for i in data.fields)
+            length_type = max(len(type_str(i.type)) for i in data.fields)
+            length_name = max(len(var_name(i.name)) for i in data.fields)
             for i, field in enumerate(data.fields):
                 output += "{}{} {: <{}} :: {: <{}}  -- ^ {}\n".format(
                     " " * self.indentation, '{' if i == 0 else ',',
-                    var_name(field[0]), length_name, type_str(field[1]),
-                    length_type, field[2])
+                    var_name(field.name), length_name, type_str(field.type),
+                    length_type, field.comment)
             output += " " * self.indentation + "}\n\n"
         return output
 
@@ -240,9 +240,9 @@ class ParserHaskell():
             args = ", ".join(chr(97 + i) for i in range(len(struct.fields)))
             parse = []
             for i, field in enumerate(struct.fields):
-                if field[1].main == TypeEnum.INT:
+                if field.type.main == TypeEnum.INT:
                     parse.append("(read {})".format(chr(97 + i)))
-                elif field[1].main == TypeEnum.CHAR:
+                elif field.type.main == TypeEnum.CHAR:
                     parse.append("(head {})".format(chr(97 + i)))
                 else:
                     assert False
@@ -252,7 +252,7 @@ class ParserHaskell():
                     data_name(struct.name), args, func)
             ]
         self.imports.add("Control.Applicative ((<$>), (<*>))")
-        args = " <*> ".join(self.read_lines(i[1]) for i in struct.fields)
+        args = " <*> ".join(self.read_lines(i.type) for i in struct.fields)
         output = ["read{0} = {0} <$> {1}".format(data_name(struct.name), args)]
         return output
 

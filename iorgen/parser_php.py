@@ -49,10 +49,10 @@ def read_line(type_: Type, input_data: Input) -> str:
     if type_.main == TypeEnum.STRUCT:
         struct = input_data.get_struct(type_.struct_name)
         begin = "array_combine([{}], ".format(", ".join(
-            '"{}"'.format(i[0]) for i in struct.fields))
-        if all(i[1].main == TypeEnum.INT for i in struct.fields):
+            '"{}"'.format(i.name) for i in struct.fields))
+        if all(i.type.main == TypeEnum.INT for i in struct.fields):
             return begin + "array_map('intval', explode(' ', fgets(STDIN))))"
-        if all(i[1].main == TypeEnum.CHAR for i in struct.fields):
+        if all(i.type.main == TypeEnum.CHAR for i in struct.fields):
             return begin + "str_split(trim(fgets(STDIN))))"
         assert False, "Not implemented"
     return {
@@ -81,7 +81,7 @@ def read_lines(type_: Type, input_data: Input) -> str:
             read_lines(type_.encapsulated, input_data), var_name(type_.size))
     if type_.main == TypeEnum.STRUCT:
         return "array({})".format(", ".join(
-            '"{}" => {}'.format(i[0], read_lines(i[1], input_data))
+            '"{}" => {}'.format(i.name, read_lines(i.type, input_data))
             for i in input_data.get_struct(type_.struct_name).fields))
     assert False
     return ""
@@ -101,7 +101,7 @@ def print_line(name: str, type_: Type, input_data: Input) -> str:
     if type_.main == TypeEnum.STRUCT:
         struct = input_data.get_struct(type_.struct_name)
         return 'echo {}, "\\n";'.format(", ' ', ".join(
-            '{}["{}"]'.format(name, i[0]) for i in struct.fields))
+            '{}["{}"]'.format(name, i.name) for i in struct.fields))
     assert False
     return ""
 
@@ -122,8 +122,8 @@ def print_lines(input_data: Input, name: str, type_: Type,
         lines = []
         for i in input_data.get_struct(type_.struct_name).fields:
             lines.extend(
-                print_lines(input_data, '{}["{}"]'.format(name, i[0]), i[1],
-                            indent_lvl))
+                print_lines(input_data, '{}["{}"]'.format(name, i.name),
+                            i.type, indent_lvl))
         return lines
     assert False
     return []

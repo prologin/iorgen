@@ -94,9 +94,9 @@ class ParserC():
         elif type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)
             self.main.append(indent + 'scanf("{}\\n", {});'.format(
-                " ".join("%c" if i[1].main == TypeEnum.CHAR else "%d"
+                " ".join("%c" if i.type.main == TypeEnum.CHAR else "%d"
                          for i in struct.fields), ", ".join(
-                             "&" + name + "." + var_name(i[0])
+                             "&" + name + "." + var_name(i.name)
                              for i in struct.fields)))
         else:
             assert False
@@ -119,8 +119,8 @@ class ParserC():
         else:
             if type_.main == TypeEnum.STRUCT:
                 for field in self.input.get_struct(type_.struct_name).fields:
-                    self.read_lines("{}.{}".format(name, var_name(field[0])),
-                                    field[1], indent_lvl)
+                    self.read_lines("{}.{}".format(name, var_name(field.name)),
+                                    field.type, indent_lvl)
             elif type_.main == TypeEnum.LIST:
                 assert type_.encapsulated is not None
                 index = self.iterator.new_it()
@@ -205,9 +205,9 @@ class ParserC():
         elif type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)
             self.method.append(indent + 'printf("{}\\n", {});'.format(
-                " ".join("%c" if i[1].main == TypeEnum.CHAR else "%d"
+                " ".join("%c" if i.type.main == TypeEnum.CHAR else "%d"
                          for i in struct.fields), ", ".join(
-                             name + "." + var_name(i[0])
+                             name + "." + var_name(i.name)
                              for i in struct.fields)))
         else:
             assert False
@@ -219,8 +219,9 @@ class ParserC():
         else:
             if type_.main == TypeEnum.STRUCT:
                 for field in self.input.get_struct(type_.struct_name).fields:
-                    self.print_lines("{}.{}".format(name, var_name(field[0])),
-                                     field[1], indent_lvl)
+                    self.print_lines(
+                        "{}.{}".format(name, var_name(field.name)), field.type,
+                        indent_lvl)
             elif type_.main == TypeEnum.LIST:
                 assert type_.encapsulated is not None
                 index = self.iterator.new_it()
@@ -247,7 +248,8 @@ class ParserC():
             output += "struct {} {{\n".format(struct_name(struct.name))
             for field in struct.fields:
                 output += " " * self.indentation + "{} {}; ///< {}\n".format(
-                    self.type_str(field[1]), var_name(field[0]), field[2])
+                    self.type_str(field.type), var_name(field.name),
+                    field.comment)
             output += "};\n\n"
         for line in self.method:
             output += line + "\n"

@@ -4,7 +4,7 @@
 
 import re
 from enum import Enum, unique
-from typing import Any, Dict, List, Optional, Tuple, Type as T, TypeVar, Union
+from typing import Any, Dict, List, Optional, Type as T, TypeVar, Union
 
 # This stuff is no longer necessary with python 3.7 by including:
 # from __future__ import annotations
@@ -93,11 +93,11 @@ class Type:
             return self.encapsulated.can_be_inlined()
         if self.main == TypeEnum.STRUCT:
             struct = next(x for x in structs if x.name == self.struct_name)
-            if all(i[1].can_be_inlined() for i in struct.fields):
+            if all(i.type.can_be_inlined() for i in struct.fields):
                 two_chars_in_a_row = False
                 for i in range(len(struct.fields) - 1):
-                    if struct.fields[i][1].main == TypeEnum.CHAR and \
-                       struct.fields[i + 1][1].main == TypeEnum.CHAR:
+                    if struct.fields[i].type.main == TypeEnum.CHAR and \
+                       struct.fields[i + 1].type.main == TypeEnum.CHAR:
                         two_chars_in_a_row = True
                         break
                 if not two_chars_in_a_row:
@@ -136,7 +136,7 @@ class Struct:
     # pylint: disable=too-few-public-methods
 
     def __init__(self: STRUCT, name: str, comment: str,
-                 fields: List[Tuple[str, Type, str]]) -> None:
+                 fields: List[Variable]) -> None:
         self.name = name
         self.comment = comment
         self.fields = fields
@@ -153,14 +153,12 @@ class Struct:
             if not isinstance(name, str) or not isinstance(
                     comment, str) or not isinstance(fields, list):
                 return None
-            field_list = []  # type: List[Tuple[str, Type, str]]
+            field_list = []  # type: List[Variable]
             for i in fields:
-                if not isinstance(i, dict):
+                var = Variable.from_dict(i)
+                if var is None:
                     return None
-                type_ = Type.from_string(i["type"])
-                if type_ is None:
-                    return None
-                field_list.append((i["name"], type_, i["comment"]))
+                field_list.append(var)
             return cls(name, comment, field_list)
         except KeyError:
             return None

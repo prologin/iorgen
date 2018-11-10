@@ -91,8 +91,8 @@ class ParserCS():
                 "{}{}{} = new {}{{{}}};".format(
                     indent, s_name if decl else "", name, s_name, ", ".join(
                         "{} = {}".format(
-                            var_name(f[0]), "int.Parse({}[{}])".
-                            format(words, i) if f[1].main == TypeEnum.
+                            var_name(f.name), "int.Parse({}[{}])".
+                            format(words, i) if f.type.main == TypeEnum.
                             INT else "{}[{}][0]".format(words, i))
                         for i, f in enumerate(struct.fields)))
             ]
@@ -130,7 +130,7 @@ class ParserCS():
             for field in struct.fields:
                 lines.extend(
                     self.read_lines(False, "{}.{}".format(
-                        name, var_name(field[0])), field[1], indent_lvl))
+                        name, var_name(field.name)), field.type, indent_lvl))
             return lines
         if type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
@@ -197,7 +197,7 @@ class ParserCS():
             return 'Console.WriteLine("{}", {});'.format(
                 " ".join("{{{}}}".format(i) for i in range(len(fields))),
                 ", ".join(
-                    "{}.{}".format(name, var_name(f[0])) for f in fields))
+                    "{}.{}".format(name, var_name(f.name)) for f in fields))
         assert False
         return ""
 
@@ -211,8 +211,9 @@ class ParserCS():
             lines = []
             for field in struct.fields:
                 lines.extend(
-                    self.print_lines("{}.{}".format(name, var_name(field[0])),
-                                     field[1], indent_lvl))
+                    self.print_lines(
+                        "{}.{}".format(name, var_name(field.name)), field.type,
+                        indent_lvl))
             return lines
         if type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
@@ -239,7 +240,7 @@ class ParserCS():
             output += "struct {}\n{{\n".format(pascal_name(struct.name))
             for field in struct.fields:
                 output += INDENTATION + "public {} {}; //!< {}\n".format(
-                    type_str(field[1]), var_name(field[0]), field[2])
+                    type_str(field.type), var_name(field.name), field.comment)
             output += "}\n\n"
         output += "class Program\n{\n"
         output += "\n".join(self.call(reprint)) + "\n"

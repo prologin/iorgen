@@ -34,10 +34,10 @@ def read_line(type_: Type, input_data: Input) -> str:
     if type_.main == TypeEnum.STRUCT:
         struct = input_data.get_struct(type_.struct_name)
         begin = "dict(zip([{}], ".format(", ".join(
-            '"{}"'.format(i[0]) for i in struct.fields))
-        if all(i[1].main == TypeEnum.INT for i in struct.fields):
+            '"{}"'.format(i.name) for i in struct.fields))
+        if all(i.type.main == TypeEnum.INT for i in struct.fields):
             return begin + "map(int, input().split())))"
-        if all(i[1].main == TypeEnum.CHAR for i in struct.fields):
+        if all(i.type.main == TypeEnum.CHAR for i in struct.fields):
             return begin + "input().split()))"
         assert False, "Not implemented"
     return {
@@ -57,7 +57,7 @@ def read_lines(type_: Type, input_data: Input) -> str:
             read_lines(type_.encapsulated, input_data), var_name(type_.size))
     if type_.main == TypeEnum.STRUCT:
         return "{{{}}}".format(", ".join(
-            '"{}": {}'.format(field[0], read_lines(field[1], input_data))
+            '"{}": {}'.format(field.name, read_lines(field.type, input_data))
             for field in input_data.get_struct(type_.struct_name).fields))
     assert False
     return ""
@@ -77,7 +77,7 @@ def print_line(name: str, type_: Type, input_data: Input) -> str:
     if type_.main == TypeEnum.STRUCT:
         struct = input_data.get_struct(type_.struct_name)
         return "print({})".format(", ".join(
-            '{}["{}"]'.format(name, i[0]) for i in struct.fields))
+            '{}["{}"]'.format(name, i.name) for i in struct.fields))
     assert False
     return ""
 
@@ -138,7 +138,7 @@ class ParserPython():
             lines = []
             for i in self.input.get_struct(type_.struct_name).fields:
                 lines.extend(
-                    self.print_lines('{}["{}"]'.format(name, i[0]), i[1],
+                    self.print_lines('{}["{}"]'.format(name, i.name), i.type,
                                      indent_lvl))
             return lines
         assert False

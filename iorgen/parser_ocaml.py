@@ -57,7 +57,7 @@ def declare_record(struct: Struct) -> List[str]:
             record_name(struct.name))
     ]
     out.extend(INDENTATION + "{} : {}; (** {} *)".format(
-        var_name(field[0]), type_str(field[1]), field[2])
+        var_name(field.name), type_str(field.type), field.comment)
                for field in struct.fields)
     return out + ["}"]
 
@@ -83,9 +83,9 @@ def read_line(type_: Type, input_data: Input) -> str:
                 'Scanf.scanf "%s\\n"', var_name(type_.size))
     if type_.main == TypeEnum.STRUCT:
         struct = input_data.get_struct(type_.struct_name)
-        args = [var_name(field[0]) for field in struct.fields]
+        args = [var_name(field.name) for field in struct.fields]
         return 'Scanf.scanf "{}\\n" (fun {} -> {{{}}})'.format(
-            " ".join("%d" if f[1].main == TypeEnum.INT else "%c"
+            " ".join("%d" if f.type.main == TypeEnum.INT else "%c"
                      for f in struct.fields), " ".join(args),
             "; ".join("{0} = {0}".format(i) for i in args))
     assert False
@@ -104,10 +104,10 @@ def read_lines(type_: Type, input_data: Input) -> str:
         struct = input_data.get_struct(type_.struct_name)
         return '{} {{{}}}'.format(
             " ".join("let {} = {} in".format(
-                var_name(field[0]), read_lines(field[1], input_data))
+                var_name(field.name), read_lines(field.type, input_data))
                      for field in struct.fields),
             "; ".join(
-                "{0} = {0}".format(var_name(f[0])) for f in struct.fields))
+                "{0} = {0}".format(var_name(f.name)) for f in struct.fields))
     assert False
     return ""
 
@@ -132,10 +132,10 @@ def print_line(name: str, type_: Type, input_data: Input) -> str:
     if type_.main == TypeEnum.STRUCT:
         struct = input_data.get_struct(type_.struct_name)
         return 'Printf.printf "{}\\n" {}'.format(
-            " ".join("%d" if f[1].main == TypeEnum.INT else "%c"
+            " ".join("%d" if f.type.main == TypeEnum.INT else "%c"
                      for f in struct.fields),
             " ".join(
-                "{}.{}".format(name, var_name(f[0])) for f in struct.fields))
+                "{}.{}".format(name, var_name(f.name)) for f in struct.fields))
     assert False
     return ""
 
@@ -147,7 +147,7 @@ def print_lines(name: str, type_: Type, input_data: Input) -> str:
     if type_.main == TypeEnum.STRUCT:
         struct = input_data.get_struct(type_.struct_name)
         return "{} ()".format(" ".join("let () = {} in".format(
-            print_lines("{}.{}".format(name, var_name(field[0])), field[1],
+            print_lines("{}.{}".format(name, var_name(field.name)), field.type,
                         input_data)) for field in struct.fields))
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
