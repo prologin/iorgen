@@ -11,6 +11,7 @@ from iorgen.parser_c import gen_c
 from iorgen.parser_cpp import gen_cpp
 from iorgen.parser_csharp import gen_csharp
 from iorgen.parser_haskell import gen_haskell
+from iorgen.parser_java import gen_java
 from iorgen.parser_ocaml import gen_ocaml
 from iorgen.parser_php import gen_php
 from iorgen.parser_python import gen_python
@@ -47,10 +48,13 @@ class Language:
         exe = self.compile(filename)
         out = ""
         with open(input_file) as sample_input:
+            cwd = os.getcwd()
+            os.chdir(os.path.dirname(filename))
             res = subprocess.run(
                 self.exec_command + [exe],
                 stdin=sample_input,
                 stdout=subprocess.PIPE)
+            os.chdir(cwd)
             out = res.stdout.decode()
         return out
 
@@ -68,6 +72,8 @@ ALL_LANGUAGES = [
     Language("cs", gen_csharp, ["mcs", "-optimize", "-out:{name}"], ["mono"]),
     Language("hs", gen_haskell,
              ["ghc", "-Wall", "-Wno-name-shadowing", "-dynamic", "-O2"]),
+    Language("java", gen_java, ["javac", "-encoding", "UTF-8"],
+             ["java", "Main"]),
     Language("ml", gen_ocaml, ["ocamlopt", "-w", "A", "-o", "{name}"]),
     Language("php", gen_php, [], ["php"]),
     Language("py", gen_python, [], ["python3", "-S"]),
