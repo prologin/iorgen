@@ -2,6 +2,7 @@
 # Copyright 2018 Sacha Delanoue
 """Input parser generators"""
 
+from iorgen.checkinput import parse_input
 from iorgen.types import Input, Struct, Variable
 from iorgen.parser_c import gen_c
 from iorgen.parser_cpp import gen_cpp
