@@ -60,10 +60,11 @@ class Type:
             inner = result.group(3)
             encapsulated = None if inner is None else cls.from_string(inner)
 
-            if (encapsulated is None) == type_ != TypeEnum.STR:
+            if (encapsulated is None) == (type_ != TypeEnum.STR):
                 return None
 
-            return cls(type_, result.group(5), encapsulated)
+            size = result.group(5)
+            return None if not size.strip() else cls(type_, size, encapsulated)
         return None
 
     def __str__(self: TYPE) -> str:
