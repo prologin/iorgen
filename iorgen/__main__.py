@@ -4,10 +4,8 @@
 
 import argparse
 
-import yaml
-
 from iorgen.generator import ALL_LANGUAGES
-from iorgen.types import Input
+from iorgen.checkinput import parse_input
 
 
 def main() -> None:
@@ -33,9 +31,10 @@ def main() -> None:
     except FileNotFoundError as error:
         parser.error("Input file not found: {}".format(error))
 
-    input_data = Input.from_dict(yaml.load(args.yaml))
-    if not input_data:
-        print("Could not parse input data")
+    try:
+        input_data = parse_input(args.yaml)
+    except ValueError as error:
+        print("Could not parse input data: {}".format(error))
         exit(1)
 
     selected_languages = args.languages or list(languages.keys())

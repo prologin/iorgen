@@ -8,19 +8,11 @@ import shutil
 import sys
 from difflib import unified_diff
 from pathlib import Path
-from typing import Iterator, List, Optional
-
-import yaml
+from typing import Iterator, List
 
 sys.path.insert(0, "..")
 # pylint: disable=wrong-import-position
-from iorgen import Input, ALL_LANGUAGES, Language
-
-
-def read_input(filename: str) -> Optional[Input]:
-    """Parse a YAML into an Input class"""
-    with open(filename, 'r') as stream:
-        return Input.from_dict(yaml.load(stream))
+from iorgen import Input, ALL_LANGUAGES, Language, parse_input
 
 
 def print_color(lines: Iterator[str]) -> None:
@@ -79,8 +71,8 @@ def test_samples() -> None:
         pass
     for name in os.listdir("samples"):
         prefix = "samples/{0}/{0}.".format(name)
-        input_data = read_input(prefix + "yaml")
-        assert input_data is not None
+        with open(prefix + "yaml", 'r') as stream:
+            input_data = parse_input(stream)
 
         for language in ALL_LANGUAGES:
             assert gen_is_same_as_sample(input_data, prefix, language)
