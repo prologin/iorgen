@@ -136,9 +136,10 @@ def call(input_data: Input, reprint: bool) -> List[str]:
         for arg in input_data.input
     ] + [" */"]
     out.append("function {}({}) {{".format(
-        function_name(input_data.name),
-        ", ".join(("" if i.type in (TypeEnum.INT, TypeEnum.CHAR) else "&") +
-                  var_name(i.name) for i in input_data.input)))
+        function_name(input_data.name), ", ".join(
+            ("" if i.type.main in (TypeEnum.INT,
+                                   TypeEnum.CHAR) else "&") + var_name(i.name)
+            for i in input_data.input)))
     if reprint:
         for var in input_data.input:
             out.extend(

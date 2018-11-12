@@ -5,7 +5,7 @@
  * @param $struct_list a list a struct 1
  * @param $triangle a triangle
  */
-function structs(&$struct, &$n, &$struct_list, &$triangle) {
+function structs(&$struct, $n, &$struct_list, &$triangle) {
     /* TODO Look at them structs. */
 }
 

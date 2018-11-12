@@ -7,7 +7,7 @@
  * @param $list_string4 a list of strings of size 4
  * @param $matrix a matrix of int
  */
-function lists(&$n, &$list_int, &$size, &$list_char, &$list_string4, &$matrix) {
+function lists($n, &$list_int, $size, &$list_char, &$list_string4, &$matrix) {
     /* TODO Aren't these lists beautifull? */
 }
 

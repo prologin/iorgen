@@ -7,7 +7,7 @@
  * @param $for not a loop
  * @param $words contains lots of things
  */
-function keywords(&$if, &$class, &$i, &$in, &$for, &$words) {
+function keywords($if, $class, &$i, &$in, &$for, &$words) {
     /* TODO If this compiles, it is already a good step! */
 }
 
