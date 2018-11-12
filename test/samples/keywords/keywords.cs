@@ -39,8 +39,8 @@ class Program
         int @if = int.Parse(Console.ReadLine());
         char @class = Console.ReadLine()[0];
         string i = Console.ReadLine();
-        string[] words2 = Console.ReadLine().Split(' ');
-        Console_ @in = new Console_ {a = int.Parse(words2[0]), @static = int.Parse(words2[1])};
+        string[] words1 = Console.ReadLine().Split(' ');
+        Console_ @in = new Console_ {a = int.Parse(words1[0]), @static = int.Parse(words1[1])};
         int[] @for = Array.ConvertAll(Console.ReadLine().Split(' '), int.Parse);
         Main_[] words = new Main_[2];
         for (int j = 0; j < 2; ++j)

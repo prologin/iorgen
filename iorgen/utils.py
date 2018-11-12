@@ -49,3 +49,28 @@ class IteratorName:
             if self.current == 0:
                 break
             self.current -= 1
+
+
+class WordsName:
+    """Give valid variable names starting with 'words'"""
+
+    def __init__(self, existing_names: List[str]) -> None:
+        self.existing_names = [i.strip().lower() for i in existing_names]
+        self.current = -1
+        self.scopes = [-1]
+
+    def next_name(self) -> str:
+        """Give the next variable name"""
+        self.current += 1
+        candidate = "words{}".format(self.current if self.current != 0 else "")
+        if candidate in self.existing_names:
+            return self.next_name()
+        return candidate
+
+    def push_scope(self) -> None:
+        """Declare a new scope"""
+        self.scopes.append(self.current)
+
+    def pop_scope(self) -> None:
+        """Declare a scope's end"""
+        self.current = self.scopes.pop()

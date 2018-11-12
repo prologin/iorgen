@@ -12,6 +12,7 @@ from iorgen.parser_cpp import gen_cpp
 from iorgen.parser_csharp import gen_csharp
 from iorgen.parser_haskell import gen_haskell
 from iorgen.parser_java import gen_java
+from iorgen.parser_javascript import gen_javascript
 from iorgen.parser_ocaml import gen_ocaml
 from iorgen.parser_php import gen_php
 from iorgen.parser_python import gen_python
@@ -74,6 +75,7 @@ ALL_LANGUAGES = [
              ["ghc", "-Wall", "-Wno-name-shadowing", "-dynamic", "-O2"]),
     Language("java", gen_java, ["javac", "-encoding", "UTF-8"],
              ["java", "Main"]),
+    Language("js", gen_javascript, [], ["node"]),
     Language("ml", gen_ocaml, ["ocamlopt", "-w", "A", "-o", "{name}"]),
     Language("php", gen_php, [], ["php"]),
     Language("py", gen_python, [], ["python3", "-S"]),

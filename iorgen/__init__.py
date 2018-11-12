@@ -9,6 +9,7 @@ from iorgen.parser_cpp import gen_cpp
 from iorgen.parser_csharp import gen_csharp
 from iorgen.parser_haskell import gen_haskell
 from iorgen.parser_java import gen_java
+from iorgen.parser_javascript import gen_javascript
 from iorgen.parser_ocaml import gen_ocaml
 from iorgen.parser_php import gen_php
 from iorgen.parser_python import gen_python

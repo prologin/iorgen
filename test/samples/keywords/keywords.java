@@ -64,10 +64,10 @@ class Main {
         int if_ = Integer.parseInt(scanner.nextLine());
         char class_ = scanner.nextLine().charAt(0);
         String i = scanner.nextLine();
-        String[] words2 = scanner.nextLine().split(" ");
+        String[] words1 = scanner.nextLine().split(" ");
         Console in = new Console();
-        in.a = Integer.parseInt(words2[0]);
-        in.static_ = Integer.parseInt(words2[1]);
+        in.a = Integer.parseInt(words1[0]);
+        in.static_ = Integer.parseInt(words1[1]);
         int[] for_ = Arrays.stream(scanner.nextLine().split(" ")).mapToInt(Integer::parseInt).toArray();
         Main_[] words = new Main_[2];
         for (int j = 0; j < 2; ++j) {

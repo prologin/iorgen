@@ -41,15 +41,15 @@ class Program
         Struct1[] structList = new Struct1[n];
         for (int i = 0; i < n; ++i)
         {
-            string[] words2 = Console.ReadLine().Split(' ');
-            structList[i] = new Struct1 {foo = int.Parse(words2[0]), bar = int.Parse(words2[1])};
+            string[] words1 = Console.ReadLine().Split(' ');
+            structList[i] = new Struct1 {foo = int.Parse(words1[0]), bar = int.Parse(words1[1])};
         }
         Point[] triangle = new Point[3];
         for (int i = 0; i < 3; ++i)
         {
             triangle[i].name = Console.ReadLine()[0];
-            string[] words3 = Console.ReadLine().Split(' ');
-            triangle[i].pos = new Position {x = int.Parse(words3[0]), y = int.Parse(words3[1]), z = int.Parse(words3[2])};
+            string[] words1 = Console.ReadLine().Split(' ');
+            triangle[i].pos = new Position {x = int.Parse(words1[0]), y = int.Parse(words1[1]), z = int.Parse(words1[2])};
         }
 
         Structs(@struct, n, structList, triangle);

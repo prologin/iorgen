@@ -69,20 +69,20 @@ class Main {
         int n = Integer.parseInt(scanner.nextLine());
         Struct1[] structList = new Struct1[n];
         for (int i = 0; i < n; ++i) {
-            String[] words2 = scanner.nextLine().split(" ");
+            String[] words1 = scanner.nextLine().split(" ");
             structList[i] = new Struct1();
-            structList[i].foo = Integer.parseInt(words2[0]);
-            structList[i].bar = Integer.parseInt(words2[1]);
+            structList[i].foo = Integer.parseInt(words1[0]);
+            structList[i].bar = Integer.parseInt(words1[1]);
         }
         Point[] triangle = new Point[3];
         for (int i = 0; i < 3; ++i) {
             triangle[i] = new Point();
             triangle[i].name = scanner.nextLine().charAt(0);
-            String[] words3 = scanner.nextLine().split(" ");
+            String[] words1 = scanner.nextLine().split(" ");
             triangle[i].pos = new Position();
-            triangle[i].pos.x = Integer.parseInt(words3[0]);
-            triangle[i].pos.y = Integer.parseInt(words3[1]);
-            triangle[i].pos.z = Integer.parseInt(words3[2]);
+            triangle[i].pos.x = Integer.parseInt(words1[0]);
+            triangle[i].pos.y = Integer.parseInt(words1[1]);
+            triangle[i].pos.z = Integer.parseInt(words1[2]);
         }
 
         structs(struct, n, structList, triangle);

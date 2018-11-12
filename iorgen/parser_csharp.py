@@ -5,7 +5,7 @@
 import textwrap
 from typing import List
 from iorgen.types import Input, Type, TypeEnum
-from iorgen.utils import camel_case, pascal_case, IteratorName
+from iorgen.utils import camel_case, pascal_case, IteratorName, WordsName
 
 KEYWORDS = [
     "abstract", "as", "base", "bool", "break", "byte", "case", "catch", "char",
@@ -63,16 +63,9 @@ class ParserCS():
     def __init__(self, input_data: Input) -> None:
         self.input = input_data
 
-        self.iterator = IteratorName([var.name for var in input_data.input])
-        self.words_n = 0
-
-    def words(self) -> str:
-        """Return a unique variable name: words, or words2, words3, etc"""
-        self.words_n += 1
-        candidate = "words" + ("" if self.words_n == 1 else str(self.words_n))
-        if candidate in (var_name(var.name) for var in self.input.input):
-            return self.words()  # use the next one
-        return candidate
+        existing_names = [var.name for var in input_data.input]
+        self.iterator = IteratorName(existing_names)
+        self.words = WordsName(existing_names)
 
     def read_line(self, decl: bool, name: str, type_: Type,
                   indent_lvl: int) -> List[str]:
@@ -82,7 +75,7 @@ class ParserCS():
         if type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)
             s_name = pascal_name(struct.name) + " "
-            words = self.words()
+            words = self.words.next_name()
             lines = [
                 indent +
                 "string[] {} = Console.ReadLine().Split(' ');".format(words)
@@ -147,12 +140,14 @@ class ParserCS():
                     list_suffix)
             ]
             index = self.iterator.new_it()
+            self.words.push_scope()
             lines.append("{0}for (int {1} = 0; {1} < {2}; ++{1})".format(
                 indent, index, var_name(type_.size)))
             lines.append(indent + "{")
             lines.extend(
                 self.read_lines(False, "{}[{}]".format(name, index),
                                 type_.encapsulated, indent_lvl + 1))
+            self.words.pop_scope()
             self.iterator.pop_it()
             return lines + [indent + "}"]
         assert False
@@ -218,6 +213,7 @@ class ParserCS():
         if type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
             index = self.iterator.new_it()
+            self.words.push_scope()
             lines = [
                 "{}foreach ({} {} in {})".format(INDENTATION * indent_lvl,
                                                  type_str(type_.encapsulated),
@@ -227,6 +223,7 @@ class ParserCS():
             lines.extend(
                 self.print_lines(index, type_.encapsulated, indent_lvl + 1))
             lines.append(INDENTATION * indent_lvl + "}")
+            self.words.pop_scope()
             self.iterator.pop_it()
             return lines
         assert False
