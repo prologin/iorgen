@@ -27,7 +27,8 @@ def error_parse_type(string: str) -> str:
     if string.startswith("str") and (string[:-1] != ")" or string[3] != "("):
         return "a string must specify its size with parenthesis 'str(size)'"
     if string.startswith("str"):
-        return "invalid string size, can only be alphanumeric characters and spaces"
+        return "invalid string size, can only be alphanumeric characters " + \
+               "and spaces"
     if lower[0] == '[' or (lower.startswith("list")
                            and not string.startswith("List")):
         return "the list type is 'List[type](size)'"
@@ -37,9 +38,11 @@ def error_parse_type(string: str) -> str:
             return "a list must specify a type and a size 'List[type](size)'"
         if not re.match(r"[A-Za-z0-9 ]+",
                         match.group(2)) or not match.group(2).strip():
-            return "invalid list size, can only be alphanumeric characters and spaces"
+            return "invalid list size, can only be alphanumeric characters" + \
+                   " and spaces"
         return "can not parse type list: " + error_parse_type(match.group(1))
-    return "should be either 'int', 'char', 'str(size)', 'List[type](size)' or '@struct_name'"
+    return "should be either 'int', 'char', 'str(size)', " + \
+           "'List[type](size)' or '@struct_name'"
 
 
 def error_parse_variable(dic: Dict[str, str]) -> str:
