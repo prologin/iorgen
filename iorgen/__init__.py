@@ -7,6 +7,7 @@ from iorgen.types import Input, Struct, Variable
 from iorgen.parser_c import gen_c
 from iorgen.parser_cpp import gen_cpp
 from iorgen.parser_csharp import gen_csharp
+from iorgen.parser_go import gen_go
 from iorgen.parser_haskell import gen_haskell
 from iorgen.parser_java import gen_java
 from iorgen.parser_javascript import gen_javascript
