@@ -6,26 +6,18 @@
 import os
 import sys
 from pathlib import Path
-from typing import Optional
-
-import yaml
 
 sys.path.insert(0, "..")
 # pylint: disable=wrong-import-position
-from iorgen import Input, ALL_LANGUAGES
-
-
-def read_input(filename: str) -> Optional[Input]:
-    """Parse a YAML into an Input class"""
-    with open(filename, 'r') as stream:
-        return Input.from_dict(yaml.load(stream))
+from iorgen import parse_input, ALL_LANGUAGES
 
 
 def regenerate_samples() -> None:
     """Regenerate all the samples"""
     for name in os.listdir("samples"):
         prefix = "samples/{0}/{0}.".format(name)
-        input_data = read_input(prefix + "yaml")
+        with open(prefix + "yaml", 'r') as stream:
+            input_data = parse_input(stream)
         assert input_data is not None
 
         for language in ALL_LANGUAGES:
