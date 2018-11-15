@@ -76,7 +76,8 @@ def test_samples() -> None:
 
         for language in ALL_LANGUAGES:
             assert gen_is_same_as_sample(input_data, prefix, language)
-            assert run_on_input(input_data, name, language)
+            if not language.is_pseudo_code():
+                assert run_on_input(input_data, name, language)
 
         print("OK", name)
 

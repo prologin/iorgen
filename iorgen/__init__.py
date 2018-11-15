@@ -4,6 +4,7 @@
 
 from iorgen.checkinput import parse_input
 from iorgen.types import Input, Struct, Variable
+from iorgen.markdown import gen_markdown
 from iorgen.parser_c import gen_c
 from iorgen.parser_cpp import gen_cpp
 from iorgen.parser_csharp import gen_csharp

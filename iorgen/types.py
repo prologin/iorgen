@@ -169,10 +169,12 @@ class Input():
     """Represents the user input, parsed"""
 
     def __init__(self: INPUT, name: str, structs: List[Struct],
-                 inputs: List[Variable], output: str) -> None:
+                 inputs: List[Variable], subject: str, output: str) -> None:
+        # pylint: disable=too-many-arguments
         self.name = name
         self.structs = structs
         self.input = inputs
+        self.subject = subject
         self.output = output
 
     @classmethod
@@ -192,7 +194,8 @@ class Input():
                 if variable is None:
                     return None
                 variables.append(variable)
-            return cls(dic["name"], structs, variables, dic["output"])
+            subject = dic["subject"] if "subject" in dic else ""
+            return cls(dic["name"], structs, variables, subject, dic["output"])
         except KeyError:
             return None
 

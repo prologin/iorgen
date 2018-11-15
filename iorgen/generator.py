@@ -7,6 +7,7 @@ import os
 from typing import Callable, Optional, List
 
 from iorgen.types import Input
+from iorgen.markdown import gen_markdown
 from iorgen.parser_c import gen_c
 from iorgen.parser_cpp import gen_cpp
 from iorgen.parser_csharp import gen_csharp
@@ -64,6 +65,10 @@ class Language:
         """Generate an input parser with a function to complete"""
         return self.generator(input_data, False)
 
+    def is_pseudo_code(self) -> bool:
+        """True if the 'language' can neither be compiled or interpreted"""
+        return not self.compile_command and not self.exec_command
+
 
 ALL_LANGUAGES = [
     Language(
@@ -81,5 +86,7 @@ ALL_LANGUAGES = [
     Language("ml", gen_ocaml, ["ocamlopt", "-w", "A", "-o", "{name}"]),
     Language("php", gen_php, [], ["php"]),
     Language("py", gen_python, [], ["python3", "-S"]),
-    Language("rs", gen_rust, ["rustc", "-W", "warnings", "-O"])
+    Language("rs", gen_rust, ["rustc", "-W", "warnings", "-O"]),
+    Language("en.md", (lambda i, _: gen_markdown(i, 'en')), []),
+    Language("fr.md", (lambda i, _: gen_markdown(i, 'fr')), [])
 ]
