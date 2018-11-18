@@ -30,6 +30,8 @@ def var_name(name: str) -> str:
 def record_name(name: str) -> str:
     """Transform a record name into a valid one for OCaml"""
     candidate = snake_case(name)
+    if candidate in ("int", "char", "string", "list"):
+        return candidate + '_'
     return candidate + '_' if candidate in KEYWORDS else candidate
 
 
@@ -151,7 +153,7 @@ def print_lines(name: str, type_: Type, input_data: Input) -> str:
                         input_data)) for field in struct.fields))
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
-        inner_name = name + "_it"
+        inner_name = name.replace(".", "_x_") + "_it"
         return "List.iter (fun {} -> {}) {}".format(
             inner_name, print_lines(inner_name, type_.encapsulated,
                                     input_data), name)
