@@ -103,15 +103,17 @@ class ParserJS:
                 indent + "{}{} = [];".format(("const " if decl else ""), name)
             ]
             iterator = self.iterator.new_it()
+            inner_name = self.iterator.new_it()
             lines.append(indent + "for (let {0} = 0; {0} < {1}; {0}++) {{".
                          format(iterator, var_name(type_.size)))
             self.words.push_scope()
             lines.extend(
-                self.read_lines(True, name + "Elem", type_.encapsulated,
+                self.read_lines(True, inner_name, type_.encapsulated,
                                 indent_lvl + 1))
             lines.append(indent + INDENTATION +
-                         "{0}.push({0}Elem);".format(name))
+                         "{}.push({});".format(name, inner_name))
             self.words.pop_scope()
+            self.iterator.pop_it()
             self.iterator.pop_it()
             return lines + [indent + "}"]
         if type_.main == TypeEnum.STRUCT:
@@ -163,7 +165,7 @@ def print_lines(input_data: Input, name: str, type_: Type,
         return [indent + print_line(name, type_, input_data)]
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
-        inner = name + "Elem"
+        inner = name.replace(".", "_") + "_elem"
         return [indent + "{}.forEach(function({}) {{".format(name, inner)
                 ] + print_lines(input_data, inner, type_.encapsulated,
                                 indent_lvl + 1) + [indent + "});"]

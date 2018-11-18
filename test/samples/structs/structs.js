@@ -25,23 +25,23 @@ function structs(struct, n, structList, triangle) {
     const structList = [];
     for (let i = 0; i < n; i++) {
         const words1 = stdin[line++].split(" ");
-        const structListElem = {
+        const j = {
             foo: Number(words1[0]),
             bar: Number(words1[1])
         };
-        structList.push(structListElem);
+        structList.push(j);
     }
     const triangle = [];
     for (let i = 0; i < 3; i++) {
-        const triangleElem = {};
-        triangleElem.name = stdin[line++];
+        const j = {};
+        j.name = stdin[line++];
         const words1 = stdin[line++].split(" ");
-        triangleElem.pos = {
+        j.pos = {
             x: Number(words1[0]),
             y: Number(words1[1]),
             z: Number(words1[2])
         };
-        triangle.push(triangleElem);
+        triangle.push(j);
     }
     structs(struct, n, structList, triangle);
 }

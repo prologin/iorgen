@@ -29,12 +29,12 @@ function keywords(if_, class_, i, in_, for_, words) {
     const for_ = stdin[line++].split(" ").map(Number);
     const words = [];
     for (let j = 0; j < 2; j++) {
-        const wordsElem = {};
-        wordsElem.int_ = {};
-        wordsElem.int_.return_ = Number(stdin[line++]);
-        wordsElem.int_.void_ = stdin[line++].split(" ").map(Number);
-        wordsElem.ifTrue = Number(stdin[line++]);
-        words.push(wordsElem);
+        const k = {};
+        k.int_ = {};
+        k.int_.return_ = Number(stdin[line++]);
+        k.int_.void_ = stdin[line++].split(" ").map(Number);
+        k.ifTrue = Number(stdin[line++]);
+        words.push(k);
     }
     keywords(if_, class_, i, in_, for_, words);
 }

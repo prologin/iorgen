@@ -24,13 +24,13 @@ function lists(n, listInt, size, listChar, listString4, matrix) {
     const listChar = stdin[line++].split("");
     const listString4 = [];
     for (let i = 0; i < size; i++) {
-        const listString4Elem = stdin[line++];
-        listString4.push(listString4Elem);
+        const j = stdin[line++];
+        listString4.push(j);
     }
     const matrix = [];
     for (let i = 0; i < size; i++) {
-        const matrixElem = stdin[line++].split(" ").map(Number);
-        matrix.push(matrixElem);
+        const j = stdin[line++].split(" ").map(Number);
+        matrix.push(j);
     }
     lists(n, listInt, size, listChar, listString4, matrix);
 }
