@@ -6,7 +6,7 @@ import textwrap
 from typing import List
 
 from iorgen.types import Input, Type, TypeEnum
-from iorgen.utils import snake_case
+from iorgen.utils import snake_case, IteratorName
 
 KEYWORDS = [
     'abstract', 'and', 'array', 'as', 'break', 'callable', 'case', 'catch',
@@ -20,9 +20,13 @@ KEYWORDS = [
     'trait', 'try', 'unset', 'use', 'var', 'while', 'xor'
 ]
 
+INDENTATION = "    "
+
 
 def var_name(name: str) -> str:
     """Transform a variable name into a valid one for PHP"""
+    if not name:
+        return ""
     snake = snake_case(name)
     try:
         int(snake)
@@ -52,9 +56,9 @@ def read_line(type_: Type, input_data: Input) -> str:
             '"{}"'.format(i.name) for i in struct.fields))
         if all(i.type.main == TypeEnum.INT for i in struct.fields):
             return begin + "array_map('intval', explode(' ', fgets(STDIN))))"
-        if all(i.type.main == TypeEnum.CHAR for i in struct.fields):
-            return begin + "str_split(trim(fgets(STDIN))))"
-        assert False, "Not implemented"
+        # Treat them all as char. It would be best to cast the integers, if
+        # they are any, but this is painful to write as a one liner.
+        return begin + "str_split(trim(fgets(STDIN))))"
     return {
         TypeEnum.INT: "intval(trim(fgets(STDIN)))",
         TypeEnum.CHAR: "fgets(STDIN)[0]",
@@ -62,29 +66,56 @@ def read_line(type_: Type, input_data: Input) -> str:
     }[type_.main]
 
 
-def read_vars(input_data: Input) -> List[str]:
-    """Generate the PHP code to read all input variables"""
-    return [
-        "{} = {};".format(
-            var_name(var.name), read_lines(var.type, input_data))
-        for var in input_data.input
-    ]
+class ParserPHP:
+    """Create the PHP code to parse an input"""
 
+    def __init__(self, input_data: Input):
+        self.input = input_data
+        self.iterator = IteratorName([var.name for var in input_data.input] +
+                                     [input_data.name])
 
-def read_lines(type_: Type, input_data: Input) -> str:
-    """Generate the PHP code to read the lines for a given type"""
-    if type_.fits_it_one_line(input_data.structs):
-        return read_line(type_, input_data)
-    if type_.main == TypeEnum.LIST:
-        assert type_.encapsulated is not None
-        return "array_map(function() {{ return {}; }}, range(1, {}))".format(
-            read_lines(type_.encapsulated, input_data), var_name(type_.size))
-    if type_.main == TypeEnum.STRUCT:
-        return "array({})".format(", ".join(
-            '"{}" => {}'.format(i.name, read_lines(i.type, input_data))
-            for i in input_data.get_struct(type_.struct_name).fields))
-    assert False
-    return ""
+    def read_lines(self, name: str, type_: Type) -> List[str]:
+        """Generate the PHP code to read the lines for a given type"""
+        if type_.fits_it_one_line(self.input.structs):
+            return [read_line(type_, self.input)]
+        if type_.main == TypeEnum.LIST:
+            assert type_.encapsulated is not None
+            iterator = "$" + self.iterator.new_it()
+            lines = self.read_lines("{}[{}]".format(name, iterator),
+                                    type_.encapsulated)
+            self.iterator.pop_it()
+            if len(lines) == 1:
+                return [
+                    "array_map(function() {{ return {}; }}, range(1, {}))".
+                    format(lines[0], var_name(type_.size))
+                ]
+            prefix = [
+                "{} = [];".format(name),
+                "for ({0} = 0; {0} < {1}; {0}++) {{".format(
+                    iterator, var_name(type_.size))
+            ]
+            return prefix + [INDENTATION + i for i in lines] + ["}"]
+        if type_.main == TypeEnum.STRUCT:
+            struct = self.input.get_struct(type_.struct_name)
+            lines = []
+            for i in struct.fields:
+                read = self.read_lines('{}["{}"]'.format(name, i.name), i.type)
+                if len(read) == 1:
+                    read[0] = '{}["{}"] = {};'.format(name, i.name, read[0])
+                lines.extend(read)
+            return ["{} = [];".format(name)] + lines
+        assert False
+        return []
+
+    def read_vars(self) -> List[str]:
+        """Generate the PHP code to read all input variables"""
+        lines = []
+        for var in self.input.input:
+            read = self.read_lines(var_name(var.name), var.type)
+            if len(read) == 1:
+                read[0] = "{} = {};".format(var_name(var.name), read[0])
+            lines.extend(read)
+        return lines
 
 
 def print_line(name: str, type_: Type, input_data: Input) -> str:
@@ -109,7 +140,7 @@ def print_line(name: str, type_: Type, input_data: Input) -> str:
 def print_lines(input_data: Input, name: str, type_: Type,
                 indent_lvl: int = 0) -> List[str]:
     """Print the content of a var that holds in one or more lines"""
-    indent = "    " * indent_lvl
+    indent = INDENTATION * indent_lvl
     if type_.fits_it_one_line(input_data.structs):
         return [indent + print_line(name, type_, input_data)]
     if type_.main == TypeEnum.LIST:
@@ -146,7 +177,7 @@ def call(input_data: Input, reprint: bool) -> List[str]:
                 print_lines(input_data, var_name(var.name), var.type, 1))
     else:
         out.extend([
-            "    " + i
+            INDENTATION + i
             for i in textwrap.wrap("/* TODO " + input_data.output + " */", 75)
         ])
     out.append("}")
@@ -158,7 +189,7 @@ def gen_php(input_data: Input, reprint: bool = False) -> str:
     output = "<?php\n"
     output += "\n".join(call(input_data, reprint))
     output += "\n\n"
-    output += "\n".join(read_vars(input_data))
+    output += "\n".join(ParserPHP(input_data).read_vars())
     args = (var_name(i.name) for i in input_data.input)
     output += "\n{}({});".format(
         function_name(input_data.name), ", ".join(args))

@@ -16,5 +16,12 @@ $class = fgets(STDIN)[0];
 $i = trim(fgets(STDIN));
 $in = array_combine(["a", "static"], array_map('intval', explode(' ', fgets(STDIN))));
 $for = array_map('intval', explode(' ', fgets(STDIN)));
-$words = array_map(function() { return array("int" => array("return" => intval(trim(fgets(STDIN))), "void" => array_map('intval', explode(' ', fgets(STDIN)))), "if true" => intval(trim(fgets(STDIN)))); }, range(1, 2));
+$words = [];
+for ($j = 0; $j < 2; $j++) {
+    $words[$j] = [];
+    $words[$j]["int"] = [];
+    $words[$j]["int"]["return"] = intval(trim(fgets(STDIN)));
+    $words[$j]["int"]["void"] = array_map('intval', explode(' ', fgets(STDIN)));
+    $words[$j]["if true"] = intval(trim(fgets(STDIN)));
+}
 keywords($if, $class, $i, $in, $for, $words);
