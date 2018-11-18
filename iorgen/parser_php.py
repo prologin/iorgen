@@ -145,7 +145,7 @@ def print_lines(input_data: Input, name: str, type_: Type,
         return [indent + print_line(name, type_, input_data)]
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
-        inner = name + "It"
+        inner = "$iT" + str(abs(hash(name)))  # quick way to have a unique name
         return [indent + "foreach ({} as &{}) {{".format(name, inner)
                 ] + print_lines(input_data, inner, type_.encapsulated,
                                 indent_lvl + 1) + [indent + "}"]
