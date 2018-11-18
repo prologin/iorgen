@@ -4,7 +4,8 @@
 
 import re
 from enum import Enum, unique
-from typing import Any, Dict, List, Optional, Type as T, TypeVar, Union
+from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple
+from typing import Type as T, TypeVar, Union
 
 # This stuff is no longer necessary with python 3.7 by including:
 # from __future__ import annotations
@@ -134,8 +135,6 @@ class Variable:
 class Struct:
     """Represent a struct (like in C)"""
 
-    # pylint: disable=too-few-public-methods
-
     def __init__(self: STRUCT, name: str, comment: str,
                  fields: List[Variable]) -> None:
         self.name = name
@@ -163,6 +162,23 @@ class Struct:
             return cls(name, comment, field_list)
         except KeyError:
             return None
+
+    def is_sized_struct(self) -> bool:
+        """A special kind of struct: first field is the size of the second"""
+        return len(self.fields) == 2 and self.fields[
+            0].type.main == TypeEnum.INT and self.fields[1].has_size(
+            ) and self.fields[0].name == self.fields[1].type.size
+
+    def fields_name_type_size(
+            self, format_spec: str,
+            var_name: Callable[[str], str]) -> Iterator[Tuple[str, Type, str]]:
+        """Return name, type and size for each field"""
+        types = [var_name(field.type.size) for field in self.fields]
+        if self.is_sized_struct():
+            types = ["", format_spec.format(var_name(self.fields[0].name))]
+        for field in zip(self.fields, types):
+            yield (format_spec.format(var_name(field[0].name)), field[0].type,
+                   field[1])
 
 
 class Input():
