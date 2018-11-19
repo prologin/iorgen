@@ -10,6 +10,7 @@ def lists(n, list_int, size, list_char, list_string4, matrix):
     # TODO Aren't these lists beautifull?
     pass
 
+
 if __name__ == '__main__':
     n = int(input())
     list_int = list(map(int, input().split()))

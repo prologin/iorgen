@@ -51,18 +51,39 @@ def read_line(type_: Type, input_data: Input) -> str:
     }[type_.main]
 
 
-def read_lines(type_: Type, input_data: Input) -> str:
+def read_lines(type_: Type, input_data: Input) -> List[str]:
     """Generate the Python code to read the lines for a given type"""
     if type_.fits_it_one_line(input_data.structs):
-        return read_line(type_, input_data)
+        return [read_line(type_, input_data)]
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
-        return "[{} for _ in range({})]".format(
-            read_lines(type_.encapsulated, input_data), var_name(type_.size))
+        lines = read_lines(type_.encapsulated, input_data)
+        if len(lines) == 1:
+            candidate = "[{} for _ in range({})]".format(
+                lines[0], var_name(type_.size))
+            if len(candidate) <= 75:
+                return [candidate]
+        if len(lines[-1]) < 5:
+            lines[-1] += " for _ in range({})]".format(var_name(type_.size))
+        else:
+            lines.append("for _ in range({})".format(var_name(type_.size)))
+            lines.append("]")
+        if len(lines[0]) < 5:
+            lines[0] = "[" + lines[0]
+        else:
+            lines = ["["] + [INDENTATION + i for i in lines]
+        return lines
     if type_.main == TypeEnum.STRUCT:
-        return "{{{}}}".format(", ".join(
-            '"{}": {}'.format(field.name, read_lines(field.type, input_data))
-            for field in input_data.get_struct(type_.struct_name).fields))
+        struct = input_data.get_struct(type_.struct_name)
+        fields = []
+        for i, field in enumerate(struct.fields):
+            lines = read_lines(field.type, input_data)
+            lines[0] = '{}"{}": {}'.format(INDENTATION, field.name, lines[0])
+            if i != len(struct.fields) - 1:
+                lines[-1] += ","
+            fields.append(lines[0])
+            fields.extend([INDENTATION + i for i in lines[1:]])
+        return ["{"] + fields + ["}"]
     assert False
     return ""
 
@@ -94,10 +115,11 @@ class ParserPython():
         self.main = []  # type: List[str]
         self.method = []  # type: List[str]
 
-    def read_var(self, var: Variable) -> None:
+    def read_var(self, var: Variable) -> List[str]:
         """Read a variable"""
-        self.main.append("{} = {}".format(
-            var_name(var.name), read_lines(var.type, self.input)))
+        lines = read_lines(var.type, self.input)
+        lines[0] = "{} = {}".format(var_name(var.name), lines[0])
+        return lines
 
     def call(self, reprint: bool) -> None:
         """Declare and call the function take all inputs in arguments"""
@@ -154,7 +176,7 @@ class ParserPython():
             output += line + "\n"
         if self.method:
             output += "\n"
-        output += "if __name__ == '__main__':\n"
+        output += "\nif __name__ == '__main__':\n"
         for line in self.main:
             output += INDENTATION + line + "\n"
         return output
@@ -164,6 +186,6 @@ def gen_python(input_data: Input, reprint: bool = False) -> str:
     """Generate a Python code to parse input"""
     parser = ParserPython(input_data)
     for var in input_data.input:
-        parser.read_var(var)
+        parser.main.extend(parser.read_var(var))
     parser.call(reprint)
     return parser.content()

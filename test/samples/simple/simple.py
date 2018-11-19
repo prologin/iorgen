@@ -6,6 +6,7 @@ def simple(n, other_number):
     # TODO Just do what you want with these numbers, like sum them.
     pass
 
+
 if __name__ == '__main__':
     n = int(input())
     other_number = int(input())
