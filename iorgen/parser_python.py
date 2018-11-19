@@ -35,13 +35,15 @@ def read_line(type_: Type, input_data: Input) -> str:
             return "list(map(int, input().split()))"
     if type_.main == TypeEnum.STRUCT:
         struct = input_data.get_struct(type_.struct_name)
-        begin = "dict(zip([{}], ".format(", ".join(
-            '"{}"'.format(i.name) for i in struct.fields))
+        keys = ", ".join('"{}"'.format(i.name) for i in struct.fields)
         if all(i.type.main == TypeEnum.INT for i in struct.fields):
-            return begin + "map(int, input().split())))"
+            return "dict(zip(({}), map(int, input().split())))".format(keys)
         if all(i.type.main == TypeEnum.CHAR for i in struct.fields):
-            return begin + "input().split()))"
-        assert False, "Not implemented"
+            return "dict(zip(({}), input().split()))".format(keys)
+        return "dict(map({}, ({}), ({}), input.split()))".format(
+            "lambda x, y, z : (x, int(z) if y else z)", keys,
+            ", ".join("1" if i.type.main == TypeEnum.INT else "0"
+                      for i in struct.fields))
     return {
         TypeEnum.INT: "int(input())",
         TypeEnum.CHAR: "input()[0]",
