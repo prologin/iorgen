@@ -155,7 +155,7 @@ class ParserPython():
             return [indent + print_line(name, type_, self.input)]
         if type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
-            inner = name + "It"
+            inner = "iT" + str(abs(hash(name)))  # unique nam
             return [
                 indent + "for {} in {}:".format(inner, name)
             ] + self.print_lines(inner, type_.encapsulated, indent_lvl + 1)
