@@ -31,7 +31,7 @@ let keywords if_ class_ i in_ for_ words =
 let () =
   let if_ = Scanf.scanf "%d\n" (fun x -> x) in
   let class_ = Scanf.scanf "%c\n" (fun x -> x) in
-  let i = Scanf.scanf "%s\n" (fun x -> x) in
+  let i = Scanf.scanf "%s@\n" (fun x -> x) in
   let in_ = Scanf.scanf "%d %d\n" (fun a static -> {a = a; static = static}) in
   let for_ = List.init if_ (fun _ -> Scanf.scanf "%d " (fun x -> x)) in
   let words = List.init 2 (fun _ -> let int = let return = Scanf.scanf "%d\n" (fun x -> x) in let void = List.init 3 (fun _ -> Scanf.scanf "%d " (fun x -> x)) in {return = return; void = void} in let ifTrue = Scanf.scanf "%d\n" (fun x -> x) in {int = int; ifTrue = ifTrue}) in

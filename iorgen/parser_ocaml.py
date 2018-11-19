@@ -73,7 +73,7 @@ def read_line(type_: Type, input_data: Input) -> str:
     if type_.main == TypeEnum.CHAR:
         return 'Scanf.scanf "%c\\n" (fun x -> x)'
     if type_.main == TypeEnum.STR:
-        return 'Scanf.scanf "%s\\n" (fun x -> x)'
+        return 'Scanf.scanf "%s@\\n" (fun x -> x)'
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
         if type_.encapsulated.main == TypeEnum.INT:
@@ -82,7 +82,7 @@ def read_line(type_: Type, input_data: Input) -> str:
                 'fun _ -> Scanf.scanf "%d " (fun x -> x)')
         if type_.encapsulated.main == TypeEnum.CHAR:
             return '{} (fun x -> List.init {} (String.get x))'.format(
-                'Scanf.scanf "%s\\n"', var_name(type_.size))
+                'Scanf.scanf "%s@\\n"', var_name(type_.size))
     if type_.main == TypeEnum.STRUCT:
         struct = input_data.get_struct(type_.struct_name)
         args = [var_name(field.name) for field in struct.fields]
