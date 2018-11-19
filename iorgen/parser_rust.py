@@ -37,6 +37,8 @@ def struct_name(name: str) -> str:
     candidate = pascal_case(name)
     if candidate in KEYWORDS:
         return candidate + "_"
+    if candidate in ("Vec", "String"):
+        return candidate + "_"
     return candidate
 
 
@@ -150,8 +152,8 @@ class ParserRust():
                              format(name, self.read_line(type_.encapsulated)))
             else:
                 lines.extend(
-                    self.read_lines("{}_elem".format(name), type_.encapsulated,
-                                    indent_lvl + 1))
+                    self.read_lines("{}_elem".format(name.replace(".", "_")),
+                                    type_.encapsulated, indent_lvl + 1))
                 lines.append(INDENTATION * (indent_lvl + 1) +
                              "{0}.push({0}_elem);".format(name))
             return lines + [INDENTATION * indent_lvl + "}"]
@@ -227,7 +229,7 @@ class ParserRust():
             return lines
         if type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
-            inner_name = "{}_elem".format(name)
+            inner_name = "{}_elem".format(name.replace(".", "_"))
             lines = ["{}for {} in &{} {{".format(indent, inner_name, name)]
             lines.extend(
                 self.print_lines(inner_name, type_.encapsulated,
