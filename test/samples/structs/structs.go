@@ -1,6 +1,9 @@
 package main
 
+import "bufio"
 import "fmt"
+import "os"
+import "strconv"
 
 // A simple struct
 type Struct1 struct {
@@ -30,18 +33,24 @@ func structs(struct_ Struct1, n int, structList []Struct1, triangle []Point) {
 }
 
 func main() {
+    scanner := bufio.NewScanner(os.Stdin)
     var struct_ Struct1
-    fmt.Scanln(&struct_.foo, &struct_.bar)
+    scanner.Scan()
+    fmt.Sscanf(scanner.Text(), "%d %d", &struct_.foo, &struct_.bar)
     var n int
-    fmt.Scanln(&n)
+    scanner.Scan()
+    n, _ = strconv.Atoi(scanner.Text())
     structList := make([]Struct1, n)
     for i := range structList {
-        fmt.Scanln(&structList[i].foo, &structList[i].bar)
+        scanner.Scan()
+        fmt.Sscanf(scanner.Text(), "%d %d", &structList[i].foo, &structList[i].bar)
     }
     triangle := make([]Point, 3)
     for i := range triangle {
-        fmt.Scanf("%c\n", &triangle[i].name)
-        fmt.Scanln(&triangle[i].pos.x, &triangle[i].pos.y, &triangle[i].pos.z)
+        scanner.Scan()
+        triangle[i].name = scanner.Text()[0]
+        scanner.Scan()
+        fmt.Sscanf(scanner.Text(), "%d %d %d", &triangle[i].pos.x, &triangle[i].pos.y, &triangle[i].pos.z)
     }
     structs(struct_, n, structList, triangle);
 }

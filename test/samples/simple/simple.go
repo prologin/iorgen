@@ -1,6 +1,8 @@
 package main
 
-import "fmt"
+import "bufio"
+import "os"
+import "strconv"
 
 // n: the first number
 // otherNumber: the second number
@@ -9,9 +11,12 @@ func simple(n int, otherNumber int) {
 }
 
 func main() {
+    scanner := bufio.NewScanner(os.Stdin)
     var n int
-    fmt.Scanln(&n)
+    scanner.Scan()
+    n, _ = strconv.Atoi(scanner.Text())
     var otherNumber int
-    fmt.Scanln(&otherNumber)
+    scanner.Scan()
+    otherNumber, _ = strconv.Atoi(scanner.Text())
     simple(n, otherNumber);
 }

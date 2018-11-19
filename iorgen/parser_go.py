@@ -22,7 +22,8 @@ def var_name(name: str) -> str:
     candidate = camel_case(name)
     if candidate in KEYWORDS:
         return candidate + "_"
-    if candidate in ("main", "fmt", "make", "len"):
+    if candidate in ("main", "bufio", "fmt", "os", "strconv", "make", "len",
+                     "scanner", "strings"):
         return candidate + "_"
     return candidate
 
@@ -57,33 +58,63 @@ class ParserGo():
 
     def __init__(self, input_data: Input) -> None:
         self.input = input_data
+        self.imports = set(["bufio", "os"])
 
         self.iterator = IteratorName([var.name for var in input_data.input])
 
     def read_line(self, name: str, type_: Type, indent_lvl: int) -> List[str]:
         """Read an entire line and store it into the right place(s)"""
+
+        # pylint: disable=too-many-return-statements
+
         assert type_.fits_it_one_line(self.input.structs)
         indent = INDENTATION * indent_lvl
-        if type_.main in (TypeEnum.INT, TypeEnum.STR):
-            return [indent + 'fmt.Scanln(&{})'.format(name)]
+        if type_.main == TypeEnum.INT:
+            self.imports.add("strconv")
+            return [
+                indent + "scanner.Scan()",
+                indent + '{}, _ = strconv.Atoi(scanner.Text())'.format(name)
+            ]
         if type_.main == TypeEnum.CHAR:
-            return [indent + 'fmt.Scanf("%c\\n", &{})'.format(name)]
+            return [
+                indent + "scanner.Scan()",
+                indent + '{} = scanner.Text()[0]'.format(name)
+            ]
+        if type_.main == TypeEnum.STR:
+            return [
+                indent + "scanner.Scan()",
+                indent + '{} = scanner.Text()'.format(name)
+            ]
         if type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
             if type_.encapsulated.main == TypeEnum.CHAR:
-                return [indent + 'fmt.Scanln(&{})'.format(name)]
+                return [
+                    indent + "scanner.Scan()",
+                    indent + '{} = scanner.Bytes()'.format(name)
+                ]
             inner_name = self.iterator.new_it()
-            lines = [indent + "for {} := range {} {{".format(inner_name, name)]
+            self.imports.add("strings")
+            self.imports.add("strconv")
+            lines = [
+                indent + "scanner.Scan()",
+                indent + 'for {0}, {0}Value '.format(inner_name) +
+                ':= range strings.Split(scanner.Text(), " ") {'
+            ]
             lines.append(indent + INDENTATION +
-                         'fmt.Scan(&{}[{}])'.format(name, inner_name))
+                         '{0}[{1}], _ = strconv.Atoi({1}Value)'.format(
+                             name, inner_name))
             self.iterator.pop_it()
             return lines + [indent + '}']
         if type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)
+            self.imports.add("fmt")
             return [
-                indent + "fmt.Scanln({})".format(", ".join(
-                    "&{}.{}".format(name, var_name(f.name))
-                    for f in struct.fields))
+                indent + "scanner.Scan()",
+                indent + 'fmt.Sscanf(scanner.Text(), "{}", {})'.format(
+                    " ".join("%d" if f.type.main == TypeEnum.INT else "%c"
+                             for f in struct.fields), ", ".join(
+                                 "&{}.{}".format(name, var_name(f.name))
+                                 for f in struct.fields))
             ]
         assert False
         return []
@@ -159,6 +190,7 @@ class ParserGo():
         """Print the content of a var that holds in one line"""
         assert type_.fits_it_one_line(self.input.structs)
         indent = INDENTATION * indent_lvl
+        self.imports.add("fmt")
         if type_.main in (TypeEnum.INT, TypeEnum.STR):
             return [indent + "fmt.Println({});".format(name)]
         if type_.main == TypeEnum.CHAR:
@@ -222,7 +254,7 @@ class ParserGo():
 
     def content(self, reprint: bool) -> str:
         """Return the parser content"""
-        output = 'package main\n\nimport "fmt"\n\n'
+        output = ""
         for struct in self.input.structs:
             output += "// {}\n".format(struct.comment)
             output += "type {} struct {{\n".format(struct_name(struct.name))
@@ -232,6 +264,7 @@ class ParserGo():
             output += "}\n\n"
         output += "\n".join(self.call(reprint)) + "\n\n"
         output += "func main() {\n"
+        output += INDENTATION + "scanner := bufio.NewScanner(os.Stdin)\n"
         for var in self.input.input:
             for line in self.read_var(var):
                 output += INDENTATION + line + "\n"
@@ -239,7 +272,9 @@ class ParserGo():
             var_name(self.input.name), ", ".join(
                 [var_name(i.name) for i in self.input.input]))
         output += "}\n"
-        return output
+        return "package main\n\n" + "\n".join(
+            'import "{}"'.format(i)
+            for i in sorted(self.imports)) + "\n\n" + output
 
 
 def gen_go(input_data: Input, reprint: bool = False) -> str:

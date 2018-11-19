@@ -1,6 +1,10 @@
 package main
 
+import "bufio"
 import "fmt"
+import "os"
+import "strconv"
+import "strings"
 
 // may conflict in c#
 type Console struct {
@@ -31,26 +35,35 @@ func keywords(if_ int, class byte, i string, in Console, for_ []int, words []Mai
 }
 
 func main() {
+    scanner := bufio.NewScanner(os.Stdin)
     var if_ int
-    fmt.Scanln(&if_)
+    scanner.Scan()
+    if_, _ = strconv.Atoi(scanner.Text())
     var class byte
-    fmt.Scanf("%c\n", &class)
+    scanner.Scan()
+    class = scanner.Text()[0]
     var i string
-    fmt.Scanln(&i)
+    scanner.Scan()
+    i = scanner.Text()
     var in Console
-    fmt.Scanln(&in.a, &in.static)
+    scanner.Scan()
+    fmt.Sscanf(scanner.Text(), "%d %d", &in.a, &in.static)
     for_ := make([]int, if_)
-    for j := range for_ {
-        fmt.Scan(&for_[j])
+    scanner.Scan()
+    for j, jValue := range strings.Split(scanner.Text(), " ") {
+        for_[j], _ = strconv.Atoi(jValue)
     }
     words := make([]Main, 2)
     for j := range words {
-        fmt.Scanln(&words[j].int.return_)
+        scanner.Scan()
+        words[j].int.return_, _ = strconv.Atoi(scanner.Text())
         words[j].int.void = make([]int, 3)
-        for k := range words[j].int.void {
-            fmt.Scan(&words[j].int.void[k])
+        scanner.Scan()
+        for k, kValue := range strings.Split(scanner.Text(), " ") {
+            words[j].int.void[k], _ = strconv.Atoi(kValue)
         }
-        fmt.Scanln(&words[j].ifTrue)
+        scanner.Scan()
+        words[j].ifTrue, _ = strconv.Atoi(scanner.Text())
     }
     keywords(if_, class, i, in, for_, words);
 }

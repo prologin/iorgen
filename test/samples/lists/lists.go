@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import "bufio"
+import "os"
+import "strconv"
+import "strings"
 
 // n: the first list's size
 // listInt: a list containing ints
@@ -13,25 +16,32 @@ func lists(n int, listInt []int, size int, listChar []byte, listString4 []string
 }
 
 func main() {
+    scanner := bufio.NewScanner(os.Stdin)
     var n int
-    fmt.Scanln(&n)
+    scanner.Scan()
+    n, _ = strconv.Atoi(scanner.Text())
     listInt := make([]int, n)
-    for i := range listInt {
-        fmt.Scan(&listInt[i])
+    scanner.Scan()
+    for i, iValue := range strings.Split(scanner.Text(), " ") {
+        listInt[i], _ = strconv.Atoi(iValue)
     }
     var size int
-    fmt.Scanln(&size)
+    scanner.Scan()
+    size, _ = strconv.Atoi(scanner.Text())
     var listChar []byte
-    fmt.Scanln(&listChar)
+    scanner.Scan()
+    listChar = scanner.Bytes()
     listString4 := make([]string, size)
     for i := range listString4 {
-        fmt.Scanln(&listString4[i])
+        scanner.Scan()
+        listString4[i] = scanner.Text()
     }
     matrix := make([][]int, size)
     for i := range matrix {
         matrix[i] = make([]int, size)
-        for j := range matrix[i] {
-            fmt.Scan(&matrix[i][j])
+        scanner.Scan()
+        for j, jValue := range strings.Split(scanner.Text(), " ") {
+            matrix[i][j], _ = strconv.Atoi(jValue)
         }
     }
     lists(n, listInt, size, listChar, listString4, matrix);
