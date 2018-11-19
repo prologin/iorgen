@@ -9,6 +9,8 @@ from typing import List
 from iorgen.types import Input, Type, TypeEnum, Variable
 from iorgen.utils import pascal_case, snake_case
 
+INDENTATION = "    "
+
 
 def var_name(name: str) -> str:
     """Transform a variable name into a valid one for Python"""
@@ -89,7 +91,6 @@ class ParserPython():
         self.input = input_data
         self.main = []  # type: List[str]
         self.method = []  # type: List[str]
-        self.indentation = 4
 
     def read_var(self, var: Variable) -> None:
         """Read a variable"""
@@ -101,31 +102,31 @@ class ParserPython():
         name = var_name(self.input.name)
         self.method.append("def {}({}):".format(
             name, ", ".join(var_name(i.name) for i in self.input.input)))
-        self.method.append(" " * self.indentation + '"""')
+        self.method.append(INDENTATION + '"""')
         self.method.extend([
-            "{}:param {}: {}".format(" " * self.indentation,
-                                     var_name(arg.name), arg.comment)
-            for arg in self.input.input
+            "{}:param {}: {}".format(INDENTATION, var_name(arg.name),
+                                     arg.comment) for arg in self.input.input
         ])
-        self.method.append(" " * self.indentation + '"""')
+        self.method.append(INDENTATION + '"""')
         if reprint:
             for var in self.input.input:
                 self.method.extend(
                     self.print_lines(var_name(var.name), var.type, 1))
         else:
-            self.method.extend([
-                " " * self.indentation + "#" + i
-                for i in textwrap.wrap(" TODO " + self.input.output, 78 -
-                                       self.indentation)
-            ])
-            self.method.append(" " * self.indentation + "pass")
+            self.method.extend(
+                textwrap.wrap(
+                    self.input.output,
+                    79,
+                    initial_indent=INDENTATION + "# " + "TODO ",
+                    subsequent_indent=INDENTATION + "# "))
+            self.method.append(INDENTATION + "pass")
         self.main.append("{}({})".format(
             name, ", ".join([var_name(i.name) for i in self.input.input])))
 
     def print_lines(self, name: str, type_: Type,
                     indent_lvl: int = 0) -> List[str]:
         """Print the content of a var that holds in one or more lines"""
-        indent = " " * self.indentation * indent_lvl
+        indent = INDENTATION * indent_lvl
         if type_.fits_it_one_line(self.input.structs):
             return [indent + print_line(name, type_, self.input)]
         if type_.main == TypeEnum.LIST:
@@ -153,7 +154,7 @@ class ParserPython():
             output += "\n"
         output += "if __name__ == '__main__':\n"
         for line in self.main:
-            output += ' ' * self.indentation + line + "\n"
+            output += INDENTATION + line + "\n"
         return output
 
 
