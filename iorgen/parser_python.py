@@ -40,7 +40,7 @@ def read_line(type_: Type, input_data: Input) -> str:
             return "dict(zip(({}), map(int, input().split())))".format(keys)
         if all(i.type.main == TypeEnum.CHAR for i in struct.fields):
             return "dict(zip(({}), input().split()))".format(keys)
-        return "dict(map({}, ({}), ({}), input.split()))".format(
+        return "dict(map({}, ({}), ({}), input().split()))".format(
             "lambda x, y, z : (x, int(z) if y else z)", keys,
             ", ".join("1" if i.type.main == TypeEnum.INT else "0"
                       for i in struct.fields))
