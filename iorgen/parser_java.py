@@ -81,9 +81,9 @@ class ParserJava():
                 class_name(type_.struct_name) +
                 " " if decl else "", name, class_name(type_.struct_name)))
             lines.extend("{}{}.{} = {};".format(
-                indent, name, var_name(
-                    f.name), "Integer.parseInt({}[{}])".format(words, i) if f.
-                type.main == TypeEnum.INT else "{}[{}][0]".format(words, i))
+                indent, name, var_name(f.name), "Integer.parseInt({}[{}])".
+                format(words, i) if f.type.main == TypeEnum.
+                INT else "{}[{}].charAt(0)".format(words, i))
                          for i, f in enumerate(struct.fields))
             return lines
         type_decl = (type_str(type_) + " ") if decl else ""
