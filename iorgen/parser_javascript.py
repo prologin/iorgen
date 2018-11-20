@@ -154,7 +154,7 @@ def print_line(name: str, type_: Type, input_data: Input) -> str:
             return 'console.log({}.join(" "));'.format(name)
     if type_.main == TypeEnum.STRUCT:
         struct = input_data.get_struct(type_.struct_name)
-        return 'console.log({});'.format(", ".join(
+        return 'console.log([{}].join(" "));'.format(", ".join(
             '{}.{}'.format(name, var_name(i.name)) for i in struct.fields))
     assert False
     return ""
