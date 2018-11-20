@@ -56,9 +56,11 @@ def read_line(type_: Type, input_data: Input) -> str:
             '"{}"'.format(i.name) for i in struct.fields))
         if all(i.type.main == TypeEnum.INT for i in struct.fields):
             return begin + "array_map('intval', explode(' ', fgets(STDIN))))"
+        if all(i.type.main == TypeEnum.CHAR for i in struct.fields):
+            return begin + "str_split(trim(fgets(STDIN))))"
         # Treat them all as char. It would be best to cast the integers, if
         # they are any, but this is painful to write as a one liner.
-        return begin + "str_split(trim(fgets(STDIN))))"
+        return begin + "explode(' ', trim(fgets(STDIN))))"
     return {
         TypeEnum.INT: "intval(trim(fgets(STDIN)))",
         TypeEnum.CHAR: "fgets(STDIN)[0]",
