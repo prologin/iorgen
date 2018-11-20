@@ -1,0 +1,56 @@
+name: sized struct
+subject: A special kind a struct containing the size of a list, or string.
+structs:
+    - name: list
+      comment: contains a list
+      fields:
+          - type: int
+            name: size1
+            comment: the list's size
+          - type: List[int](size1)
+            name: int list
+            comment: the integer list
+    - name: string
+      comment: contains a string
+      fields:
+          - type: int
+            name: size2
+            comment: the list's size
+          - type: str(size2)
+            name: string list
+            comment: the string list
+    - name: matrix
+      comment: contains a matrix
+      fields:
+          - type: int
+            name: size3
+            comment: the list's size
+          - type: List[List[int](2)](size3)
+            name: list list
+            comment: the list list
+    - name: not a sized struct
+      comment: this is not a 'sized struct', but a regular one!
+      fields:
+          - type: int
+            name: size4
+            comment: not the list's size
+          - type: List[int](n)
+            name: int list n
+            comment: the integer list
+input:
+    - type: int
+      name: n
+      comment: the size of the lists
+    - type: List[@list](n)
+      name: lists
+      comment: a list of list of different sizes
+    - type: List[@string](n)
+      name: strings
+      comment: a list of strings of different sizes
+    - type: List[@matrix](2)
+      name: matrices
+      comment: a list of matrices of different sizes
+    - type: List[@not a sized struct](n)
+      name: same
+      comment: a list of list of same sizes
+output: The is a special case.
