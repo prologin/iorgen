@@ -1,0 +1,21 @@
+name: example
+subject: This input is an example for Iorgen's README
+structs:
+    - name: a struct
+      comment: A struct for the example
+      fields:
+          - type: int
+            name: integer
+            comment: an integer
+          - type: char
+            name: character
+            comment: a char
+input:
+    - type: int
+      name: N
+      comment: a number, used as a size
+    - type: List[@a struct](N)
+      name: list
+      comment: a list of structs
+output: In a real life scenario, you will describe here what you want the end
+    user to do with this generated code
