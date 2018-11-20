@@ -14,8 +14,9 @@ English and French can also be generated.
 ## Usage
 
 Make sure python (version 3.5 and above) and python-yaml are installed on your
-computer and run `python -m iorgen input.yaml`. You can see other options, like
-selecting only a subset of language, by displaying the help with the `-h` flag.
+computer and run `python3 -m iorgen input.yaml`. You can see other options,
+like selecting only a subset of language, by displaying the help with the `-h`
+flag.
 
 ## Input format
 
@@ -76,3 +77,62 @@ and `structname` following this guidelines:
 - `type` can be any valid type, even an other list
 - `structname` is the name of a struct, as declared in the `"name"` field of
   `"structs"`
+
+### Example
+
+```yaml
+name: example
+subject: This input is an example for Iorgen's README
+structs:
+    - name: a struct
+      comment: A struct for the example
+      fields:
+          - type: int
+            name: integer
+            comment: an integer
+          - type: char
+            name: character
+            comment: a char
+input:
+    - type: int
+      name: N
+      comment: a number, used as a size
+    - type: List[@a struct](N)
+      name: list
+      comment: a list of structs
+output: In a real life scenario, you will describe here what you want the end
+    user to do with this generated code
+```
+
+If you want to generate the C code for parsing this kind of input, run
+`python3 -m iorgen -l c example.yaml`, and you will get:
+
+```C
+#include <stdio.h>
+#include <stdlib.h>
+
+/// A struct for the example
+struct a_struct {
+    int integer; ///< an integer
+    char character; ///< a char
+};
+
+/// \param n a number, used as a size
+/// \param list a list of structs
+void example(int n, struct a_struct* list) {
+    /* TODO In a real life scenario, you will describe here what you want the
+    end user to do with this generated code */
+}
+
+int main() {
+    int n; ///< a number, used as a size
+    scanf("%d\n", &n);
+    struct a_struct* list = calloc(n, sizeof(struct a_struct)); ///< a list of structs
+    for (int i = 0; i < n; ++i) {
+        scanf("%d %c\n", &list[i].integer, &list[i].character);
+    }
+    example(n, list);
+
+    return 0;
+}
+```
