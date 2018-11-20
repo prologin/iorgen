@@ -9,8 +9,9 @@ L’entrée contiendra :
 - Sur la première ligne, un entier : **if**, not a condition.
 - Sur la ligne suivante, un caractère : **class**, not a class.
 - Sur la ligne suivante, une chaine de **8** caractères : **i**, just a string.
-- Sur la ligne suivante, séparés par des espaces, un entier (the first letter
-  of the alphabet), et un entier (an integer) : **in**, not in.
+- Sur la ligne suivante, séparés par des espaces, un entier **a** (the first
+  letter of the alphabet), et un entier **static** (an integer) : **in**, not
+  in.
 - Sur la ligne suivante, une liste de **if** entiers séparés par des espaces :
   **for**, not a loop.
 - Sur les lignes suivantes, une liste de **2** éléments : **words**, contains

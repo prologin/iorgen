@@ -109,10 +109,10 @@ class Markdown:
             struct = self.input.get_struct(type_.struct_name)
             type_str = "{}, {}".format(
                 self.lang['struct oneline'],
-                ', '.join("{}{} ({})".format(
+                ', '.join("{}{} **{}** ({})".format(
                     "" if i != len(struct.fields) - 1 else self.lang['and'],
                     self.lang['int' if field.type.main == TypeEnum.
-                              INT else 'char'], field.comment)
+                              INT else 'char'], field.name, field.comment)
                           for i, field in enumerate(struct.fields)))
         else:
             assert False

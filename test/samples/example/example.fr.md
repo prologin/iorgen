@@ -10,7 +10,7 @@ L’entrée contiendra :
 - Sur les lignes suivantes, une liste de **N** éléments : **list**, a list of
   structs.
     - Une ligne par élément de la liste : séparés par des espaces, un entier
-      (an integer), et un caractère (a char).
+      **integer** (an integer), et un caractère **character** (a char).
 
 ### Sortie
 

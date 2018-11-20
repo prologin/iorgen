@@ -8,8 +8,8 @@ The input will contain:
 
 - On the first line, an integer: **N**, a number, used as a size.
 - On the next lines, a list of **N** elements: **list**, a list of structs.
-    - One line per list element: separated by spaces, an integer (an integer),
-      and a char (a char).
+    - One line per list element: separated by spaces, an integer **integer**
+      (an integer), and a char **character** (a char).
 
 ### Output
 
