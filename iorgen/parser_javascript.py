@@ -91,8 +91,9 @@ class ParserJS:
             }[type_.main]
         ]
 
-    def read_lines(self, decl: bool, name: str, type_: Type,
+    def read_lines(self, decl: bool, name: str, type_: Type, size: str,
                    indent_lvl: int) -> List[str]:
+        # pylint: disable=too-many-arguments
         """Generate the Javascript code to read the lines for a given type"""
         if type_.fits_it_one_line(self.input.structs):
             return self.read_line(decl, name, type_, indent_lvl)
@@ -105,10 +106,11 @@ class ParserJS:
             iterator = self.iterator.new_it()
             inner_name = self.iterator.new_it()
             lines.append(indent + "for (let {0} = 0; {0} < {1}; {0}++) {{".
-                         format(iterator, var_name(type_.size)))
+                         format(iterator, size))
             self.words.push_scope()
             lines.extend(
                 self.read_lines(True, inner_name, type_.encapsulated,
+                                var_name(type_.encapsulated.size),
                                 indent_lvl + 1))
             lines.append(indent + INDENTATION +
                          "{}.push({});".format(name, inner_name))
@@ -121,10 +123,10 @@ class ParserJS:
             lines = [
                 indent + "{}{} = {{}};".format("const " if decl else "", name)
             ]
-            for field in struct.fields:
+            for f_name, f_type, f_size in struct.fields_name_type_size(
+                    "{}.{{}}".format(name), var_name):
                 lines.extend(
-                    self.read_lines(False, "{}.{}".format(
-                        name, var_name(field.name)), field.type, indent_lvl))
+                    self.read_lines(False, f_name, f_type, f_size, indent_lvl))
             return lines
         assert False
         return []
@@ -134,7 +136,8 @@ class ParserJS:
         lines = []
         for var in self.input.input:
             lines.extend(
-                self.read_lines(True, var_name(var.name), var.type, 1))
+                self.read_lines(True, var_name(var.name), var.type,
+                                var_name(var.type.size), 1))
         return lines
 
 

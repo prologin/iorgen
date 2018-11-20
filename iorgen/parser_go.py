@@ -119,19 +119,21 @@ class ParserGo():
         assert False
         return []
 
-    def read_lines(self, name: str, type_: Type, indent_lvl: int) -> List[str]:
+    def read_lines(self, name: str, type_: Type, size: str,
+                   indent_lvl: int) -> List[str]:
         """Read one or several lines and store them into the right place(s)"""
         lines = []
         if type_.main == TypeEnum.LIST and indent_lvl != 0:
             lines.append("{}{} = make({}, {})".format(
-                INDENTATION * indent_lvl, name, type_str(type_), type_.size))
+                INDENTATION * indent_lvl, name, type_str(type_), size))
         if type_.fits_it_one_line(self.input.structs):
             return lines + self.read_line(name, type_, indent_lvl)
         if type_.main == TypeEnum.STRUCT:
-            for field in self.input.get_struct(type_.struct_name).fields:
+            struct = self.input.get_struct(type_.struct_name)
+            for f_name, f_type, f_size in struct.fields_name_type_size(
+                    "{}.{{}}".format(name), var_name):
                 lines.extend(
-                    self.read_lines("{}.{}".format(name, var_name(field.name)),
-                                    field.type, indent_lvl))
+                    self.read_lines(f_name, f_type, f_size, indent_lvl))
             return lines
         if type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
@@ -139,8 +141,9 @@ class ParserGo():
             lines.append("{}for {} := range {} {{".format(
                 INDENTATION * indent_lvl, inner_name, name))
             lines.extend(
-                self.read_lines("{}[{}]".format(name, inner_name),
-                                type_.encapsulated, indent_lvl + 1))
+                self.read_lines(
+                    "{}[{}]".format(name, inner_name), type_.encapsulated,
+                    var_name(type_.encapsulated.size), indent_lvl + 1))
             lines.append(INDENTATION * indent_lvl + "}")
             self.iterator.pop_it()
             return lines
@@ -162,7 +165,9 @@ class ParserGo():
         else:
             lines.append("var {} {}".format(
                 var_name(var.name), type_str(var.type)))
-        lines.extend(self.read_lines(var_name(var.name), var.type, 0))
+        lines.extend(
+            self.read_lines(
+                var_name(var.name), var.type, var_name(var.type.size), 0))
         return lines
 
     def call(self, reprint: bool) -> List[str]:

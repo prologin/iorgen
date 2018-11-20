@@ -51,22 +51,22 @@ def read_line(type_: Type, input_data: Input) -> str:
     }[type_.main]
 
 
-def read_lines(type_: Type, input_data: Input) -> List[str]:
+def read_lines(type_: Type, size: str, input_data: Input) -> List[str]:
     """Generate the Python code to read the lines for a given type"""
     if type_.fits_it_one_line(input_data.structs):
         return [read_line(type_, input_data)]
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
-        lines = read_lines(type_.encapsulated, input_data)
+        lines = read_lines(type_.encapsulated,
+                           var_name(type_.encapsulated.size), input_data)
         if len(lines) == 1:
-            candidate = "[{} for _ in range({})]".format(
-                lines[0], var_name(type_.size))
+            candidate = "[{} for _ in range({})]".format(lines[0], size)
             if len(candidate) <= 75:
                 return [candidate]
         if len(lines[-1]) < 5:
-            lines[-1] += " for _ in range({})]".format(var_name(type_.size))
+            lines[-1] += " for _ in range({})]".format(size)
         else:
-            lines.append("for _ in range({})".format(var_name(type_.size)))
+            lines.append("for _ in range({})".format(size))
             lines.append("]")
         if len(lines[0]) < 5:
             lines[0] = "[" + lines[0]
@@ -75,9 +75,18 @@ def read_lines(type_: Type, input_data: Input) -> List[str]:
         return lines
     if type_.main == TypeEnum.STRUCT:
         struct = input_data.get_struct(type_.struct_name)
+        if struct.is_sized_struct():
+            inner = "i"
+            lines = read_lines(struct.fields[1].type, inner, input_data)
+            lines[0] = '"{}": {}'.format(struct.fields[1].name, lines[0])
+            return [
+                '(lambda {}: {{'.format(inner),
+                INDENTATION + '"{}": {},'.format(struct.fields[0].name, inner)
+            ] + [INDENTATION + i for i in lines] + ['})(int(input()))']
         fields = []
         for i, field in enumerate(struct.fields):
-            lines = read_lines(field.type, input_data)
+            lines = read_lines(field.type, var_name(field.type.size),
+                               input_data)
             lines[0] = '{}"{}": {}'.format(INDENTATION, field.name, lines[0])
             if i != len(struct.fields) - 1:
                 lines[-1] += ","
@@ -117,7 +126,7 @@ class ParserPython():
 
     def read_var(self, var: Variable) -> List[str]:
         """Read a variable"""
-        lines = read_lines(var.type, self.input)
+        lines = read_lines(var.type, var_name(var.type.size), self.input)
         lines[0] = "{} = {}".format(var_name(var.name), lines[0])
         return lines
 
@@ -155,7 +164,7 @@ class ParserPython():
             return [indent + print_line(name, type_, self.input)]
         if type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
-            inner = "iT" + str(abs(hash(name)))  # unique nam
+            inner = "iT" + str(abs(hash(name)))  # unique name
             return [
                 indent + "for {} in {}:".format(inner, name)
             ] + self.print_lines(inner, type_.encapsulated, indent_lvl + 1)

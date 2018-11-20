@@ -17,6 +17,8 @@ def pascal_case(name: str) -> str:
 
 def camel_case(name: str) -> str:
     """Format a name with camel case style"""
+    if not name:
+        return ""
     pascal = pascal_case(name)
     return pascal[0].lower() + pascal[1:]
 

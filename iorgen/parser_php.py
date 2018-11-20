@@ -74,7 +74,7 @@ class ParserPHP:
         self.iterator = IteratorName([var.name for var in input_data.input] +
                                      [input_data.name])
 
-    def read_lines(self, name: str, type_: Type) -> List[str]:
+    def read_lines(self, name: str, type_: Type, size: str) -> List[str]:
         """Generate the PHP code to read the lines for a given type"""
         if type_.fits_it_one_line(self.input.structs):
             return [read_line(type_, self.input)]
@@ -82,26 +82,27 @@ class ParserPHP:
             assert type_.encapsulated is not None
             iterator = "$" + self.iterator.new_it()
             lines = self.read_lines("{}[{}]".format(name, iterator),
-                                    type_.encapsulated)
+                                    type_.encapsulated,
+                                    var_name(type_.encapsulated.size))
             self.iterator.pop_it()
             if len(lines) == 1:
                 return [
                     "array_map(function() {{ return {}; }}, range(1, {}))".
-                    format(lines[0], var_name(type_.size))
+                    format(lines[0], size)
                 ]
             prefix = [
                 "{} = [];".format(name),
-                "for ({0} = 0; {0} < {1}; {0}++) {{".format(
-                    iterator, var_name(type_.size))
+                "for ({0} = 0; {0} < {1}; {0}++) {{".format(iterator, size)
             ]
             return prefix + [INDENTATION + i for i in lines] + ["}"]
         if type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)
             lines = []
-            for i in struct.fields:
-                read = self.read_lines('{}["{}"]'.format(name, i.name), i.type)
+            for f_name, f_type, f_size in struct.fields_name_type_size(
+                    '{}["{{}}"]'.format(name), lambda x: x):
+                read = self.read_lines(f_name, f_type, f_size)
                 if len(read) == 1:
-                    read[0] = '{}["{}"] = {};'.format(name, i.name, read[0])
+                    read[0] = '{} = {};'.format(f_name, read[0])
                 lines.extend(read)
             return ["{} = [];".format(name)] + lines
         assert False
@@ -111,7 +112,8 @@ class ParserPHP:
         """Generate the PHP code to read all input variables"""
         lines = []
         for var in self.input.input:
-            read = self.read_lines(var_name(var.name), var.type)
+            read = self.read_lines(
+                var_name(var.name), var.type, var_name(var.type.size))
             if len(read) == 1:
                 read[0] = "{} = {};".format(var_name(var.name), read[0])
             lines.extend(read)

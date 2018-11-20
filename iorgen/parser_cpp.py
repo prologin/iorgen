@@ -103,25 +103,32 @@ class ParserCpp():
             assert False
         self.garbage_ws = type_.main != TypeEnum.STR
 
-    def read_lines(self, name: str, type_: Type, indent_lvl: int = 0) -> None:
+    def read_lines(self,
+                   name: str,
+                   type_: Type,
+                   size: str,
+                   indent_lvl: int = 0) -> None:
         """Read one or several lines and store them into the right place(s)"""
         if type_.main == TypeEnum.LIST and indent_lvl != 0:
             self.main.append("{}{}.resize({});".format(
-                " " * self.indentation * indent_lvl, name, type_.size))
+                " " * self.indentation * indent_lvl, name, size))
         if type_.fits_it_one_line(self.input.structs):
             self.read_line(name, type_, indent_lvl)
         else:
             if type_.main == TypeEnum.STRUCT:
-                for field in self.input.get_struct(type_.struct_name).fields:
-                    self.read_lines("{}.{}".format(name, var_name(field.name)),
-                                    field.type, indent_lvl)
+                struct = self.input.get_struct(type_.struct_name)
+                for f_name, f_type, f_size in struct.fields_name_type_size(
+                        "{}.{{}}".format(name), var_name):
+                    self.read_lines(f_name, f_type, f_size, indent_lvl)
             elif type_.main == TypeEnum.LIST:
                 assert type_.encapsulated is not None
                 inner_name = self.iterator.new_it()
                 self.main.append("{}for ({}& {} : {}) {{".format(
                     " " * self.indentation * indent_lvl,
                     self.type_str(type_.encapsulated), inner_name, name))
-                self.read_lines(inner_name, type_.encapsulated, indent_lvl + 1)
+                self.read_lines(inner_name, type_.encapsulated,
+                                var_name(type_.encapsulated.size),
+                                indent_lvl + 1)
                 self.main.append(" " * self.indentation * indent_lvl + "}")
                 self.iterator.pop_it()
             else:
@@ -137,7 +144,7 @@ class ParserCpp():
                 size = "({})".format(var_name(var.type.size))
         self.main.append("{} {}{}; ///< {}".format(
             self.type_str(var.type), var_name(var.name), size, var.comment))
-        self.read_lines(var_name(var.name), var.type)
+        self.read_lines(var_name(var.name), var.type, var_name(var.type.size))
 
     def call(self, reprint: bool) -> None:
         """Declare and call the function take all inputs in arguments"""

@@ -61,7 +61,8 @@ class ParserC():
         assert False
         return ""
 
-    def read_line(self, name: str, type_: Type, indent_lvl: int) -> None:
+    def read_line(self, name: str, type_: Type, size: str,
+                  indent_lvl: int) -> None:
         """Read an entire line and store it into the right place(s)"""
         assert type_.fits_it_one_line(self.input.structs)
         indent = ' ' * (self.indentation * indent_lvl)
@@ -73,19 +74,20 @@ class ParserC():
                 self.main.append(indent + "{} = getchar();".format(name))
             self.main.append(indent + "getchar(); // \\n")
         elif type_.main == TypeEnum.STR:
-            self.main.append(indent + "fgets({}, {} + 1, stdin);".format(
-                name, var_name(type_.size)))
+            self.main.append(indent +
+                             "fgets({}, {} + 1, stdin);".format(name, size))
             self.main.append(indent + "getchar(); // \\n")
         elif type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
             if type_.encapsulated.main == TypeEnum.CHAR:
-                self.main.append(indent + "fgets({}, {} + 1, stdin);".format(
-                    name, var_name(type_.size)))
+                self.main.append(
+                    indent + "fgets({}, {} + 1, stdin);".format(name, size))
                 self.main.append(indent + "getchar(); // \\n")
             elif type_.encapsulated.main == TypeEnum.INT:
                 index = self.iterator.new_it()
-                self.main.append(indent + "for (int {0} = 0; {0} < {1}; ++{0})"
-                                 .format(index, var_name(type_.size)))
+                self.main.append(
+                    indent +
+                    "for (int {0} = 0; {0} < {1}; ++{0})".format(index, size))
                 self.main.append(' ' * self.indentation + indent +
                                  'scanf("%d ", &{}[{}]);'.format(name, index))
                 self.iterator.pop_it()
@@ -101,35 +103,39 @@ class ParserC():
         else:
             assert False
 
-    def read_lines(self, name: str, type_: Type, indent_lvl: int = 0) -> None:
+    def read_lines(self,
+                   name: str,
+                   type_: Type,
+                   size: str,
+                   indent_lvl: int = 0) -> None:
         """Read one or several lines and store them into the right place(s)"""
         if type_.main == TypeEnum.LIST and indent_lvl != 0:
             self.includes.add("stdlib.h")
             self.main.append("{}{} = calloc({}{}, sizeof({}));".format(
-                " " * self.indentation * indent_lvl, name, var_name(
-                    type_.size), " + 1" if type_.main == TypeEnum.CHAR else "",
+                " " * self.indentation * indent_lvl, name, size,
+                " + 1" if type_.main == TypeEnum.CHAR else "",
                 self.type_str(type_)))
         elif type_.main == TypeEnum.STR and indent_lvl != 0:
             self.includes.add("stdlib.h")
             self.main.append("{}{} = calloc({} + 1, sizeof(char));".format(
-                " " * self.indentation * indent_lvl, name,
-                var_name(type_.size)))
+                " " * self.indentation * indent_lvl, name, size))
         if type_.fits_it_one_line(self.input.structs):
-            self.read_line(name, type_, indent_lvl)
+            self.read_line(name, type_, size, indent_lvl)
         else:
             if type_.main == TypeEnum.STRUCT:
-                for field in self.input.get_struct(type_.struct_name).fields:
-                    self.read_lines("{}.{}".format(name, var_name(field.name)),
-                                    field.type, indent_lvl)
+                struct = self.input.get_struct(type_.struct_name)
+                for f_name, f_type, f_size in struct.fields_name_type_size(
+                        "{}.{{}}".format(name), var_name):
+                    self.read_lines(f_name, f_type, f_size, indent_lvl)
             elif type_.main == TypeEnum.LIST:
                 assert type_.encapsulated is not None
                 index = self.iterator.new_it()
                 self.main.append(
                     "{0}for (int {1} = 0; {1} < {2}; ++{1}) {{".format(
-                        " " * self.indentation * indent_lvl, index,
-                        var_name(type_.size)))
-                self.read_lines("{}[{}]".format(name, index),
-                                type_.encapsulated, indent_lvl + 1)
+                        " " * self.indentation * indent_lvl, index, size))
+                self.read_lines(
+                    "{}[{}]".format(name, index), type_.encapsulated,
+                    var_name(type_.encapsulated.size), indent_lvl + 1)
                 self.main.append(" " * self.indentation * indent_lvl + "}")
                 self.iterator.pop_it()
             else:
@@ -154,7 +160,7 @@ class ParserC():
                 self.type_str(var.type.encapsulated))
         self.main.append("{} {}{}; ///< {}".format(
             self.type_str(var.type), var_name(var.name), init, var.comment))
-        self.read_lines(var_name(var.name), var.type)
+        self.read_lines(var_name(var.name), var.type, var_name(var.type.size))
 
     def call(self, reprint: bool) -> None:
         """Declare and call the function take all inputs in arguments"""
@@ -168,7 +174,8 @@ class ParserC():
         self.method.append("void {}({}) {{".format(name, ", ".join(arguments)))
         if reprint:
             for var in self.input.input:
-                self.print_lines(var_name(var.name), var.type, 1)
+                self.print_lines(
+                    var_name(var.name), var.type, var_name(var.type.size), 1)
         else:
             self.method.extend([
                 " " * self.indentation + i
@@ -177,7 +184,8 @@ class ParserC():
             ])
         self.method.append("}")
 
-    def print_line(self, name: str, type_: Type, indent_lvl: int) -> None:
+    def print_line(self, name: str, type_: Type, size: str,
+                   indent_lvl: int) -> None:
         """Print the content of a var that holds in one line"""
         assert type_.fits_it_one_line(self.input.structs)
         indent = ' ' * (self.indentation * indent_lvl)
@@ -194,13 +202,13 @@ class ParserC():
                                    'printf("%s\\n", {});'.format(name))
             else:
                 index = self.iterator.new_it()
-                self.method.append(indent +
-                                   "for (int {0} = 0; {0} < {1}; ++{0})".
-                                   format(index, var_name(type_.size)))
+                self.method.append(
+                    indent +
+                    "for (int {0} = 0; {0} < {1}; ++{0})".format(index, size))
                 self.method.append(
                     ' ' * self.indentation + indent +
                     "printf(\"%d%c\", {0}[{1}], {1} < {2} - 1 ? ' ' : '\\n');".
-                    format(name, index, var_name(type_.size)))
+                    format(name, index, size))
                 self.iterator.pop_it()
         elif type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)
@@ -212,25 +220,30 @@ class ParserC():
         else:
             assert False
 
-    def print_lines(self, name: str, type_: Type, indent_lvl: int = 0) -> None:
+    def print_lines(self,
+                    name: str,
+                    type_: Type,
+                    size: str,
+                    indent_lvl: int = 0) -> None:
         """Print the content of a var that holds in one or more lines"""
         if type_.fits_it_one_line(self.input.structs):
-            self.print_line(name, type_, indent_lvl)
+            self.print_line(name, type_, size, indent_lvl)
         else:
             if type_.main == TypeEnum.STRUCT:
-                for field in self.input.get_struct(type_.struct_name).fields:
-                    self.print_lines(
-                        "{}.{}".format(name, var_name(field.name)), field.type,
-                        indent_lvl)
+                struct = self.input.get_struct(type_.struct_name)
+                struct = self.input.get_struct(type_.struct_name)
+                for f_name, f_type, f_size in struct.fields_name_type_size(
+                        "{}.{{}}".format(name), var_name):
+                    self.print_lines(f_name, f_type, f_size, indent_lvl)
             elif type_.main == TypeEnum.LIST:
                 assert type_.encapsulated is not None
                 index = self.iterator.new_it()
                 self.method.append(
                     "{0}for (int {1} = 0; {1} < {2}; ++{1}) {{".format(
-                        " " * self.indentation * indent_lvl, index,
-                        var_name(type_.size)))
-                self.print_lines("{}[{}]".format(name, index),
-                                 type_.encapsulated, indent_lvl + 1)
+                        " " * self.indentation * indent_lvl, index, size))
+                self.print_lines(
+                    "{}[{}]".format(name, index), type_.encapsulated,
+                    var_name(type_.encapsulated.size), indent_lvl + 1)
                 self.method.append(" " * self.indentation * indent_lvl + "}")
                 self.iterator.pop_it()
             else:

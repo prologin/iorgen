@@ -179,7 +179,7 @@ class ParserHaskell():
         assert False
         return ""
 
-    def read_lines(self, type_: Type) -> str:
+    def read_lines(self, type_: Type, size: str) -> str:
         """Read one or several lines and parse them"""
         if type_.fits_it_one_line(self.input.structs):
             return self.read_line(type_)
@@ -189,17 +189,19 @@ class ParserHaskell():
         if type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
             self.imports.add("Control.Monad (replicateM)")
-            replicate = self.read_lines(type_.encapsulated)
+            replicate = self.read_lines(type_.encapsulated,
+                                        var_name(type_.encapsulated.size))
             if len(replicate.split()) != 1:
                 replicate = "$ " + replicate
-            return "replicateM {} {}".format(var_name(type_.size), replicate)
+            return "replicateM {} {}".format(size, replicate)
         assert False
         return ""
 
     def read_var(self, var: Variable) -> None:
         """Read a variable"""
         self.main.append("{} <- {}".format(
-            var_name(var.name), self.read_lines(var.type)))
+            var_name(var.name),
+            self.read_lines(var.type, var_name(var.type.size))))
 
     def call(self, reprint: bool) -> None:
         """Declare and call the function take all inputs in arguments"""
@@ -251,10 +253,25 @@ class ParserHaskell():
                 "read{} = fmap ((\\[{}] -> {}) . words) getLine".format(
                     data_name(struct.name), args, func)
             ]
-        self.imports.add("Control.Applicative ((<$>), (<*>))")
-        args = " <*> ".join(self.read_lines(i.type) for i in struct.fields)
-        output = ["read{0} = {0} <$> {1}".format(data_name(struct.name), args)]
-        return output
+        need_size = struct.is_sized_struct() and struct.fields[
+            1].type.main == TypeEnum.LIST and not struct.fields[
+                1].type.fits_it_one_line(self.input.structs)
+        if not need_size:
+            self.imports.add("Control.Applicative ((<$>), (<*>))")
+            self.imports.discard("Control.Applicative ((<$>))")
+            args = " <*> ".join(
+                self.read_lines(i.type, var_name(i.type.size))
+                for i in struct.fields)
+            return [
+                "read{0} = {0} <$> {1}".format(data_name(struct.name), args)
+            ]
+        if "Control.Applicative ((<$>), (<*>))" not in self.imports:
+            self.imports.add("Control.Applicative ((<$>))")
+        field = struct.fields[1]
+        return [
+            "read{0} = fmap read getLine >>= \\a -> {0} a <$> ({1})".format(
+                data_name(struct.name), self.read_lines(field.type, 'a'))
+        ]
 
     def read_structs(self) -> List[str]:
         """Generate the functions to read the structs"""
