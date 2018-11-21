@@ -172,7 +172,11 @@ def gen_markdown(input_data: Input, lang: str = "en") -> str:
     """Generate a markdown describing the input"""
     output = "## {}\n\n".format(LANG[lang]['subject'])
     if input_data.subject:
-        output += '\n'.join(textwrap.wrap(input_data.subject, 79)) + '\n\n'
+        output += '\n'.join(
+            textwrap.wrap(
+                input_data.subject.replace("\n", "\n\n"),
+                79,
+                replace_whitespace=False)) + '\n\n'
     output += "### {}\n\n".format(LANG[lang]['input'])
     output += LANG[lang]['input decl'] + '\n\n'
     output += Markdown(input_data, lang).content()
