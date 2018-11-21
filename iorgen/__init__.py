@@ -15,5 +15,6 @@ from iorgen.parser_javascript import gen_javascript
 from iorgen.parser_ocaml import gen_ocaml
 from iorgen.parser_php import gen_php
 from iorgen.parser_python import gen_python
+from iorgen.parser_ruby import gen_ruby
 from iorgen.parser_rust import gen_rust
 from iorgen.generator import Language, ALL_LANGUAGES
