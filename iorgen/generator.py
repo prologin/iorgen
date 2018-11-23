@@ -15,6 +15,7 @@ from iorgen.parser_go import gen_go
 from iorgen.parser_haskell import gen_haskell
 from iorgen.parser_java import gen_java
 from iorgen.parser_javascript import gen_javascript
+from iorgen.parser_lua import gen_lua
 from iorgen.parser_ocaml import gen_ocaml
 from iorgen.parser_perl import gen_perl
 from iorgen.parser_php import gen_php
@@ -85,6 +86,7 @@ ALL_LANGUAGES = [
     Language("java", gen_java, ["javac", "-encoding", "UTF-8"],
              ["java", "Main"]),
     Language("js", gen_javascript, [], ["node"]),
+    Language("lua", gen_lua, [], ["lua5.3"]),
     Language("ml", gen_ocaml, ["ocamlopt", "-w", "A", "-o", "{name}"]),
     Language("php", gen_php, [], ["php"]),
     Language("pl", gen_perl, [], ["perl"]),
