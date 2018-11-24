@@ -16,6 +16,7 @@ from iorgen.parser_lua import gen_lua
 from iorgen.parser_ocaml import gen_ocaml
 from iorgen.parser_perl import gen_perl
 from iorgen.parser_php import gen_php
+from iorgen.parser_prolog import gen_prolog
 from iorgen.parser_python import gen_python
 from iorgen.parser_ruby import gen_ruby
 from iorgen.parser_rust import gen_rust

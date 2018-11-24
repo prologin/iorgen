@@ -19,6 +19,7 @@ from iorgen.parser_lua import gen_lua
 from iorgen.parser_ocaml import gen_ocaml
 from iorgen.parser_perl import gen_perl
 from iorgen.parser_php import gen_php
+from iorgen.parser_prolog import gen_prolog
 from iorgen.parser_python import gen_python
 from iorgen.parser_ruby import gen_ruby
 from iorgen.parser_rust import gen_rust
@@ -90,6 +91,7 @@ ALL_LANGUAGES = [
     Language("ml", gen_ocaml, ["ocamlopt", "-w", "A", "-o", "{name}"]),
     Language("php", gen_php, [], ["php"]),
     Language("pl", gen_perl, [], ["perl"]),
+    Language("pro", gen_prolog, [], ["swipl", "--quiet", "-t", "halt", "-l"]),
     Language("py", gen_python, [], ["python3", "-S"]),
     Language("rb", gen_ruby, [], ["ruby"]),
     Language("rs", gen_rust, ["rustc", "-W", "warnings", "-O"]),
