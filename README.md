@@ -18,6 +18,10 @@ computer and run `python3 -m iorgen input.yaml`. You can see other options,
 like selecting only a subset of language, by displaying the help with the `-h`
 flag.
 
+The generated code is written in a directory specified by the `-o` flag
+(default to `skeleton`). The directory is relative to the call site of
+*Iorgen*, but you can specify an absolute path if you want.
+
 ## Input format
 
 ### Types

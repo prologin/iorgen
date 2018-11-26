@@ -3,6 +3,8 @@
 """Multi-languages parser generator"""
 
 import argparse
+import os
+from pathlib import Path
 
 from iorgen.generator import ALL_LANGUAGES
 from iorgen.checkinput import parse_input
@@ -19,8 +21,9 @@ def main() -> None:
         '-l',
         '--languages',
         action='append',
-        help='Languages for which to generate a parser',
+        help='languages for which to generate a parser',
         choices=list(languages.keys()))
+    parser.add_argument('-o', default="skeleton", help="output folder")
     parser.add_argument(
         'yaml',
         metavar='input.yaml',
@@ -37,9 +40,14 @@ def main() -> None:
         print("Could not parse input data: {}".format(error))
         exit(1)
 
+    Path(args.o).mkdir(exist_ok=True)
+    prefix = os.path.split(os.path.splitext(args.yaml.name)[0])[1] + "."
+
     selected_languages = args.languages or list(languages.keys())
     for language in selected_languages:
-        print(languages[language].generate(input_data))
+        path = Path(
+            os.path.join(args.o, prefix + languages[language].extension))
+        path.write_text(languages[language].generate(input_data))
 
 
 if __name__ == '__main__':
