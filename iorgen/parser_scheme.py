@@ -5,7 +5,7 @@
 import textwrap
 from typing import List
 
-from iorgen.types import Input, Struct, Type, TypeEnum, Variable
+from iorgen.types import Input, Struct, Type, TypeEnum
 
 KEYWORDS = [
     "access", "and", "begin", "bkpt", "case", "cond", "cons-stream", "declare",
