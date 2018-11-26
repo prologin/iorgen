@@ -8,8 +8,8 @@ template. The user writes a YAML describing the input, and *Iorgen* will
 generate the code to read this input from stdin, in all supported languages.
 
 The list of currently supported languages is: C, C++, C#, Go, Haskell, Java,
-Javascript, Ocaml, PHP, Prolog, Python, Ruby, Rust. A markdown description of
-the input in English and French can also be generated.
+Javascript, Ocaml, PHP, Prolog, Python, Ruby, Rust, Scheme. A markdown
+description of the input in English and French can also be generated.
 
 ## Usage
 

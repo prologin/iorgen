@@ -23,6 +23,7 @@ from iorgen.parser_prolog import gen_prolog
 from iorgen.parser_python import gen_python
 from iorgen.parser_ruby import gen_ruby
 from iorgen.parser_rust import gen_rust
+from iorgen.parser_scheme import gen_scheme
 
 
 class Language:
@@ -95,6 +96,7 @@ ALL_LANGUAGES = [
     Language("py", gen_python, [], ["python3", "-S"]),
     Language("rb", gen_ruby, [], ["ruby"]),
     Language("rs", gen_rust, ["rustc", "-W", "warnings", "-O"]),
+    Language("scm", gen_scheme, [], ["gsi"]),
     Language("en.md", (lambda i, _: gen_markdown(i, 'en')), []),
     Language("fr.md", (lambda i, _: gen_markdown(i, 'fr')), [])
 ]

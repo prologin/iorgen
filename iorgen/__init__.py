@@ -20,4 +20,5 @@ from iorgen.parser_prolog import gen_prolog
 from iorgen.parser_python import gen_python
 from iorgen.parser_ruby import gen_ruby
 from iorgen.parser_rust import gen_rust
+from iorgen.parser_scheme import gen_scheme
 from iorgen.generator import Language, ALL_LANGUAGES
