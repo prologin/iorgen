@@ -112,14 +112,12 @@ class Type:
 class Variable:
     """Everything there is to know about a variable"""
 
+    # pylint: disable=too-few-public-methods
+
     def __init__(self: VAR, name: str, comment: str, type_: Type) -> None:
         self.name = name
         self.comment = comment
         self.type = type_
-
-    def has_size(self) -> bool:
-        """Does the variable has a size"""
-        return self.type.main in (TypeEnum.STR, TypeEnum.LIST)
 
     @classmethod
     def from_dict(cls: T[VAR], dic: Dict[str, str]) -> Optional[VAR]:
@@ -166,7 +164,8 @@ class Struct:
     def is_sized_struct(self) -> bool:
         """A special kind of struct: first field is the size of the second"""
         return len(self.fields) == 2 and self.fields[
-            0].type.main == TypeEnum.INT and self.fields[1].has_size(
+            0].type.main == TypeEnum.INT and self.fields[1].type.main in (
+                TypeEnum.STR, TypeEnum.LIST
             ) and self.fields[0].name == self.fields[1].type.size
 
     def fields_name_type_size(
