@@ -49,7 +49,6 @@ class ParserCpp():
         self.main = []  # type: List[str]
         self.method = []  # type: List[str]
         self.iterator = IteratorName([var.name for var in input_data.input])
-        self.garbage_ws = False
 
         self.indentation = 4
 
@@ -71,7 +70,8 @@ class ParserCpp():
         assert False
         return ""
 
-    def read_line(self, name: str, type_: Type, indent_lvl: int) -> None:
+    def read_line(self, name: str, type_: Type, size: str,
+                  indent_lvl: int) -> None:
         """Read an entire line and store it into the right place(s)"""
         assert type_.fits_it_one_line(self.input.structs)
         indent = ' ' * (self.indentation * indent_lvl)
@@ -79,13 +79,23 @@ class ParserCpp():
         if type_.main in (TypeEnum.INT, TypeEnum.CHAR):
             self.main.append(indent + "std::cin >> {};".format(name))
         elif type_.main == TypeEnum.STR:
+            can_be_empty = True
+            try:
+                int_size = int(size)
+                if int_size > 0:
+                    can_be_empty = False
+                else:
+                    assert int_size == 0, "Negative size"
+                    return  # String is null, nothing to parse
+            except ValueError:
+                pass
             self.includes.add("string")
-            cin = "std::cin"
-            if self.garbage_ws:
-                self.includes.add("istream")
-                cin = "std::cin >> std::ws"
-            self.main.append(indent +
-                             "std::getline({}, {});".format(cin, name))
+            self.includes.add("istream")
+            if can_be_empty:
+                self.main.append(indent + "if ({} > 0)".format(size))
+            self.main.append(
+                indent + " " * (self.indentation if can_be_empty else 0) +
+                "std::getline(std::cin >> std::ws, {});".format(name))
         elif type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
             inner_name = self.iterator.new_it()
@@ -101,7 +111,6 @@ class ParserCpp():
                 for x in struct.fields)))
         else:
             assert False
-        self.garbage_ws = type_.main != TypeEnum.STR
 
     def read_lines(self,
                    name: str,
@@ -113,7 +122,7 @@ class ParserCpp():
             self.main.append("{}{}.resize({});".format(
                 " " * self.indentation * indent_lvl, name, size))
         if type_.fits_it_one_line(self.input.structs):
-            self.read_line(name, type_, indent_lvl)
+            self.read_line(name, type_, size, indent_lvl)
         else:
             if type_.main == TypeEnum.STRUCT:
                 struct = self.input.get_struct(type_.struct_name)
@@ -190,6 +199,9 @@ class ParserCpp():
                 '{0}[{1}] << ({1} < {0}.size() - 1 ? "{2}" : "\\n");'.format(
                     name, inner_name, "" if type_.encapsulated.main ==
                     TypeEnum.CHAR else " "))
+            self.method.append(
+                indent +
+                "if ({}.size() == 0) std::cout << std::endl;".format(name))
             self.iterator.pop_it()
         elif type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)
