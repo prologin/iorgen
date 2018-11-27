@@ -68,7 +68,8 @@ class ParserC():
         indent = ' ' * (self.indentation * indent_lvl)
         self.includes.add("stdio.h")
         if type_.main == TypeEnum.INT:
-            self.main.append(indent + 'scanf("%d\\n", &{});'.format(name))
+            self.main.append(indent + 'scanf("%d", &{});'.format(name))
+            self.main.append(indent + "getchar(); // \\n")
         elif type_.main == TypeEnum.CHAR:
             if indent_lvl != 0:
                 self.main.append(indent + "{} = getchar();".format(name))
@@ -89,17 +90,19 @@ class ParserC():
                     indent +
                     "for (int {0} = 0; {0} < {1}; ++{0})".format(index, size))
                 self.main.append(' ' * self.indentation + indent +
-                                 'scanf("%d ", &{}[{}]);'.format(name, index))
+                                 'scanf("%d", &{}[{}]);'.format(name, index))
+                self.main.append(indent + "getchar(); // \\n")
                 self.iterator.pop_it()
             else:
                 assert False
         elif type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)
-            self.main.append(indent + 'scanf("{}\\n", {});'.format(
+            self.main.append(indent + 'scanf("{}", {});'.format(
                 " ".join("%c" if i.type.main == TypeEnum.CHAR else "%d"
                          for i in struct.fields), ", ".join(
                              "&" + name + "." + var_name(i.name)
                              for i in struct.fields)))
+            self.main.append(indent + "getchar(); // \\n")
         else:
             assert False
 
@@ -209,6 +212,8 @@ class ParserC():
                     ' ' * self.indentation + indent +
                     "printf(\"%d%c\", {0}[{1}], {1} < {2} - 1 ? ' ' : '\\n');".
                     format(name, index, size))
+                self.method.append(indent +
+                                   "if ({} == 0) putchar('\\n');".format(size))
                 self.iterator.pop_it()
         elif type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)

@@ -13,12 +13,15 @@ void lists(int n, int* list_int, int size, char* list_char, char** list_string4,
 
 int main() {
     int n; ///< the first list's size
-    scanf("%d\n", &n);
+    scanf("%d", &n);
+    getchar(); // \n
     int* list_int = calloc(n, sizeof(int)); ///< a list containing ints
     for (int i = 0; i < n; ++i)
-        scanf("%d ", &list_int[i]);
+        scanf("%d", &list_int[i]);
+    getchar(); // \n
     int size; ///< an other size
-    scanf("%d\n", &size);
+    scanf("%d", &size);
+    getchar(); // \n
     char* list_char = calloc(size + 1, sizeof(char)); ///< a list of char
     fgets(list_char, size + 1, stdin);
     getchar(); // \n
@@ -32,7 +35,8 @@ int main() {
     for (int i = 0; i < size; ++i) {
         matrix[i] = calloc(size, sizeof(int*));
         for (int j = 0; j < size; ++j)
-            scanf("%d ", &matrix[i][j]);
+            scanf("%d", &matrix[i][j]);
+        getchar(); // \n
     }
     lists(n, list_int, size, list_char, list_string4, matrix);
 

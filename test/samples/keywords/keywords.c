@@ -31,24 +31,30 @@ void keywords(int if_, char class, char* i, struct console in, int* for_, struct
 
 int main() {
     int if_; ///< not a condition
-    scanf("%d\n", &if_);
+    scanf("%d", &if_);
+    getchar(); // \n
     char class = getchar(); ///< not a class
     getchar(); // \n
     char* i = calloc(8 + 1, sizeof(char));; ///< just a string
     fgets(i, 8 + 1, stdin);
     getchar(); // \n
     struct console in; ///< not in
-    scanf("%d %d\n", &in.a, &in.static_);
+    scanf("%d %d", &in.a, &in.static_);
+    getchar(); // \n
     int* for_ = calloc(if_, sizeof(int)); ///< not a loop
     for (int j = 0; j < if_; ++j)
-        scanf("%d ", &for_[j]);
+        scanf("%d", &for_[j]);
+    getchar(); // \n
     struct main* words = calloc(2, sizeof(struct main)); ///< contains lots of things
     for (int j = 0; j < 2; ++j) {
-        scanf("%d\n", &words[j].int_.return_);
+        scanf("%d", &words[j].int_.return_);
+        getchar(); // \n
         words[j].int_.void_ = calloc(3, sizeof(int*));
         for (int k = 0; k < 3; ++k)
-            scanf("%d ", &words[j].int_.void_[k]);
-        scanf("%d\n", &words[j].if_true);
+            scanf("%d", &words[j].int_.void_[k]);
+        getchar(); // \n
+        scanf("%d", &words[j].if_true);
+        getchar(); // \n
     }
     keywords(if_, class, i, in, for_, words);
 
