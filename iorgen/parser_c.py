@@ -19,7 +19,7 @@ KEYWORDS = [
 def var_name(name: str) -> str:
     """Transform a variable name into a valid one for C"""
     candidate = snake_case(name)
-    if candidate in KEYWORDS:
+    if candidate in KEYWORDS or candidate == "main":
         return candidate + "_"
     return candidate
 
