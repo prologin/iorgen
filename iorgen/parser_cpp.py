@@ -154,7 +154,7 @@ class ParserCpp():
             arg_name = var_name(arg.name)
             self.method.append("/// \\param {} {}".format(
                 arg_name, arg.comment))
-            if arg.has_size():
+            if arg.type.main in (TypeEnum.STR, TypeEnum.LIST, TypeEnum.STRUCT):
                 arguments.append("const {}& {}".format(
                     self.type_str(arg.type), arg_name))
             else:

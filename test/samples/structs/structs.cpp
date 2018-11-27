@@ -24,7 +24,7 @@ struct Point {
 /// \param n a number
 /// \param struct_list a list a struct 1
 /// \param triangle a triangle
-void structs(Struct1 struct_, int n, const std::vector<Struct1>& struct_list, const std::vector<Point>& triangle) {
+void structs(const Struct1& struct_, int n, const std::vector<Struct1>& struct_list, const std::vector<Point>& triangle) {
     /* TODO Look at them structs. */
 }
 
