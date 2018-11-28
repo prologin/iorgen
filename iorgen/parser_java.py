@@ -100,8 +100,9 @@ class ParserJava():
                 command = "scanner.nextLine().toCharArray()"
             elif type_.encapsulated.main == TypeEnum.INT:
                 self.imports.add("java.util.Arrays")
-                command = 'Arrays.stream(scanner.nextLine().split(" ")).' + \
-                          'mapToInt(Integer::parseInt).toArray()'
+                command = ('Arrays.stream(scanner.nextLine().split(" ")).'
+                           'filter(x -> !x.isEmpty()).'
+                           'mapToInt(Integer::parseInt).toArray()')
         assert command
         return ["{}{}{} = {};".format(indent, type_decl, name, command)]
 

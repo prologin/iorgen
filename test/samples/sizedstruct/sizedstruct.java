@@ -80,7 +80,7 @@ class Main {
         for (int i = 0; i < n; ++i) {
             lists[i] = new List();
             lists[i].size1 = Integer.parseInt(scanner.nextLine());
-            lists[i].intList = Arrays.stream(scanner.nextLine().split(" ")).mapToInt(Integer::parseInt).toArray();
+            lists[i].intList = Arrays.stream(scanner.nextLine().split(" ")).filter(x -> !x.isEmpty()).mapToInt(Integer::parseInt).toArray();
         }
         String_[] strings = new String_[n];
         for (int i = 0; i < n; ++i) {
@@ -94,14 +94,14 @@ class Main {
             matrices[i].size3 = Integer.parseInt(scanner.nextLine());
             matrices[i].listList = new int[matrices[i].size3][];
             for (int j = 0; j < matrices[i].size3; ++j) {
-                matrices[i].listList[j] = Arrays.stream(scanner.nextLine().split(" ")).mapToInt(Integer::parseInt).toArray();
+                matrices[i].listList[j] = Arrays.stream(scanner.nextLine().split(" ")).filter(x -> !x.isEmpty()).mapToInt(Integer::parseInt).toArray();
             }
         }
         NotASizedStruct[] same = new NotASizedStruct[n];
         for (int i = 0; i < n; ++i) {
             same[i] = new NotASizedStruct();
             same[i].size4 = Integer.parseInt(scanner.nextLine());
-            same[i].intListN = Arrays.stream(scanner.nextLine().split(" ")).mapToInt(Integer::parseInt).toArray();
+            same[i].intListN = Arrays.stream(scanner.nextLine().split(" ")).filter(x -> !x.isEmpty()).mapToInt(Integer::parseInt).toArray();
         }
 
         sizedStruct(n, lists, strings, matrices, same);

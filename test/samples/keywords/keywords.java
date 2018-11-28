@@ -68,13 +68,13 @@ class Main {
         Console in = new Console();
         in.a = Integer.parseInt(words1[0]);
         in.static_ = Integer.parseInt(words1[1]);
-        int[] for_ = Arrays.stream(scanner.nextLine().split(" ")).mapToInt(Integer::parseInt).toArray();
+        int[] for_ = Arrays.stream(scanner.nextLine().split(" ")).filter(x -> !x.isEmpty()).mapToInt(Integer::parseInt).toArray();
         Main_[] words = new Main_[2];
         for (int j = 0; j < 2; ++j) {
             words[j] = new Main_();
             words[j].int_ = new System_();
             words[j].int_.return_ = Integer.parseInt(scanner.nextLine());
-            words[j].int_.void_ = Arrays.stream(scanner.nextLine().split(" ")).mapToInt(Integer::parseInt).toArray();
+            words[j].int_.void_ = Arrays.stream(scanner.nextLine().split(" ")).filter(x -> !x.isEmpty()).mapToInt(Integer::parseInt).toArray();
             words[j].ifTrue = Integer.parseInt(scanner.nextLine());
         }
 

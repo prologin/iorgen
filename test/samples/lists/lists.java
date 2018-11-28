@@ -17,7 +17,7 @@ class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         int n = Integer.parseInt(scanner.nextLine());
-        int[] listInt = Arrays.stream(scanner.nextLine().split(" ")).mapToInt(Integer::parseInt).toArray();
+        int[] listInt = Arrays.stream(scanner.nextLine().split(" ")).filter(x -> !x.isEmpty()).mapToInt(Integer::parseInt).toArray();
         int size = Integer.parseInt(scanner.nextLine());
         char[] listChar = scanner.nextLine().toCharArray();
         String[] listString4 = new String[size];
@@ -26,7 +26,7 @@ class Main {
         }
         int[][] matrix = new int[size][];
         for (int i = 0; i < size; ++i) {
-            matrix[i] = Arrays.stream(scanner.nextLine().split(" ")).mapToInt(Integer::parseInt).toArray();
+            matrix[i] = Arrays.stream(scanner.nextLine().split(" ")).filter(x -> !x.isEmpty()).mapToInt(Integer::parseInt).toArray();
         }
 
         lists(n, listInt, size, listChar, listString4, matrix);
