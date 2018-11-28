@@ -71,7 +71,7 @@ class ParserC():
             self.main.append(indent + 'scanf("%d", &{});'.format(name))
             self.main.append(indent + "getchar(); // \\n")
         elif type_.main == TypeEnum.CHAR:
-            if indent_lvl != 0:
+            if "." in name or "[" in name:
                 self.main.append(indent + "{} = getchar();".format(name))
             self.main.append(indent + "getchar(); // \\n")
         elif type_.main == TypeEnum.STR:
@@ -112,13 +112,14 @@ class ParserC():
                    size: str,
                    indent_lvl: int = 0) -> None:
         """Read one or several lines and store them into the right place(s)"""
-        if type_.main == TypeEnum.LIST and indent_lvl != 0:
+        not_initialized = "." in name or "[" in name
+        if type_.main == TypeEnum.LIST and not_initialized:
             self.includes.add("stdlib.h")
             self.main.append("{}{} = calloc({}{}, sizeof({}));".format(
                 " " * self.indentation * indent_lvl, name, size,
                 " + 1" if type_.main == TypeEnum.CHAR else "",
                 self.type_str(type_)))
-        elif type_.main == TypeEnum.STR and indent_lvl != 0:
+        elif type_.main == TypeEnum.STR and not_initialized:
             self.includes.add("stdlib.h")
             self.main.append("{}{} = calloc({} + 1, sizeof(char));".format(
                 " " * self.indentation * indent_lvl, name, size))
