@@ -11,19 +11,19 @@ sub structs {
     # TODO Look at them structs.
 }
 
-my @words = split / /, <>;
+my @words = split /[ \n]/, <>;
 my %struct = ("foo" => int($words[0]), "bar" => int($words[1]));
 my $n = int <>;
 my @struct_list = ();
 for (1..$n) {
-    my @words1 = split / /, <>;
+    my @words1 = split /[ \n]/, <>;
     push(@struct_list, \%{{("foo" => int($words1[0]), "bar" => int($words1[1]))}});
 }
 my @triangle = ();
 for (1..3) {
     push(@triangle, {});
     $triangle[-1]{'name'} = substr <>, 0, 1;
-    my @words1 = split / /, <>;
+    my @words1 = split /[ \n]/, <>;
     $triangle[-1]{'pos'} = \%{{("x" => int($words1[0]), "y" => int($words1[1]), "z" => int($words1[2]))}};
 }
 

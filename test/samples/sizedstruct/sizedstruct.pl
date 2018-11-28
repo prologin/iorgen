@@ -17,7 +17,7 @@ my @lists = ();
 for (1..$n) {
     push(@lists, {});
     $lists[-1]{'size1'} = int <>;
-    $lists[-1]{'int list'} = \@{[map { int } split(/ /, <>)]};
+    $lists[-1]{'int list'} = \@{[map { int } split(/[ \n]/, <>)]};
 }
 my @strings = ();
 for (1..$n) {
@@ -32,14 +32,14 @@ for (1..2) {
     $matrices[-1]{'size3'} = int <>;
     $matrices[-1]{'list list'} = ();
     for (1..$matrices[-1]{'size3'}) {
-        push(@{$matrices[-1]{'list list'}}, \@{[map { int } split(/ /, <>)]});
+        push(@{$matrices[-1]{'list list'}}, \@{[map { int } split(/[ \n]/, <>)]});
     }
 }
 my @same = ();
 for (1..$n) {
     push(@same, {});
     $same[-1]{'size4'} = int <>;
-    $same[-1]{'int list n'} = \@{[map { int } split(/ /, <>)]};
+    $same[-1]{'int list n'} = \@{[map { int } split(/[ \n]/, <>)]};
 }
 
 sized_struct($n, \@lists, \@strings, \@matrices, \@same);

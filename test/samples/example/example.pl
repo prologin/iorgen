@@ -13,7 +13,7 @@ sub example {
 my $n = int <>;
 my @list = ();
 for (1..$n) {
-    my @words = split / /, <>;
+    my @words = split /[ \n]/, <>;
     push(@list, \%{{("integer" => int($words[0]), "character" => substr($words[1], 0, 1))}});
 }
 

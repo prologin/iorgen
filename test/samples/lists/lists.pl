@@ -14,11 +14,9 @@ sub lists {
 }
 
 my $n = int <>;
-my @list_int = map { int } split(/ /, <>);
+my @list_int = map { int } split(/[ \n]/, <>);
 my $size = int <>;
-$_ = <>;
-chomp;
-my @list_char = split //;
+my @list_char = split /\n?/, <>;
 my @list_string4 = ();
 for (1..$size) {
     push(@list_string4, scalar(<>));
@@ -26,7 +24,7 @@ for (1..$size) {
 }
 my @matrix = ();
 for (1..$size) {
-    push(@matrix, \@{[map { int } split(/ /, <>)]});
+    push(@matrix, \@{[map { int } split(/[ \n]/, <>)]});
 }
 
 lists($n, \@list_int, $size, \@list_char, \@list_string4, \@matrix);

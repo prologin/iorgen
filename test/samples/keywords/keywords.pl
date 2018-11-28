@@ -17,15 +17,15 @@ my $if = int <>;
 my $class = substr <>, 0, 1;
 my $i = <>;
 chomp $i;
-my @words1 = split / /, <>;
+my @words1 = split /[ \n]/, <>;
 my %in = ("a" => int($words1[0]), "static" => int($words1[1]));
-my @for = map { int } split(/ /, <>);
+my @for = map { int } split(/[ \n]/, <>);
 my @words = ();
 for (1..2) {
     push(@words, {});
     $words[-1]{'int'} = {};
     $words[-1]{'int'}{'return'} = int <>;
-    $words[-1]{'int'}{'void'} = \@{[map { int } split(/ /, <>)]};
+    $words[-1]{'int'}{'void'} = \@{[map { int } split(/[ \n]/, <>)]};
     $words[-1]{'if true'} = int <>;
 }
 

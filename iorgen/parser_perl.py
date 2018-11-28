@@ -112,9 +112,9 @@ def read_line(name: str, decl: str, type_: Type, input_data: Input,
         if not decl.startswith("my"):
             decl2 = format_keep_braces(decl, "\\@{{[{}]}}")
         if type_.encapsulated.main == TypeEnum.INT:
-            return [decl2.format('map { int } split(/ /, <>)')]
+            return [decl2.format('map { int } split(/[ \\n]/, <>)')]
         assert type_.encapsulated.main == TypeEnum.CHAR
-        return ["$_ = <>;", "chomp;", decl2.format("split //")]
+        return [decl2.format("split /\\n?/, <>")]
     if type_.main == TypeEnum.STRUCT:
         struct = input_data.get_struct(type_.struct_name)
         decl2 = decl
@@ -126,7 +126,7 @@ def read_line(name: str, decl: str, type_: Type, input_data: Input,
                      "substr(${}[{}], 0, 1)").format(split, i))
                   for i, f in enumerate(struct.fields))
         return [
-            "my @{} = split / /, <>;".format(split),
+            "my @{} = split /[ \\n]/, <>;".format(split),
             decl2.format("({})".format(", ".join(fields)))
         ]
     assert False
@@ -159,9 +159,9 @@ def read_lines(name: str, decl: str, type_: Type, size: str, input_data: Input,
         sizes = [size_name(field.type.size) for field in struct.fields]
         if struct.is_sized_struct():
             sizes = ["", "{}{{'{}'}}".format(name, struct.fields[0].name)]
-        lines = [decl.format("{}")]
+        lines = [decl.format("()" if name[0] == "%" else "{}")]
         for (field, f_size) in zip(struct.fields, sizes):
-            f_name = "{}{{'{}'}}".format(name, field.name)
+            f_name = "${}{{'{}'}}".format(name[1:], field.name)
             lines.extend(
                 read_lines(
                     f_name,
