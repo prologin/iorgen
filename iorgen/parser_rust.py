@@ -93,7 +93,7 @@ class ParserRust():
                 struct_name=struct.name).fits_it_one_line(self.input.structs):
             lines.extend([
                 INDENTATION + "let line = read_line();", INDENTATION +
-                "let words: Vec<&str> = line.split(' ').collect();",
+                "let words: Vec<&str> = line.split_whitespace().collect();",
                 INDENTATION + "{} {{".format(struct_name(struct.name))
             ])
             lines.extend("{}{}: words[{}].parse().unwrap(),".format(
@@ -270,7 +270,7 @@ class ParserRust():
         if self.read_vec_int:
             output += "\nfn read_vec_int() -> Vec<i32> {\n"
             output += INDENTATION + "read_line()\n"
-            output += 2 * INDENTATION + ".split(' ')\n"
+            output += 2 * INDENTATION + ".split_whitespace()\n"
             output += 2 * INDENTATION + ".collect::<Vec<&str>>()\n"
             output += 2 * INDENTATION + ".iter()\n"
             output += 2 * INDENTATION + ".map(|x| x.parse().unwrap())\n"

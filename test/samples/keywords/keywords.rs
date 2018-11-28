@@ -59,7 +59,7 @@ fn read_line() -> String {
 
 fn read_vec_int() -> Vec<i32> {
     read_line()
-        .split(' ')
+        .split_whitespace()
         .collect::<Vec<&str>>()
         .iter()
         .map(|x| x.parse().unwrap())
@@ -68,7 +68,7 @@ fn read_vec_int() -> Vec<i32> {
 
 fn read_struct_console() -> Console {
     let line = read_line();
-    let words: Vec<&str> = line.split(' ').collect();
+    let words: Vec<&str> = line.split_whitespace().collect();
     Console {
         a: words[0].parse().unwrap(),
         static_: words[1].parse().unwrap(),

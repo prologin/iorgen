@@ -77,7 +77,7 @@ fn read_line() -> String {
 
 fn read_vec_int() -> Vec<i32> {
     read_line()
-        .split(' ')
+        .split_whitespace()
         .collect::<Vec<&str>>()
         .iter()
         .map(|x| x.parse().unwrap())

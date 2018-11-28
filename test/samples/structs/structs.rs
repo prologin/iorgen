@@ -60,7 +60,7 @@ fn read_line() -> String {
 
 fn read_struct_struct_1() -> Struct1 {
     let line = read_line();
-    let words: Vec<&str> = line.split(' ').collect();
+    let words: Vec<&str> = line.split_whitespace().collect();
     Struct1 {
         foo: words[0].parse().unwrap(),
         bar: words[1].parse().unwrap(),
@@ -69,7 +69,7 @@ fn read_struct_struct_1() -> Struct1 {
 
 fn read_struct_position() -> Position {
     let line = read_line();
-    let words: Vec<&str> = line.split(' ').collect();
+    let words: Vec<&str> = line.split_whitespace().collect();
     Position {
         x: words[0].parse().unwrap(),
         y: words[1].parse().unwrap(),

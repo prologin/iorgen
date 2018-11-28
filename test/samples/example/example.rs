@@ -35,7 +35,7 @@ fn read_line() -> String {
 
 fn read_struct_a_struct() -> AStruct {
     let line = read_line();
-    let words: Vec<&str> = line.split(' ').collect();
+    let words: Vec<&str> = line.split_whitespace().collect();
     AStruct {
         integer: words[0].parse().unwrap(),
         character: words[1].parse().unwrap(),
