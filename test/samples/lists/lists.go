@@ -22,7 +22,7 @@ func main() {
     n, _ = strconv.Atoi(scanner.Text())
     listInt := make([]int, n)
     scanner.Scan()
-    for i, iValue := range strings.Split(scanner.Text(), " ") {
+    for i, iValue := range strings.SplitN(scanner.Text(), " ", n) {
         listInt[i], _ = strconv.Atoi(iValue)
     }
     var size int
@@ -40,7 +40,7 @@ func main() {
     for i := range matrix {
         matrix[i] = make([]int, size)
         scanner.Scan()
-        for j, jValue := range strings.Split(scanner.Text(), " ") {
+        for j, jValue := range strings.SplitN(scanner.Text(), " ", size) {
             matrix[i][j], _ = strconv.Atoi(jValue)
         }
     }

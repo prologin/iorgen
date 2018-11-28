@@ -49,7 +49,7 @@ func main() {
         lists[i].size1, _ = strconv.Atoi(scanner.Text())
         lists[i].intList = make([]int, lists[i].size1)
         scanner.Scan()
-        for j, jValue := range strings.Split(scanner.Text(), " ") {
+        for j, jValue := range strings.SplitN(scanner.Text(), " ", lists[i].size1) {
             lists[i].intList[j], _ = strconv.Atoi(jValue)
         }
     }
@@ -68,7 +68,7 @@ func main() {
         for j := range matrices[i].listList {
             matrices[i].listList[j] = make([]int, 2)
             scanner.Scan()
-            for k, kValue := range strings.Split(scanner.Text(), " ") {
+            for k, kValue := range strings.SplitN(scanner.Text(), " ", 2) {
                 matrices[i].listList[j][k], _ = strconv.Atoi(kValue)
             }
         }
@@ -79,7 +79,7 @@ func main() {
         same[i].size4, _ = strconv.Atoi(scanner.Text())
         same[i].intListN = make([]int, n)
         scanner.Scan()
-        for j, jValue := range strings.Split(scanner.Text(), " ") {
+        for j, jValue := range strings.SplitN(scanner.Text(), " ", n) {
             same[i].intListN[j], _ = strconv.Atoi(jValue)
         }
     }

@@ -50,7 +50,7 @@ func main() {
     fmt.Sscanf(scanner.Text(), "%d %d", &in.a, &in.static)
     for_ := make([]int, if_)
     scanner.Scan()
-    for j, jValue := range strings.Split(scanner.Text(), " ") {
+    for j, jValue := range strings.SplitN(scanner.Text(), " ", if_) {
         for_[j], _ = strconv.Atoi(jValue)
     }
     words := make([]Main, 2)
@@ -59,7 +59,7 @@ func main() {
         words[j].int.return_, _ = strconv.Atoi(scanner.Text())
         words[j].int.void = make([]int, 3)
         scanner.Scan()
-        for k, kValue := range strings.Split(scanner.Text(), " ") {
+        for k, kValue := range strings.SplitN(scanner.Text(), " ", 3) {
             words[j].int.void[k], _ = strconv.Atoi(kValue)
         }
         scanner.Scan()

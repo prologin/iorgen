@@ -62,7 +62,8 @@ class ParserGo():
 
         self.iterator = IteratorName([var.name for var in input_data.input])
 
-    def read_line(self, name: str, type_: Type, indent_lvl: int) -> List[str]:
+    def read_line(self, name: str, size: str, type_: Type,
+                  indent_lvl: int) -> List[str]:
         """Read an entire line and store it into the right place(s)"""
 
         # pylint: disable=too-many-return-statements
@@ -98,7 +99,8 @@ class ParserGo():
             lines = [
                 indent + "scanner.Scan()",
                 indent + 'for {0}, {0}Value '.format(inner_name) +
-                ':= range strings.Split(scanner.Text(), " ") {'
+                ':= range strings.SplitN(scanner.Text(), " ", {}) {{'.format(
+                    size)
             ]
             lines.append(indent + INDENTATION +
                          '{0}[{1}], _ = strconv.Atoi({1}Value)'.format(
@@ -127,7 +129,7 @@ class ParserGo():
             lines.append("{}{} = make({}, {})".format(
                 INDENTATION * indent_lvl, name, type_str(type_), size))
         if type_.fits_it_one_line(self.input.structs):
-            return lines + self.read_line(name, type_, indent_lvl)
+            return lines + self.read_line(name, size, type_, indent_lvl)
         if type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)
             for f_name, f_type, f_size in struct.fields_name_type_size(
