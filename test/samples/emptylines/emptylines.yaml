@@ -1,0 +1,66 @@
+name: empty lines
+subject: Very rarely, some lines may be empty, because we read a list or a
+    string that has an empty size. Here we check that those cases work well.
+structs:
+    - name: struct with a char
+      comment: a char struct
+      fields:
+          - type: char
+            name: char1
+            comment: a char
+          - type: int
+            name: int2
+            comment: an integer
+    - name: a
+      comment: a struct
+      fields:
+          - type: List[int](n)
+            name: list in struct
+            comment: a list in a struct
+          - type: "@struct with a char"
+            name: struct in struct
+            comment: a struct in a struct
+    - name: sized struct
+      comment: a sized struct
+      fields:
+          - type: int
+            name: size
+            comment: the size
+          - type: str(size)
+            name: string in struct
+            comment: the string
+input:
+    - type: List[int](0)
+      name: empty list
+      comment: an empty list
+    - type: str(3)
+      name: buffer string
+      comment: here to check correct parsing of empty line above
+    - type: int
+      name: N
+      comment: an integer, will be 0 in the sample input
+    - type: List[int](n)
+      name: empty in sample
+      comment: an empty list (only in the sample)
+    - type: str(0)
+      name: empty string
+      comment: an empty string
+    - type: str(4)
+      name: main
+      comment: an other buffer string
+    - type: List[char](0)
+      name: empty char list
+      comment: an empty char list
+    - type: List[char](5)
+      name: non empty char list
+      comment: an char list, non empty
+    - type: "@a"
+      name: struct with empty line
+      comment: a struct containing an empty line, then a struct
+    - type: "@sized struct"
+      name: a sized struct
+      comment: a sized struct containing an empty line
+    - type: str(6)
+      name: finish
+      comment: a string to finish
+output: Wow, lots of empty lines!
