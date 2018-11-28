@@ -77,9 +77,9 @@ def read_line(type_: Type, input_data: Input) -> str:
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
         if type_.encapsulated.main == TypeEnum.INT:
-            return 'List.init {} ({})'.format(
-                var_name(type_.size),
-                'fun _ -> Scanf.scanf "%d " (fun x -> x)')
+            return (
+                'Scanf.scanf "%s@\\n" (fun x -> if String.equal "" x then [] '
+                'else List.map int_of_string (String.split_on_char \' \' x))')
         if type_.encapsulated.main == TypeEnum.CHAR:
             return '{} (fun x -> List.init {} (String.get x))'.format(
                 'Scanf.scanf "%s@\\n"', var_name(type_.size))
