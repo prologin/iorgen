@@ -41,16 +41,16 @@ class Program
 
     static void Main()
     {
-        int[] emptyList = Array.ConvertAll(Console.ReadLine().Split(' ', StringSplitOptions.RemoveEmptyEntries), int.Parse);
+        int[] emptyList = Array.ConvertAll(Console.ReadLine().Split(new char[] {' '}, StringSplitOptions.RemoveEmptyEntries), int.Parse);
         string bufferString = Console.ReadLine();
         int n = int.Parse(Console.ReadLine());
-        int[] emptyInSample = Array.ConvertAll(Console.ReadLine().Split(' ', StringSplitOptions.RemoveEmptyEntries), int.Parse);
+        int[] emptyInSample = Array.ConvertAll(Console.ReadLine().Split(new char[] {' '}, StringSplitOptions.RemoveEmptyEntries), int.Parse);
         string emptyString = Console.ReadLine();
         string main = Console.ReadLine();
         char[] emptyCharList = Console.ReadLine().ToCharArray();
         char[] nonEmptyCharList = Console.ReadLine().ToCharArray();
         A structWithEmptyLine;
-        structWithEmptyLine.listInStruct = Array.ConvertAll(Console.ReadLine().Split(' ', StringSplitOptions.RemoveEmptyEntries), int.Parse);
+        structWithEmptyLine.listInStruct = Array.ConvertAll(Console.ReadLine().Split(new char[] {' '}, StringSplitOptions.RemoveEmptyEntries), int.Parse);
         string[] words = Console.ReadLine().Split(' ');
         structWithEmptyLine.structInStruct = new StructWithAChar {char1 = words[0][0], int2 = int.Parse(words[1])};
         SizedStruct aSizedStruct;

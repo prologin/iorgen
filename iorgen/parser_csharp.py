@@ -104,8 +104,8 @@ class ParserCS():
                 command = "Console.ReadLine().ToCharArray()"
             elif type_.encapsulated.main == TypeEnum.INT:
                 command = (
-                    "Array.ConvertAll(Console.ReadLine().Split(' ', "
-                    "StringSplitOptions.RemoveEmptyEntries), int.Parse)")
+                    "Array.ConvertAll(Console.ReadLine().Split(new char[] {' '"
+                    "}, StringSplitOptions.RemoveEmptyEntries), int.Parse)")
         assert command
         return ["{}{}{} = {};".format(indent, type_decl, name, command)]
 

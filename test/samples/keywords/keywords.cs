@@ -41,12 +41,12 @@ class Program
         string i = Console.ReadLine();
         string[] words1 = Console.ReadLine().Split(' ');
         Console_ @in = new Console_ {a = int.Parse(words1[0]), @static = int.Parse(words1[1])};
-        int[] @for = Array.ConvertAll(Console.ReadLine().Split(' ', StringSplitOptions.RemoveEmptyEntries), int.Parse);
+        int[] @for = Array.ConvertAll(Console.ReadLine().Split(new char[] {' '}, StringSplitOptions.RemoveEmptyEntries), int.Parse);
         Main_[] words = new Main_[2];
         for (int j = 0; j < 2; ++j)
         {
             words[j].@int.@return = int.Parse(Console.ReadLine());
-            words[j].@int.@void = Array.ConvertAll(Console.ReadLine().Split(' ', StringSplitOptions.RemoveEmptyEntries), int.Parse);
+            words[j].@int.@void = Array.ConvertAll(Console.ReadLine().Split(new char[] {' '}, StringSplitOptions.RemoveEmptyEntries), int.Parse);
             words[j].ifTrue = int.Parse(Console.ReadLine());
         }
 

@@ -16,7 +16,7 @@ class Program
     static void Main()
     {
         int n = int.Parse(Console.ReadLine());
-        int[] listInt = Array.ConvertAll(Console.ReadLine().Split(' ', StringSplitOptions.RemoveEmptyEntries), int.Parse);
+        int[] listInt = Array.ConvertAll(Console.ReadLine().Split(new char[] {' '}, StringSplitOptions.RemoveEmptyEntries), int.Parse);
         int size = int.Parse(Console.ReadLine());
         char[] listChar = Console.ReadLine().ToCharArray();
         string[] listString4 = new string[size];
@@ -27,7 +27,7 @@ class Program
         int[][] matrix = new int[size][];
         for (int i = 0; i < size; ++i)
         {
-            matrix[i] = Array.ConvertAll(Console.ReadLine().Split(' ', StringSplitOptions.RemoveEmptyEntries), int.Parse);
+            matrix[i] = Array.ConvertAll(Console.ReadLine().Split(new char[] {' '}, StringSplitOptions.RemoveEmptyEntries), int.Parse);
         }
 
         Lists(n, listInt, size, listChar, listString4, matrix);
