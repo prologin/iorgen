@@ -47,7 +47,7 @@ class Program
         for (int i = 0; i < n; ++i)
         {
             lists[i].size1 = int.Parse(Console.ReadLine());
-            lists[i].intList = Array.ConvertAll(Console.ReadLine().Split(' '), int.Parse);
+            lists[i].intList = Array.ConvertAll(Console.ReadLine().Split(' ', StringSplitOptions.RemoveEmptyEntries), int.Parse);
         }
         String_[] strings = new String_[n];
         for (int i = 0; i < n; ++i)
@@ -62,14 +62,14 @@ class Program
             matrices[i].listList = new int[matrices[i].size3][];
             for (int j = 0; j < matrices[i].size3; ++j)
             {
-                matrices[i].listList[j] = Array.ConvertAll(Console.ReadLine().Split(' '), int.Parse);
+                matrices[i].listList[j] = Array.ConvertAll(Console.ReadLine().Split(' ', StringSplitOptions.RemoveEmptyEntries), int.Parse);
             }
         }
         NotASizedStruct[] same = new NotASizedStruct[n];
         for (int i = 0; i < n; ++i)
         {
             same[i].size4 = int.Parse(Console.ReadLine());
-            same[i].intListN = Array.ConvertAll(Console.ReadLine().Split(' '), int.Parse);
+            same[i].intListN = Array.ConvertAll(Console.ReadLine().Split(' ', StringSplitOptions.RemoveEmptyEntries), int.Parse);
         }
 
         SizedStruct(n, lists, strings, matrices, same);
