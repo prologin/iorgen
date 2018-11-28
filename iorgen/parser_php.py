@@ -47,9 +47,11 @@ def read_line(type_: Type, input_data: Input) -> str:
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
         if type_.encapsulated.main == TypeEnum.CHAR:
-            return "str_split(trim(fgets(STDIN)))"
+            return ("preg_split('//', trim(fgets(STDIN)), -1, "
+                    "PREG_SPLIT_NO_EMPTY)")
         if type_.encapsulated.main == TypeEnum.INT:
-            return "array_map('intval', explode(' ', fgets(STDIN)))"
+            return ("array_map('intval', preg_split('/ /', "
+                    "trim(fgets(STDIN)), -1, PREG_SPLIT_NO_EMPTY))")
     if type_.main == TypeEnum.STRUCT:
         struct = input_data.get_struct(type_.struct_name)
         begin = "array_combine([{}], ".format(", ".join(

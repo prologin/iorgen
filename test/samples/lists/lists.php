@@ -12,9 +12,9 @@ function lists($n, &$list_int, $size, &$list_char, &$list_string4, &$matrix) {
 }
 
 $n = intval(trim(fgets(STDIN)));
-$list_int = array_map('intval', explode(' ', fgets(STDIN)));
+$list_int = array_map('intval', preg_split('/ /', trim(fgets(STDIN)), -1, PREG_SPLIT_NO_EMPTY));
 $size = intval(trim(fgets(STDIN)));
-$list_char = str_split(trim(fgets(STDIN)));
+$list_char = preg_split('//', trim(fgets(STDIN)), -1, PREG_SPLIT_NO_EMPTY);
 $list_string4 = array_map(function() { return trim(fgets(STDIN)); }, range(1, $size));
-$matrix = array_map(function() { return array_map('intval', explode(' ', fgets(STDIN))); }, range(1, $size));
+$matrix = array_map(function() { return array_map('intval', preg_split('/ /', trim(fgets(STDIN)), -1, PREG_SPLIT_NO_EMPTY)); }, range(1, $size));
 lists($n, $list_int, $size, $list_char, $list_string4, $matrix);
