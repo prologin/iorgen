@@ -278,9 +278,10 @@ class ParserProlog():
             output += "read_int(X) :- read_line(S), number_string(X, S).\n"
         if "List[int]" in self.read:
             output += "string_number(X, Y) :- number_string(Y, X).\nread_int_"
-            output += 'list(X) :- read_line_to_codes(user_input, C),\n'
-            output += INDENTATION + 'split_string(C, " ", "", L),'
-            output += ' maplist(string_number, L, X).\n'
+            output += ('list(X) :- read_line_to_codes(user_input, C), '
+                       '(C == [] -> X = []\n')
+            output += INDENTATION + ('; split_string(C, " ", "", L), '
+                                     'maplist(string_number, L, X)).\n')
         if "List" in self.read:
             output += "read_list(_, 0, []) :- !.\n"
             output += "read_list(Goal, N, [H|T]) :- "

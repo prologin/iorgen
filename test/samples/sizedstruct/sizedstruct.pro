@@ -10,8 +10,8 @@ sized_struct(N, Lists, Strings, Matrices, Same) :-
 read_line(X) :- read_string(user_input, "\n", "\r", _, X).
 read_int(X) :- read_line(S), number_string(X, S).
 string_number(X, Y) :- number_string(Y, X).
-read_int_list(X) :- read_line_to_codes(user_input, C),
-    split_string(C, " ", "", L), maplist(string_number, L, X).
+read_int_list(X) :- read_line_to_codes(user_input, C), (C == [] -> X = []
+    ; split_string(C, " ", "", L), maplist(string_number, L, X)).
 read_list(_, 0, []) :- !.
 read_list(Goal, N, [H|T]) :- call(Goal, H), M is N - 1, read_list(Goal, M, T).
 read_assoc_list(X) :-
