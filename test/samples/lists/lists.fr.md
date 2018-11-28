@@ -23,3 +23,8 @@ L’entrée contiendra :
 ### Sortie
 
 Aren't these lists beautifull?
+
+### Contraintes
+
+- 0 ≤ N
+- 0 ≤ size

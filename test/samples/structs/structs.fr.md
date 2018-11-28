@@ -26,3 +26,7 @@ L’entrée contiendra :
 ### Sortie
 
 Look at them structs.
+
+### Contraintes
+
+- 0 ≤ n

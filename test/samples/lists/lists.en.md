@@ -22,3 +22,8 @@ The input will contain:
 ### Output
 
 Aren't these lists beautifull?
+
+### Constraints
+
+- 0 ≤ N
+- 0 ≤ size

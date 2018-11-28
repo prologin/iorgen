@@ -39,3 +39,8 @@ L’entrée contiendra :
 ### Sortie
 
 Wow, lots of empty lines!
+
+### Contraintes
+
+- 0 ≤ N
+- 0 ≤ size

@@ -26,3 +26,7 @@ The input will contain:
 ### Output
 
 If this compiles, it is already a good step!
+
+### Constraints
+
+- 0 ≤ if

@@ -24,3 +24,7 @@ The input will contain:
 ### Output
 
 Look at them structs.
+
+### Constraints
+
+- 0 ≤ n

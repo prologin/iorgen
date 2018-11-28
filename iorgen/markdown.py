@@ -3,9 +3,9 @@
 """Generate the markdown describing the subject"""
 
 import textwrap
-from typing import List, Optional
+from typing import Dict, List, Optional
 
-from iorgen.types import Input, Type, TypeEnum
+from iorgen.types import Input, Type, TypeEnum, Variable
 
 LANG = {
     'en': {
@@ -13,6 +13,8 @@ LANG = {
         'and': 'and ',
         'char': 'a char',
         'char list': 'a list of **{}** chars next to each other',
+        'constraints': 'Constraints',
+        'constraints perf': 'Performance constraints',
         'first line': 'On the first line,',
         'first lines': 'On the first lines,',
         'input': 'Input',
@@ -36,6 +38,8 @@ LANG = {
         'and': 'et ',
         'char': 'un caractère',
         'char list': 'une liste de **{}** caractères juxtaposés',
+        'constraints': 'Contraintes',
+        'constraints perf': 'Contraintes de performance',
         'first line': 'Sur la première ligne,',
         'first lines': 'Sur les premières lignes,',
         'input': 'Entrée',
@@ -168,6 +172,27 @@ class Markdown:
         return "\n".join(output) + "\n"
 
 
+def constraints(variables: List[Variable], lang: Dict[str, str]) -> str:
+    """Return content of constraints sections"""
+    l_simple = []
+    l_perf = []
+    for var in variables:
+        simple = var.constraints_repr()
+        if simple:
+            l_simple.append(simple)
+        perf = var.constraints_repr(True)
+        if perf:
+            l_perf.append(perf)
+    output = []
+    if l_simple:
+        output.extend(["", "### {}".format(lang['constraints']), ""])
+        output.extend(["- " + i for i in l_simple])
+    if l_perf:
+        output.extend(["", "### {}".format(lang['constraints perf']), ""])
+        output.extend(["- " + i for i in l_perf])
+    return "\n".join(output + [""])
+
+
 def gen_markdown(input_data: Input, lang: str = "en") -> str:
     """Generate a markdown describing the input"""
     output = "## {}\n\n".format(LANG[lang]['subject'])
@@ -183,4 +208,9 @@ def gen_markdown(input_data: Input, lang: str = "en") -> str:
     if input_data.output:
         output += "\n### {}\n\n".format(LANG[lang]['output'])
         output += '\n'.join(textwrap.wrap(input_data.output, 79)) + '\n'
+    variables = input_data.input.copy()
+    for struct in input_data.structs:
+        for var in struct.fields:
+            variables.append(var)
+    output += constraints(variables, LANG[lang])
     return output

@@ -16,3 +16,7 @@ L’entrée contiendra :
 
 In a real life scenario, you will describe here what you want the end user to
 do with this generated code
+
+### Contraintes
+
+- 0 ≤ N

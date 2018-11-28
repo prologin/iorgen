@@ -41,3 +41,10 @@ L’entrée contiendra :
 ### Sortie
 
 The is a special case.
+
+### Contraintes
+
+- 0 ≤ n
+- 0 ≤ size1
+- 0 ≤ size2
+- 0 ≤ size3

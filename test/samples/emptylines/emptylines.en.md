@@ -36,3 +36,8 @@ The input will contain:
 ### Output
 
 Wow, lots of empty lines!
+
+### Constraints
+
+- 0 ≤ N
+- 0 ≤ size
