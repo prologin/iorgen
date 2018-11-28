@@ -58,8 +58,9 @@ class ParserJS:
         self.iterator = IteratorName(existing_names)
         self.words = WordsName(existing_names)
 
-    def read_line(self, decl: bool, name: str, type_: Type,
+    def read_line(self, decl: bool, name: str, type_: Type, size: str,
                   indent_lvl: int) -> List[str]:
+        # pylint: disable = too-many-arguments
         """Generate the Javascript code to read a line of given type"""
         assert type_.fits_it_one_line(self.input.structs)
         indent = INDENTATION * indent_lvl
@@ -69,7 +70,10 @@ class ParserJS:
             if type_.encapsulated.main == TypeEnum.CHAR:
                 return [start + 'stdin[line++].split("");']
             if type_.encapsulated.main == TypeEnum.INT:
-                return [start + 'stdin[line++].split(" ").map(Number);']
+                return [
+                    start +
+                    'stdin[line++].split(" ", {}).map(Number);'.format(size)
+                ]
         if type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)
             words = self.words.next_name()
@@ -96,7 +100,7 @@ class ParserJS:
         # pylint: disable=too-many-arguments
         """Generate the Javascript code to read the lines for a given type"""
         if type_.fits_it_one_line(self.input.structs):
-            return self.read_line(decl, name, type_, indent_lvl)
+            return self.read_line(decl, name, type_, size, indent_lvl)
         indent = INDENTATION * indent_lvl
         if type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None

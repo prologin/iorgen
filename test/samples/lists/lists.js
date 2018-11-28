@@ -19,7 +19,7 @@ function lists(n, listInt, size, listChar, listString4, matrix) {
     let line = 0;
 
     const n = Number(stdin[line++]);
-    const listInt = stdin[line++].split(" ").map(Number);
+    const listInt = stdin[line++].split(" ", n).map(Number);
     const size = Number(stdin[line++]);
     const listChar = stdin[line++].split("");
     const listString4 = [];
@@ -29,7 +29,7 @@ function lists(n, listInt, size, listChar, listString4, matrix) {
     }
     const matrix = [];
     for (let i = 0; i < size; i++) {
-        const j = stdin[line++].split(" ").map(Number);
+        const j = stdin[line++].split(" ", size).map(Number);
         matrix.push(j);
     }
     lists(n, listInt, size, listChar, listString4, matrix);

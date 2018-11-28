@@ -22,7 +22,7 @@ function sizedStruct(n, lists, strings, matrices, same) {
     for (let i = 0; i < n; i++) {
         const j = {};
         j.size1 = Number(stdin[line++]);
-        j.intList = stdin[line++].split(" ").map(Number);
+        j.intList = stdin[line++].split(" ", j.size1).map(Number);
         lists.push(j);
     }
     const strings = [];
@@ -38,7 +38,7 @@ function sizedStruct(n, lists, strings, matrices, same) {
         j.size3 = Number(stdin[line++]);
         j.listList = [];
         for (let k = 0; k < j.size3; k++) {
-            const l = stdin[line++].split(" ").map(Number);
+            const l = stdin[line++].split(" ", 2).map(Number);
             j.listList.push(l);
         }
         matrices.push(j);
@@ -47,7 +47,7 @@ function sizedStruct(n, lists, strings, matrices, same) {
     for (let i = 0; i < n; i++) {
         const j = {};
         j.size4 = Number(stdin[line++]);
-        j.intListN = stdin[line++].split(" ").map(Number);
+        j.intListN = stdin[line++].split(" ", n).map(Number);
         same.push(j);
     }
     sizedStruct(n, lists, strings, matrices, same);

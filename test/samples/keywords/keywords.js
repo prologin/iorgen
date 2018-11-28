@@ -26,13 +26,13 @@ function keywords(if_, class_, i, in_, for_, words) {
         a: Number(words1[0]),
         static_: Number(words1[1])
     };
-    const for_ = stdin[line++].split(" ").map(Number);
+    const for_ = stdin[line++].split(" ", if_).map(Number);
     const words = [];
     for (let j = 0; j < 2; j++) {
         const k = {};
         k.int_ = {};
         k.int_.return_ = Number(stdin[line++]);
-        k.int_.void_ = stdin[line++].split(" ").map(Number);
+        k.int_.void_ = stdin[line++].split(" ", 3).map(Number);
         k.ifTrue = Number(stdin[line++]);
         words.push(k);
     }
