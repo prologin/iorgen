@@ -13,7 +13,7 @@ L’entrée contiendra :
   here to check correct parsing of empty line above.
 - Sur la ligne suivante, un entier : **N**, an integer, will be 0 in the sample
   input.
-- Sur la ligne suivante, une liste de **n** entiers séparés par des espaces :
+- Sur la ligne suivante, une liste de **N** entiers séparés par des espaces :
   **empty in sample**, an empty list (only in the sample).
 - Sur la ligne suivante, une chaine de **0** caractères : **empty string**, an
   empty string.
@@ -24,7 +24,7 @@ L’entrée contiendra :
 - Sur la ligne suivante, une liste de **5** caractères juxtaposés : **non empty
   char list**, an char list, non empty.
 - Sur les lignes suivantes, une struct **a**.
-    - Sur la première ligne, une liste de **n** entiers séparés par des
+    - Sur la première ligne, une liste de **N** entiers séparés par des
       espaces : **list in struct**, a list in a struct.
     - Sur la ligne suivante, séparés par des espaces, un caractère **char1** (a
       char), et un entier **int2** (an integer) : **struct in struct**, a

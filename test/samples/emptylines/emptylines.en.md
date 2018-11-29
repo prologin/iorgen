@@ -13,7 +13,7 @@ The input will contain:
   correct parsing of empty line above.
 - On the next line, an integer: **N**, an integer, will be 0 in the sample
   input.
-- On the next line, a list of **n** integers separated by spaces: **empty in
+- On the next line, a list of **N** integers separated by spaces: **empty in
   sample**, an empty list (only in the sample).
 - On the next line, a string of size **0**: **empty string**, an empty string.
 - On the next line, a string of size **4**: **main**, an other buffer string.
@@ -22,7 +22,7 @@ The input will contain:
 - On the next line, a list of **5** chars next to each other: **non empty char
   list**, an char list, non empty.
 - On the next lines, a struct **a**.
-    - On the first line, a list of **n** integers separated by spaces: **list
+    - On the first line, a list of **N** integers separated by spaces: **list
       in struct**, a list in a struct.
     - On the next line, separated by spaces, a char **char1** (a char), and an
       integer **int2** (an integer): **struct in struct**, a struct in a

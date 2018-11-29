@@ -14,7 +14,7 @@ structs:
     - name: a
       comment: a struct
       fields:
-          - type: List[int](n)
+          - type: List[int](N)
             name: list in struct
             comment: a list in a struct
           - type: "@struct with a char"
@@ -39,7 +39,7 @@ input:
     - type: int
       name: N
       comment: an integer, will be 0 in the sample input
-    - type: List[int](n)
+    - type: List[int](N)
       name: empty in sample
       comment: an empty list (only in the sample)
     - type: str(0)
