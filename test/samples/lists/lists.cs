@@ -16,7 +16,7 @@ class Program
     static void Main()
     {
         int n = int.Parse(Console.ReadLine());
-        int[] listInt = Array.ConvertAll(Console.ReadLine().Split(new char[] {' '}, StringSplitOptions.RemoveEmptyEntries), int.Parse);
+        int[] listInt = Array.ConvertAll(Console.ReadLine().Split(' '), int.Parse);
         int size = int.Parse(Console.ReadLine());
         char[] listChar = Console.ReadLine().ToCharArray();
         string[] listString4 = new string[size];

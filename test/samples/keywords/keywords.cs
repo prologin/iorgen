@@ -46,7 +46,7 @@ class Program
         for (int j = 0; j < 2; ++j)
         {
             words[j].@int.@return = int.Parse(Console.ReadLine());
-            words[j].@int.@void = Array.ConvertAll(Console.ReadLine().Split(new char[] {' '}, StringSplitOptions.RemoveEmptyEntries), int.Parse);
+            words[j].@int.@void = Array.ConvertAll(Console.ReadLine().Split(' '), int.Parse);
             words[j].ifTrue = int.Parse(Console.ReadLine());
         }
 

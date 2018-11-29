@@ -62,7 +62,7 @@ class Program
             matrices[i].listList = new int[matrices[i].size3][];
             for (int j = 0; j < matrices[i].size3; ++j)
             {
-                matrices[i].listList[j] = Array.ConvertAll(Console.ReadLine().Split(new char[] {' '}, StringSplitOptions.RemoveEmptyEntries), int.Parse);
+                matrices[i].listList[j] = Array.ConvertAll(Console.ReadLine().Split(' '), int.Parse);
             }
         }
         NotASizedStruct[] same = new NotASizedStruct[n];
