@@ -25,5 +25,12 @@ Aren't these lists beautifull?
 
 ### Constraints
 
-- 0 ≤ N
-- 0 ≤ size
+- 1 ≤ N ≤ 10
+- 1 ≤ (list int)[ ] ≤ 2000
+- 0 ≤ size ≤ 5
+- (list char)[ ] ϵ {f, o}
+- 0 ≤ matrix[ ] ≤ 3456
+
+### Performance constraints
+
+- 0 ≤ matrix[ ] ≤ 10000

@@ -4,19 +4,28 @@ input:
     - type: int
       name: N
       comment: the first list's size
+      min: 1
+      max: 10
     - type: List[int](N)
       name: list int
       comment: a list containing ints
+      min: 1
+      max: 2000
     - type: int
       name: size
       comment: an other size
+      max: 5
     - type: List[char](size)
       name: list char
       comment: a list of char
+      choices: [f, o]
     - type: List[str(4)](size)
       name: list string4
       comment: a list of strings of size 4
     - type: List[List[int](size)](size)
       name: matrix
       comment: a matrix of int
+      min: 0
+      max: 3456
+      max_perf: 10000
 output: Aren't these lists beautifull?

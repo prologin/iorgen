@@ -12,3 +12,12 @@ The input will contain:
 ### Output
 
 Just do what you want with these numbers, like sum them.
+
+### Constraints
+
+- -3 ≤ N ≤ 123456789
+- other number ≤ N
+
+### Performance constraints
+
+- -3 ≤ N ≤ 1234567890

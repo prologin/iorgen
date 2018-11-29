@@ -7,9 +7,12 @@ structs:
           - type: int
             name: foo
             comment: a field
+            choices: [28, 1, 8, 3, 43]
           - type: int
             name: bar
             comment: a field
+            min: 2
+            max: 99
     - name: position
       comment: Represents a position
       fields:
@@ -27,6 +30,7 @@ structs:
       fields:
           - type: char
             name: name
+            choices: [O, A, B]
             comment: the point's name (single character)
           - type: "@position"
             name: pos
@@ -38,6 +42,7 @@ input:
     - type: int
       name: n
       comment: a number
+      min_perf: 2
     - type: List[@struct 1](n)
       name: struct list
       comment: a list a struct 1

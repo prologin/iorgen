@@ -12,3 +12,12 @@ L’entrée contiendra :
 ### Sortie
 
 Just do what you want with these numbers, like sum them.
+
+### Contraintes
+
+- -3 ≤ N ≤ 123456789
+- other number ≤ N
+
+### Contraintes de performance
+
+- -3 ≤ N ≤ 1234567890

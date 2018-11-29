@@ -16,6 +16,7 @@ structs:
           - type: int
             name: size2
             comment: the list's size
+            min: 1
           - type: str(size2)
             name: string list
             comment: the string list

@@ -4,7 +4,11 @@ input:
     - type: int
       name: N
       comment: the first number
+      min: -3
+      max: 123456789
+      max_perf: 1234567890
     - type: int
       name: other number
       comment: the second number
+      max: N
 output: Just do what you want with these numbers, like sum them.

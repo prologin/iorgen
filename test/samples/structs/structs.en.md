@@ -28,3 +28,10 @@ Look at them structs.
 ### Constraints
 
 - 0 ≤ n
+- foo ϵ {1, 3, 8, 28, 43}
+- 2 ≤ bar ≤ 99
+- name ϵ {A, B, O}
+
+### Performance constraints
+
+- 2 ≤ n
