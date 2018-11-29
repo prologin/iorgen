@@ -49,8 +49,7 @@ int main() {
     std::vector<String> strings(n); ///< a list of strings of different sizes
     for (String& i : strings) {
         std::cin >> i.size2;
-        if (i.size2 > 0)
-            std::getline(std::cin >> std::ws, i.string_list);
+        std::getline(std::cin >> std::ws, i.string_list);
     }
     std::vector<Matrix> matrices(2); ///< a list of matrices of different sizes
     for (Matrix& i : matrices) {

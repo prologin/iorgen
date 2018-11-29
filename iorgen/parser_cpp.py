@@ -79,22 +79,13 @@ class ParserCpp():
         if type_.main in (TypeEnum.INT, TypeEnum.CHAR):
             self.main.append(indent + "std::cin >> {};".format(name))
         elif type_.main == TypeEnum.STR:
-            can_be_empty = True
-            try:
-                int_size = int(size)
-                if int_size > 0:
-                    can_be_empty = False
-                else:
-                    assert int_size == 0, "Negative size"
-                    return  # String is null, nothing to parse
-            except ValueError:
-                pass
             self.includes.add("string")
             self.includes.add("istream")
-            if can_be_empty:
+            if type_.can_be_empty:
                 self.main.append(indent + "if ({} > 0)".format(size))
             self.main.append(
-                indent + " " * (self.indentation if can_be_empty else 0) +
+                indent +
+                " " * (self.indentation if type_.can_be_empty else 0) +
                 "std::getline(std::cin >> std::ws, {});".format(name))
         elif type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None

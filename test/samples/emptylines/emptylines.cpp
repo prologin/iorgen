@@ -48,6 +48,8 @@ int main() {
     for (int& i : empty_in_sample)
         std::cin >> i;
     std::string empty_string; ///< an empty string
+    if (0 > 0)
+        std::getline(std::cin >> std::ws, empty_string);
     std::string main; ///< an other buffer string
     std::getline(std::cin >> std::ws, main);
     std::vector<char> empty_char_list(0); ///< an empty char list
