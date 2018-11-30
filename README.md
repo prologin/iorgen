@@ -164,3 +164,8 @@ int main() {
     return 0;
 }
 ```
+
+You can see every other thing that _Iorgen_ can generate in the
+[test samples](test/samples/example/); you can find parsers for lots of
+languages, and also a [generated description of the input in
+YAML](test/samples/example/example.en.md).
