@@ -18,4 +18,10 @@ do with this generated code
 
 ### Constraints
 
-- 0 ≤ N
+- 1 ≤ N ≤ 10
+- integer ϵ {-4, 42, 1337}
+- character ϵ {a, b, c}
+
+### Performance constraints
+
+- 1 ≤ N ≤ 10000

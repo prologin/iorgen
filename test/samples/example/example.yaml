@@ -7,13 +7,18 @@ structs:
           - type: int
             name: integer
             comment: an integer
+            choices: [-4, 42, 1337]
           - type: char
             name: character
             comment: a char
+            choices: [a, b, c]
 input:
     - type: int
       name: N
       comment: a number, used as a size
+      min: 1
+      max: 10
+      max_perf: 10000
     - type: List[@a struct](N)
       name: list
       comment: a list of structs

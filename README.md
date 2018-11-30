@@ -52,6 +52,22 @@ format:
     - A `"type"` field, containing a string (see the type syntax below)
     - A `"name"` field, containing a string: the variable’s name
     - A `"comment"` field, containing a string: a description of the variable
+    - An optional `"min"` field, if the variable is a integer, or a list (or
+      list or list, or list of list of list, etc) of integers. This will be
+      the minimal value possible for this variable. This is used in the
+      markdown generator to show the constraints, and in some langages
+      generators to check if the size of a list or a string is garantied to be
+      not null. The `"min"` field can either be an integer, or a variable name.
+    - An optional `"max"` field (similar to the `"min"` one).
+    - An optional `"min_perf"` field: like the `"min"` one, but only used in
+      the case of _performance_ cases, often meaning that the variable will
+      have a very big value.
+    - An optional `"max_perf"` field (similar to the `"min_perf"` one).
+    - An optional `"choices"` field, if the variable is a char or a integer, or
+      a list (or list of list, etc) of chars or integers (for this definition
+      a string is considered as a list of chars). `"choices"` is a list of
+      values possible for this integer or char. If this list is not empty,
+      then the `"min"` fields and similar fields will be ignored.
 - An optional `"structs"` field, if your input uses structs, a list of structs.
   Each struct is a map with the following fields:
     - A `"name"` field, containing a string: the struct’s name
@@ -94,13 +110,18 @@ structs:
           - type: int
             name: integer
             comment: an integer
+            choices: [-4, 42, 1337]
           - type: char
             name: character
             comment: a char
+            choices: [a, b, c]
 input:
     - type: int
       name: N
       comment: a number, used as a size
+      min: 1
+      max: 10
+      max_perf: 10000
     - type: List[@a struct](N)
       name: list
       comment: a list of structs
@@ -109,7 +130,8 @@ output: In a real life scenario, you will describe here what you want the end
 ```
 
 If you want to generate the C code for parsing this kind of input, run
-`python3 -m iorgen -l c example.yaml`, and you will get:
+`python3 -m iorgen -l c example.yaml`, and you will get the following
+`skeleton/example.c`:
 
 ```C
 #include <stdio.h>
@@ -130,10 +152,12 @@ void example(int n, struct a_struct* list) {
 
 int main() {
     int n; ///< a number, used as a size
-    scanf("%d\n", &n);
+    scanf("%d", &n);
+    getchar(); // \n
     struct a_struct* list = calloc(n, sizeof(struct a_struct)); ///< a list of structs
     for (int i = 0; i < n; ++i) {
-        scanf("%d %c\n", &list[i].integer, &list[i].character);
+        scanf("%d %c", &list[i].integer, &list[i].character);
+        getchar(); // \n
     }
     example(n, list);
 
