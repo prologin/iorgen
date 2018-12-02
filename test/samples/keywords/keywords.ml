@@ -34,5 +34,5 @@ let () =
   let i = Scanf.scanf "%s@\n" (fun x -> x) in
   let in_ = Scanf.scanf "%d %d\n" (fun a static -> {a = a; static = static}) in
   let for_ = Scanf.scanf "%s@\n" (fun x -> if String.equal "" x then [] else List.map int_of_string (String.split_on_char ' ' x)) in
-  let words = List.init 2 (fun _ -> let int = let return = Scanf.scanf "%d\n" (fun x -> x) in let void = Scanf.scanf "%s@\n" (fun x -> if String.equal "" x then [] else List.map int_of_string (String.split_on_char ' ' x)) in {return = return; void = void} in let ifTrue = Scanf.scanf "%d\n" (fun x -> x) in {int = int; ifTrue = ifTrue}) in
+  let words = List.init 2 (fun _ -> let int = let return = Scanf.scanf "%d\n" (fun x -> x) in let void = Scanf.scanf "%s@\n" (fun x -> List.map int_of_string (String.split_on_char ' ' x)) in {return = return; void = void} in let ifTrue = Scanf.scanf "%d\n" (fun x -> x) in {int = int; ifTrue = ifTrue}) in
   keywords if_ class_ i in_ for_ words
