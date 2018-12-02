@@ -94,7 +94,7 @@ class Main {
             matrices[i].size3 = Integer.parseInt(scanner.nextLine());
             matrices[i].listList = new int[matrices[i].size3][];
             for (int j = 0; j < matrices[i].size3; ++j) {
-                matrices[i].listList[j] = Arrays.stream(scanner.nextLine().split(" ")).filter(x -> !x.isEmpty()).mapToInt(Integer::parseInt).toArray();
+                matrices[i].listList[j] = Arrays.stream(scanner.nextLine().split(" ")).mapToInt(Integer::parseInt).toArray();
             }
         }
         NotASizedStruct[] same = new NotASizedStruct[n];

@@ -74,7 +74,7 @@ class Main {
             words[j] = new Main_();
             words[j].int_ = new System_();
             words[j].int_.return_ = Integer.parseInt(scanner.nextLine());
-            words[j].int_.void_ = Arrays.stream(scanner.nextLine().split(" ")).filter(x -> !x.isEmpty()).mapToInt(Integer::parseInt).toArray();
+            words[j].int_.void_ = Arrays.stream(scanner.nextLine().split(" ")).mapToInt(Integer::parseInt).toArray();
             words[j].ifTrue = Integer.parseInt(scanner.nextLine());
         }
 
