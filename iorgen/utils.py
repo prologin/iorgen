@@ -56,15 +56,24 @@ class IteratorName:
 class WordsName:
     """Give valid variable names starting with 'words'"""
 
-    def __init__(self, existing_names: List[str]) -> None:
+    def __init__(self, existing_names: List[str],
+                 cs_mode: bool = False) -> None:
+        # In C# you can not name a variable if it was already declared in a
+        # nested scode, it would cause error CS0136
         self.existing_names = [i.strip().lower() for i in existing_names]
         self.current = -1
+        self.current_nested = -1
         self.scopes = [-1]
+        self.nested_scopes = [-1]
+        self.cs_mode = cs_mode
 
     def next_name(self) -> str:
         """Give the next variable name"""
         self.current += 1
-        candidate = "words{}".format(self.current if self.current != 0 else "")
+        self.current_nested += 1
+        current = self.current_nested if self.cs_mode else self.current
+        self.nested_scopes = [max(i, current) for i in self.nested_scopes]
+        candidate = "words{}".format(current if current != 0 else "")
         if candidate in self.existing_names:
             return self.next_name()
         return candidate
@@ -72,7 +81,10 @@ class WordsName:
     def push_scope(self) -> None:
         """Declare a new scope"""
         self.scopes.append(self.current)
+        self.nested_scopes.append(self.current)
+        self.current_nested = self.current
 
     def pop_scope(self) -> None:
         """Declare a scope's end"""
         self.current = self.scopes.pop()
+        self.current_nested = self.nested_scopes.pop()

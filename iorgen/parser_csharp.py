@@ -66,7 +66,7 @@ class ParserCS():
 
         existing_names = [var.name for var in input_data.input]
         self.iterator = IteratorName(existing_names)
-        self.words = WordsName(existing_names)
+        self.words = WordsName(existing_names, cs_mode=True)
 
     def read_line(self, decl: bool, name: str, type_: Type,
                   indent_lvl: int) -> List[str]:
