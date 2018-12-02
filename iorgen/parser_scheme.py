@@ -160,10 +160,10 @@ class ParserScheme():
                 return "map cons '({}) (parse-int-list (read-line))".format(
                     " ".join(var_name(i.name) for i in struct.fields))
             if all(i.type.main == TypeEnum.CHAR for i in struct.fields):
-                return ("map cons '({}) (let loop ((l (string->list str)) "
-                        "(b #t)) (if (null? l) '() (if b (cons (car l) (loop "
-                        "(cdr l) #f)) (loop (cdr l) #t))))").format(" ".join(
-                            var_name(i.name) for i in struct.fields))
+                return ("map cons '({}) (let loop ((l (string->list (read-line"
+                        "))) (b #t)) (if (null? l) '() (if b (cons (car l) (lo"
+                        "op (cdr l) #f)) (loop (cdr l) #t))))").format(
+                            " ".join(var_name(i.name) for i in struct.fields))
             self.make_assoc_list_oneline = True
             return "make-assoc-list-oneline '({}) '({})".format(
                 " ".join(var_name(i.name) for i in struct.fields),

@@ -40,7 +40,7 @@ def read_line(type_: Type, input_data: Input) -> str:
         if all(i.type.main == TypeEnum.INT for i in struct.fields):
             return "Hash[[{}].zip(STDIN.gets.split.map(&:to_i))]".format(keys)
         if all(i.type.main == TypeEnum.CHAR for i in struct.fields):
-            return 'Hash[[{}].zip(STDIN.gets.chomp.split("")]'.format(keys)
+            return 'Hash[[{}].zip(STDIN.gets.chomp.split(" "))]'.format(keys)
         return "Hash[[{}].zip([{}], STDIN.gets.split).map{{ {} }}]".format(
             keys, ", ".join("1" if i.type.main == TypeEnum.INT else "0"
                             for i in struct.fields),

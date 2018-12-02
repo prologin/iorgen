@@ -148,7 +148,7 @@ class ParserProlog():
                                    name, keys)
                 elif all(i.type.main == TypeEnum.CHAR for i in struct.fields):
                     self.read.add("List[char]")
-                    output += ("{} read_string(S), atomic_list_concat(L, ' ',"
+                    output += ("{} read_line(S), atomic_list_concat(L, ' ',"
                                "S), pairs_keys_values(P, [{}], L), "
                                "list_to_assoc(P, X).\n").format(name, keys)
                 else:
