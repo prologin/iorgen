@@ -41,7 +41,6 @@ int main() {
     getchar(); // \n
     char* buffer_string = calloc(3 + 1, sizeof(char));; ///< here to check correct parsing of empty line above
     fgets(buffer_string, 3 + 1, stdin);
-    getchar(); // \n
     int n; ///< an integer, will be 0 in the sample input
     scanf("%d", &n);
     getchar(); // \n
@@ -67,7 +66,6 @@ int main() {
         scanf("%d", &struct_with_empty_line.list_in_struct[i]);
     getchar(); // \n
     scanf("%c %d", &struct_with_empty_line.struct_in_struct.char1, &struct_with_empty_line.struct_in_struct.int2);
-    getchar(); // \n
     struct sized_struct a_sized_struct; ///< a sized struct containing an empty line
     scanf("%d", &a_sized_struct.size);
     getchar(); // \n
@@ -76,7 +74,6 @@ int main() {
     getchar(); // \n
     char* finish = calloc(6 + 1, sizeof(char));; ///< a string to finish
     fgets(finish, 6 + 1, stdin);
-    getchar(); // \n
     empty_lines(empty_list, buffer_string, n, empty_in_sample, empty_string, main_, empty_char_list, non_empty_char_list, struct_with_empty_line, a_sized_struct, finish);
 
     return 0;

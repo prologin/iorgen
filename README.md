@@ -154,11 +154,9 @@ void example(int n, struct a_struct* list) {
 int main() {
     int n; ///< a number, used as a size
     scanf("%d", &n);
-    getchar(); // \n
     struct a_struct* list = calloc(n, sizeof(struct a_struct)); ///< a list of structs
     for (int i = 0; i < n; ++i) {
         scanf("%d %c", &list[i].integer, &list[i].character);
-        getchar(); // \n
     }
     example(n, list);
 

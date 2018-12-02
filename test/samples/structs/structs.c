@@ -31,7 +31,6 @@ void structs(struct struct_1 struct_, int n, struct struct_1* struct_list, struc
 int main() {
     struct struct_1 struct_; ///< a struct 1 instance
     scanf("%d %d", &struct_.foo, &struct_.bar);
-    getchar(); // \n
     int n; ///< a number
     scanf("%d", &n);
     getchar(); // \n
@@ -43,7 +42,6 @@ int main() {
     struct point* triangle = calloc(3, sizeof(struct point)); ///< a triangle
     for (int i = 0; i < 3; ++i) {
         triangle[i].name = getchar();
-        getchar(); // \n
         scanf("%d %d %d", &triangle[i].pos.x, &triangle[i].pos.y, &triangle[i].pos.z);
         getchar(); // \n
     }

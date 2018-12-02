@@ -9,10 +9,8 @@ void simple(int n, int other_number) {
 int main() {
     int n; ///< the first number
     scanf("%d", &n);
-    getchar(); // \n
     int other_number; ///< the second number
     scanf("%d", &other_number);
-    getchar(); // \n
     simple(n, other_number);
 
     return 0;

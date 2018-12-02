@@ -37,24 +37,18 @@ int main() {
     getchar(); // \n
     char* i = calloc(8 + 1, sizeof(char));; ///< just a string
     fgets(i, 8 + 1, stdin);
-    getchar(); // \n
     struct console in; ///< not in
     scanf("%d %d", &in.a, &in.static_);
-    getchar(); // \n
     int* for_ = calloc(if_, sizeof(int)); ///< not a loop
     for (int j = 0; j < if_; ++j)
         scanf("%d", &for_[j]);
-    getchar(); // \n
     struct main* words = calloc(2, sizeof(struct main)); ///< contains lots of things
     for (int j = 0; j < 2; ++j) {
         scanf("%d", &words[j].int_.return_);
-        getchar(); // \n
         words[j].int_.void_ = calloc(3, sizeof(int*));
         for (int k = 0; k < 3; ++k)
             scanf("%d", &words[j].int_.void_[k]);
-        getchar(); // \n
         scanf("%d", &words[j].if_true);
-        getchar(); // \n
     }
     keywords(if_, class, i, in, for_, words);
 

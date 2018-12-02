@@ -53,28 +53,23 @@ int main() {
         getchar(); // \n
         strings[i].string_list = calloc(strings[i].size2 + 1, sizeof(char));
         fgets(strings[i].string_list, strings[i].size2 + 1, stdin);
-        getchar(); // \n
     }
     struct matrix* matrices = calloc(2, sizeof(struct matrix)); ///< a list of matrices of different sizes
     for (int i = 0; i < 2; ++i) {
         scanf("%d", &matrices[i].size3);
-        getchar(); // \n
         matrices[i].list_list = calloc(matrices[i].size3, sizeof(int**));
         for (int j = 0; j < matrices[i].size3; ++j) {
             matrices[i].list_list[j] = calloc(2, sizeof(int*));
             for (int k = 0; k < 2; ++k)
                 scanf("%d", &matrices[i].list_list[j][k]);
-            getchar(); // \n
         }
     }
     struct not_a_sized_struct* same = calloc(n, sizeof(struct not_a_sized_struct)); ///< a list of list of same sizes
     for (int i = 0; i < n; ++i) {
         scanf("%d", &same[i].size4);
-        getchar(); // \n
         same[i].int_list_n = calloc(n, sizeof(int*));
         for (int j = 0; j < n; ++j)
             scanf("%d", &same[i].int_list_n[j]);
-        getchar(); // \n
     }
     sized_struct(n, lists, strings, matrices, same);
 
