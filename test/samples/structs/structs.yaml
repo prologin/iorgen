@@ -35,6 +35,18 @@ structs:
           - type: "@position"
             name: pos
             comment: the point's position
+    - name: chars
+      comment: a struct of chars
+      fields:
+          - type: char
+            name: first char
+            comment: a first char
+          - type: char
+            name: second char
+            comment: a second char
+          - type: char
+            name: third char
+            comment: a third char
 input:
     - type: "@struct 1"
       name: struct
@@ -49,4 +61,7 @@ input:
     - type: List[@point](3)
       name: triangle
       comment: a triangle
+    - type: "@chars"
+      name: struct chars
+      comment: a struct of chars
 output: Look at them structs.

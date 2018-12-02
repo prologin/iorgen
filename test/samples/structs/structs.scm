@@ -2,7 +2,8 @@
 ;;; n: a number
 ;;; struct-list: a list a struct 1
 ;;; triangle: a triangle
-(define (structs struct n struct-list triangle)
+;;; struct-chars: a struct of chars
+(define (structs struct n struct-list triangle struct-chars)
   ;;; TODO Look at them structs.
   (newline))
 
@@ -38,5 +39,16 @@
                  (lambda () (string-ref (read-line) 0))
                  (lambda
                    ()
-                   (map cons '(x y z) (parse-int-list (read-line))))))))))
-  (structs struct n struct-list triangle))
+                   (map cons '(x y z) (parse-int-list (read-line)))))))))
+       (struct-chars
+         (map
+           cons
+           '(first-char second-char third-char)
+           (let
+             loop
+             ((l (string->list (read-line))) (b #t))
+             (if
+               (null? l)
+               '()
+               (if b (cons (car l) (loop (cdr l) #f)) (loop (cdr l) #t)))))))
+  (structs struct n struct-list triangle struct-chars))

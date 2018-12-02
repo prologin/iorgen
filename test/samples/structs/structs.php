@@ -4,8 +4,9 @@
  * @param $n a number
  * @param $struct_list a list a struct 1
  * @param $triangle a triangle
+ * @param $struct_chars a struct of chars
  */
-function structs(&$struct, $n, &$struct_list, &$triangle) {
+function structs(&$struct, $n, &$struct_list, &$triangle, &$struct_chars) {
     /* TODO Look at them structs. */
 }
 
@@ -18,4 +19,5 @@ for ($i = 0; $i < 3; $i++) {
     $triangle[$i]["name"] = fgets(STDIN)[0];
     $triangle[$i]["pos"] = array_combine(["x", "y", "z"], array_map('intval', explode(' ', fgets(STDIN))));
 }
-structs($struct, $n, $struct_list, $triangle);
+$struct_chars = array_combine(["first char", "second char", "third char"], explode(' ', trim(fgets(STDIN))));
+structs($struct, $n, $struct_list, $triangle, $struct_chars);

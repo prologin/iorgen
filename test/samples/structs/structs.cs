@@ -22,13 +22,22 @@ struct Point
     public Position pos; //!< the point's position
 }
 
+/// a struct of chars
+struct Chars
+{
+    public char firstChar; //!< a first char
+    public char secondChar; //!< a second char
+    public char thirdChar; //!< a third char
+}
+
 class Program
 {
     /// \param @struct a struct 1 instance
     /// \param n a number
     /// \param structList a list a struct 1
     /// \param triangle a triangle
-    static void Structs(Struct1 @struct, int n, Struct1[] structList, Point[] triangle)
+    /// \param structChars a struct of chars
+    static void Structs(Struct1 @struct, int n, Struct1[] structList, Point[] triangle, Chars structChars)
     {
         /* TODO Look at them structs. */
     }
@@ -51,7 +60,9 @@ class Program
             string[] words1 = Console.ReadLine().Split(' ');
             triangle[i].pos = new Position {x = int.Parse(words1[0]), y = int.Parse(words1[1]), z = int.Parse(words1[2])};
         }
+        string[] words2 = Console.ReadLine().Split(' ');
+        Chars structChars = new Chars {firstChar = words2[0][0], secondChar = words2[1][0], thirdChar = words2[2][0]};
 
-        Structs(@struct, n, structList, triangle);
+        Structs(@struct, n, structList, triangle, structChars);
     }
 }

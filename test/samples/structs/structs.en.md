@@ -20,6 +20,9 @@ The input will contain:
         - On the next line, separated by spaces, an integer **x** (X), an
           integer **y** (Y), and an integer **z** (Z): **pos**, the point's
           position.
+- On the next line, separated by spaces, a char **first char** (a first char),
+  a char **second char** (a second char), and a char **third char** (a third
+  char): **struct chars**, a struct of chars.
 
 ### Output
 

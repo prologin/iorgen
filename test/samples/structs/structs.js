@@ -6,9 +6,10 @@ const fs = require("fs");
  * @param {number} n a number
  * @param {Array.<Object>} structList a list a struct 1
  * @param {Array.<Object>} triangle a triangle
+ * @param {Object} structChars a struct of chars
  * @returns {void}
  */
-function structs(struct, n, structList, triangle) {
+function structs(struct, n, structList, triangle, structChars) {
     /* TODO Look at them structs. */
 }
 
@@ -43,5 +44,11 @@ function structs(struct, n, structList, triangle) {
         };
         triangle.push(j);
     }
-    structs(struct, n, structList, triangle);
+    const words1 = stdin[line++].split(" ");
+    const structChars = {
+        firstChar: words1[0],
+        secondChar: words1[1],
+        thirdChar: words1[2]
+    };
+    structs(struct, n, structList, triangle, structChars);
 }

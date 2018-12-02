@@ -20,11 +20,19 @@ struct Point {
     Position pos; ///< the point's position
 };
 
+/// a struct of chars
+struct Chars {
+    char first_char; ///< a first char
+    char second_char; ///< a second char
+    char third_char; ///< a third char
+};
+
 /// \param struct_ a struct 1 instance
 /// \param n a number
 /// \param struct_list a list a struct 1
 /// \param triangle a triangle
-void structs(const Struct1& struct_, int n, const std::vector<Struct1>& struct_list, const std::vector<Point>& triangle) {
+/// \param struct_chars a struct of chars
+void structs(const Struct1& struct_, int n, const std::vector<Struct1>& struct_list, const std::vector<Point>& triangle, const Chars& struct_chars) {
     /* TODO Look at them structs. */
 }
 
@@ -42,5 +50,7 @@ int main() {
         std::cin >> i.name;
         std::cin >> i.pos.x >> i.pos.y >> i.pos.z;
     }
-    structs(struct_, n, struct_list, triangle);
+    Chars struct_chars; ///< a struct of chars
+    std::cin >> struct_chars.first_char >> struct_chars.second_char >> struct_chars.third_char;
+    structs(struct_, n, struct_list, triangle, struct_chars);
 }

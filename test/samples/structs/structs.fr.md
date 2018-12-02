@@ -22,6 +22,9 @@ L’entrée contiendra :
         - Sur la ligne suivante, séparés par des espaces, un entier **x** (X),
           un entier **y** (Y), et un entier **z** (Z) : **pos**, the point's
           position.
+- Sur la ligne suivante, séparés par des espaces, un caractère **first char**
+  (a first char), un caractère **second char** (a second char), et un caractère
+  **third char** (a third char) : **struct chars**, a struct of chars.
 
 ### Sortie
 

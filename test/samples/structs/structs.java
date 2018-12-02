@@ -49,14 +49,34 @@ class Point
     public Position pos;
 }
 
+/**
+ * a struct of chars
+ */
+class Chars
+{
+    /**
+     * a first char
+     */
+    public char firstChar;
+    /**
+     * a second char
+     */
+    public char secondChar;
+    /**
+     * a third char
+     */
+    public char thirdChar;
+}
+
 class Main {
     /**
      * @param struct a struct 1 instance
      * @param n a number
      * @param structList a list a struct 1
      * @param triangle a triangle
+     * @param structChars a struct of chars
      */
-    static void structs(Struct1 struct, int n, Struct1[] structList, Point[] triangle) {
+    static void structs(Struct1 struct, int n, Struct1[] structList, Point[] triangle, Chars structChars) {
         /* TODO Look at them structs. */
     }
 
@@ -84,7 +104,12 @@ class Main {
             triangle[i].pos.y = Integer.parseInt(words1[1]);
             triangle[i].pos.z = Integer.parseInt(words1[2]);
         }
+        String[] words1 = scanner.nextLine().split(" ");
+        Chars structChars = new Chars();
+        structChars.firstChar = words1[0].charAt(0);
+        structChars.secondChar = words1[1].charAt(0);
+        structChars.thirdChar = words1[2].charAt(0);
 
-        structs(struct, n, structList, triangle);
+        structs(struct, n, structList, triangle, structChars);
     }
 }

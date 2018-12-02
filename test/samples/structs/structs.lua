@@ -2,7 +2,8 @@
 -- n: a number
 -- struct_list: a list a struct 1
 -- triangle: a triangle
-function structs(struct, n, struct_list, triangle)
+-- struct_chars: a struct of chars
+function structs(struct, n, struct_list, triangle, struct_chars)
     -- TODO Look at them structs.
 end
 
@@ -21,5 +22,7 @@ for i = 1, 3 do
     local j = {string.match(io.read(), "(-?%d+) (-?%d+) (-?%d+)")}
     triangle[i]["pos"] = {x = tonumber(j[1]), y = tonumber(j[2]), z = tonumber(j[3])}
 end
+local i = {string.match(io.read(), "(%S) (%S) (%S)")}
+local struct_chars = {["first char"] = i[1], ["second char"] = i[2], ["third char"] = i[3]}
 
-structs(struct, n, struct_list, triangle)
+structs(struct, n, struct_list, triangle, struct_chars)

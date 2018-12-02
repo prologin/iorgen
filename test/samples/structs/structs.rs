@@ -26,11 +26,22 @@ struct Point {
     pos: Position,
 }
 
+/// a struct of chars
+struct Chars {
+    /// a first char
+    first_char: char,
+    /// a second char
+    second_char: char,
+    /// a third char
+    third_char: char,
+}
+
 /// * `struct_` - a struct 1 instance
 /// * `n` - a number
 /// * `struct_list` - a list a struct 1
 /// * `triangle` - a triangle
-fn structs(struct_: Struct1, n: i32, struct_list: Vec<Struct1>, triangle: Vec<Point>) {
+/// * `struct_chars` - a struct of chars
+fn structs(struct_: Struct1, n: i32, struct_list: Vec<Struct1>, triangle: Vec<Point>, struct_chars: Chars) {
     /* TODO Look at them structs. */
 }
 
@@ -46,8 +57,9 @@ fn main() {
         let triangle_elem: Point = read_struct_point();
         triangle.push(triangle_elem);
     }
+    let struct_chars: Chars = read_struct_chars();
 
-    structs(struct_, n, struct_list, triangle);
+    structs(struct_, n, struct_list, triangle, struct_chars);
 }
 
 fn read_line() -> String {
@@ -81,4 +93,14 @@ fn read_struct_point() -> Point {
     let name: char = read_line().parse().unwrap();
     let pos: Position = read_struct_position();
     Point { name, pos }
+}
+
+fn read_struct_chars() -> Chars {
+    let line = read_line();
+    let words: Vec<&str> = line.split_whitespace().collect();
+    Chars {
+        first_char: words[0].parse().unwrap(),
+        second_char: words[1].parse().unwrap(),
+        third_char: words[2].parse().unwrap(),
+    }
 }

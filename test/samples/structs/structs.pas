@@ -20,6 +20,13 @@ type
         Pos: Position; { the point's position }
     end;
 
+    { a struct of chars }
+    Chars = record
+        FirstChar: char; { a first char }
+        SecondChar: char; { a second char }
+        ThirdChar: char; { a third char }
+    end;
+
     T_StructList = array of Struct1;
     T_Triangle = array of Point;
 
@@ -27,7 +34,8 @@ type
 { @param N a number }
 { @param StructList a list a struct 1 }
 { @param Triangle a triangle }
-procedure Structs(const Struct: Struct1; N: longint; const StructList: T_StructList; const Triangle: T_Triangle);
+{ @param StructChars a struct of chars }
+procedure Structs(const Struct: Struct1; N: longint; const StructList: T_StructList; const Triangle: T_Triangle; const StructChars: Chars);
 begin
     {* TODO Look at them structs. *}
 end;
@@ -37,7 +45,9 @@ var
     N: longint; { a number }
     StructList: T_StructList; { a list a struct 1 }
     Triangle: T_Triangle; { a triangle }
+    StructChars: Chars; { a struct of chars }
     i: longint;
+    _: char;
 begin
     readln(Struct.Foo, Struct.Bar);
     readln(N);
@@ -52,5 +62,6 @@ begin
         readln(Triangle[i].Name_);
         readln(Triangle[i].Pos.X, Triangle[i].Pos.Y, Triangle[i].Pos.Z);
     end;
-    Structs(Struct, N, StructList, Triangle);
+    readln(StructChars.FirstChar, _, StructChars.SecondChar, _, StructChars.ThirdChar);
+    Structs(Struct, N, StructList, Triangle, StructChars);
 end.

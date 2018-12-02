@@ -20,11 +20,19 @@ struct point {
     struct position pos; ///< the point's position
 };
 
+/// a struct of chars
+struct chars {
+    char first_char; ///< a first char
+    char second_char; ///< a second char
+    char third_char; ///< a third char
+};
+
 /// \param struct_ a struct 1 instance
 /// \param n a number
 /// \param struct_list a list a struct 1
 /// \param triangle a triangle
-void structs(struct struct_1 struct_, int n, struct struct_1* struct_list, struct point* triangle) {
+/// \param struct_chars a struct of chars
+void structs(struct struct_1 struct_, int n, struct struct_1* struct_list, struct point* triangle, struct chars struct_chars) {
     /* TODO Look at them structs. */
 }
 
@@ -45,7 +53,9 @@ int main() {
         scanf("%d %d %d", &triangle[i].pos.x, &triangle[i].pos.y, &triangle[i].pos.z);
         getchar(); // \n
     }
-    structs(struct_, n, struct_list, triangle);
+    struct chars struct_chars; ///< a struct of chars
+    scanf("%c %c %c", &struct_chars.first_char, &struct_chars.second_char, &struct_chars.third_char);
+    structs(struct_, n, struct_list, triangle, struct_chars);
 
     return 0;
 }

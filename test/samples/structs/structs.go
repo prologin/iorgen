@@ -24,11 +24,19 @@ type Point struct {
     pos Position // the point's position
 }
 
+// a struct of chars
+type Chars struct {
+    firstChar byte // a first char
+    secondChar byte // a second char
+    thirdChar byte // a third char
+}
+
 // struct_: a struct 1 instance
 // n: a number
 // structList: a list a struct 1
 // triangle: a triangle
-func structs(struct_ Struct1, n int, structList []Struct1, triangle []Point) {
+// structChars: a struct of chars
+func structs(struct_ Struct1, n int, structList []Struct1, triangle []Point, structChars Chars) {
     /* TODO Look at them structs. */
 }
 
@@ -52,5 +60,8 @@ func main() {
         scanner.Scan()
         fmt.Sscanf(scanner.Text(), "%d %d %d", &triangle[i].pos.x, &triangle[i].pos.y, &triangle[i].pos.z)
     }
-    structs(struct_, n, structList, triangle);
+    var structChars Chars
+    scanner.Scan()
+    fmt.Sscanf(scanner.Text(), "%c %c %c", &structChars.firstChar, &structChars.secondChar, &structChars.thirdChar)
+    structs(struct_, n, structList, triangle, structChars);
 }
