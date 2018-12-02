@@ -68,7 +68,7 @@ class ParserGo():
 
         # pylint: disable=too-many-return-statements
 
-        assert type_.fits_it_one_line(self.input.structs)
+        assert type_.fits_in_one_line(self.input.structs)
         indent = INDENTATION * indent_lvl
         if type_.main == TypeEnum.INT:
             self.imports.add("strconv")
@@ -128,7 +128,7 @@ class ParserGo():
         if type_.main == TypeEnum.LIST and indent_lvl != 0:
             lines.append("{}{} = make({}, {})".format(
                 INDENTATION * indent_lvl, name, type_str(type_), size))
-        if type_.fits_it_one_line(self.input.structs):
+        if type_.fits_in_one_line(self.input.structs):
             return lines + self.read_line(name, size, type_, indent_lvl)
         if type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)
@@ -195,7 +195,7 @@ class ParserGo():
 
     def print_line(self, name: str, type_: Type, indent_lvl: int) -> List[str]:
         """Print the content of a var that holds in one line"""
-        assert type_.fits_it_one_line(self.input.structs)
+        assert type_.fits_in_one_line(self.input.structs)
         indent = INDENTATION * indent_lvl
         self.imports.add("fmt")
         if type_.main in (TypeEnum.INT, TypeEnum.STR):
@@ -233,7 +233,7 @@ class ParserGo():
     def print_lines(self, name: str, type_: Type,
                     indent_lvl: int) -> List[str]:
         """Print the content of a var that holds in one or more lines"""
-        if type_.fits_it_one_line(self.input.structs):
+        if type_.fits_in_one_line(self.input.structs):
             return self.print_line(name, type_, indent_lvl)
         if type_.main == TypeEnum.STRUCT:
             lines = []

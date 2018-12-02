@@ -120,7 +120,7 @@ class ParserC():
     def read_line(self, name: str, type_: Type, size: str,
                   indent_lvl: int) -> None:
         """Read an entire line and store it into the right place(s)"""
-        assert type_.fits_it_one_line(self.input.structs)
+        assert type_.fits_in_one_line(self.input.structs)
         indent = ' ' * (self.indentation * indent_lvl)
         self.includes.add("stdio.h")
         if type_.main == TypeEnum.INT:
@@ -184,7 +184,7 @@ class ParserC():
             self.includes.add("stdlib.h")
             self.main.append("{}{} = calloc({} + 1, sizeof(char));".format(
                 " " * self.indentation * indent_lvl, name, size))
-        if type_.fits_it_one_line(self.input.structs):
+        if type_.fits_in_one_line(self.input.structs):
             self.read_line(name, type_, size, indent_lvl)
         else:
             if type_.main == TypeEnum.STRUCT:
@@ -254,7 +254,7 @@ class ParserC():
     def print_line(self, name: str, type_: Type, size: str,
                    indent_lvl: int) -> None:
         """Print the content of a var that holds in one line"""
-        assert type_.fits_it_one_line(self.input.structs)
+        assert type_.fits_in_one_line(self.input.structs)
         indent = ' ' * (self.indentation * indent_lvl)
         if type_.main == TypeEnum.INT:
             self.method.append(indent + 'printf("%d\\n", {});'.format(name))
@@ -295,7 +295,7 @@ class ParserC():
                     size: str,
                     indent_lvl: int = 0) -> None:
         """Print the content of a var that holds in one or more lines"""
-        if type_.fits_it_one_line(self.input.structs):
+        if type_.fits_in_one_line(self.input.structs):
             self.print_line(name, type_, size, indent_lvl)
         else:
             if type_.main == TypeEnum.STRUCT:

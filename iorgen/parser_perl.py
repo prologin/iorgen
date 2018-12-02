@@ -98,7 +98,7 @@ def read_line(name: str, decl: str, type_: Type, input_data: Input,
               words: WordsName) -> List[str]:
     # pylint: disable=too-many-return-statements
     """Generate the Ruby code to read a line of given type"""
-    assert type_.fits_it_one_line(input_data.structs)
+    assert type_.fits_in_one_line(input_data.structs)
     if type_.main == TypeEnum.INT:
         return [decl.format("int <>")]
     if type_.main == TypeEnum.CHAR:
@@ -137,7 +137,7 @@ def read_lines(name: str, decl: str, type_: Type, size: str, input_data: Input,
                words: WordsName) -> List[str]:
     # pylint: disable=too-many-arguments
     """Generate the Ruby code to read the lines for a given type"""
-    if type_.fits_it_one_line(input_data.structs):
+    if type_.fits_in_one_line(input_data.structs):
         return read_line(name, decl, type_, input_data, words)
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
@@ -181,7 +181,7 @@ def read_var(var: Variable, input_data: Input, words: WordsName) -> List[str]:
 
 def print_line(varname: str, type_: Type, input_data: Input) -> str:
     """Print the content of a var in one line"""
-    assert type_.fits_it_one_line(input_data.structs)
+    assert type_.fits_in_one_line(input_data.structs)
     name = "$" + varname[1:]
     if type_.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.STR):
         return 'print "{}\\n";'.format(name)
@@ -203,7 +203,7 @@ def print_lines(name: str, type_: Type, input_data: Input,
                 indent_lvl: int) -> List[str]:
     """Print the content of a var that holds in one or more lines"""
     indent = INDENTATION * indent_lvl
-    if type_.fits_it_one_line(input_data.structs):
+    if type_.fits_in_one_line(input_data.structs):
         return [indent + print_line(name, type_, input_data)]
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None

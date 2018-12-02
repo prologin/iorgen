@@ -26,7 +26,7 @@ def struct_name(name: str) -> str:
 
 def read_line(type_: Type, input_data: Input) -> str:
     """Generate the Python code to read a line of given type"""
-    assert type_.fits_it_one_line(input_data.structs)
+    assert type_.fits_in_one_line(input_data.structs)
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
         if type_.encapsulated.main == TypeEnum.CHAR:
@@ -53,7 +53,7 @@ def read_line(type_: Type, input_data: Input) -> str:
 
 def read_lines(type_: Type, size: str, input_data: Input) -> List[str]:
     """Generate the Python code to read the lines for a given type"""
-    if type_.fits_it_one_line(input_data.structs):
+    if type_.fits_in_one_line(input_data.structs):
         return [read_line(type_, input_data)]
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
@@ -99,7 +99,7 @@ def read_lines(type_: Type, size: str, input_data: Input) -> List[str]:
 
 def print_line(name: str, type_: Type, input_data: Input) -> str:
     """Print the content of a var in one line"""
-    assert type_.fits_it_one_line(input_data.structs)
+    assert type_.fits_in_one_line(input_data.structs)
     if type_.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.STR):
         return "print({})".format(name)
     if type_.main == TypeEnum.LIST:
@@ -160,7 +160,7 @@ class ParserPython():
                     indent_lvl: int = 0) -> List[str]:
         """Print the content of a var that holds in one or more lines"""
         indent = INDENTATION * indent_lvl
-        if type_.fits_it_one_line(self.input.structs):
+        if type_.fits_in_one_line(self.input.structs):
             return [indent + print_line(name, type_, self.input)]
         if type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None

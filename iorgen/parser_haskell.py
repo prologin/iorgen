@@ -103,7 +103,7 @@ def print_var_content(type_: Type, structs: List[Struct]) -> str:
         return '(++ "\\n")'
     if type_.main == TypeEnum.STRUCT:
         struct = next(x for x in structs if x.name == type_.struct_name)
-        if type_.fits_it_one_line(structs):
+        if type_.fits_in_one_line(structs):
             fields = []
             for i in struct.fields:
                 if i.type.main == TypeEnum.INT:
@@ -159,7 +159,7 @@ class ParserHaskell():
     def read_line(self, type_: Type) -> str:
         """Read an entire line and parse it"""
         # pylint: disable=too-many-return-statements
-        assert type_.fits_it_one_line(self.input.structs)
+        assert type_.fits_in_one_line(self.input.structs)
         if type_.main == TypeEnum.INT:
             return "fmap read getLine"
         if type_.main == TypeEnum.CHAR:
@@ -181,7 +181,7 @@ class ParserHaskell():
 
     def read_lines(self, type_: Type, size: str) -> str:
         """Read one or several lines and parse them"""
-        if type_.fits_it_one_line(self.input.structs):
+        if type_.fits_in_one_line(self.input.structs):
             return self.read_line(type_)
         if type_.main == TypeEnum.STRUCT:
             self.where[type_.struct_name] = False
@@ -255,7 +255,7 @@ class ParserHaskell():
             ]
         need_size = struct.is_sized_struct() and struct.fields[
             1].type.main == TypeEnum.LIST and not struct.fields[
-                1].type.fits_it_one_line(self.input.structs)
+                1].type.fits_in_one_line(self.input.structs)
         if not need_size:
             self.imports.add("Control.Applicative ((<$>), (<*>))")
             self.imports.discard("Control.Applicative ((<$>))")

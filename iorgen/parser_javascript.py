@@ -62,7 +62,7 @@ class ParserJS:
                   indent_lvl: int) -> List[str]:
         # pylint: disable = too-many-arguments
         """Generate the Javascript code to read a line of given type"""
-        assert type_.fits_it_one_line(self.input.structs)
+        assert type_.fits_in_one_line(self.input.structs)
         indent = INDENTATION * indent_lvl
         start = indent + ("const " if decl else "") + name + " = "
         if type_.main == TypeEnum.LIST:
@@ -99,7 +99,7 @@ class ParserJS:
                    indent_lvl: int) -> List[str]:
         # pylint: disable=too-many-arguments
         """Generate the Javascript code to read the lines for a given type"""
-        if type_.fits_it_one_line(self.input.structs):
+        if type_.fits_in_one_line(self.input.structs):
             return self.read_line(decl, name, type_, size, indent_lvl)
         indent = INDENTATION * indent_lvl
         if type_.main == TypeEnum.LIST:
@@ -147,7 +147,7 @@ class ParserJS:
 
 def print_line(name: str, type_: Type, input_data: Input) -> str:
     """Print the content of a var in one line"""
-    assert type_.fits_it_one_line(input_data.structs)
+    assert type_.fits_in_one_line(input_data.structs)
     if type_.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.STR):
         return 'console.log({});'.format(name)
     if type_.main == TypeEnum.LIST:
@@ -168,7 +168,7 @@ def print_lines(input_data: Input, name: str, type_: Type,
                 indent_lvl: int = 0) -> List[str]:
     """Print the content of a var that holds in one or more lines"""
     indent = "    " * indent_lvl
-    if type_.fits_it_one_line(input_data.structs):
+    if type_.fits_in_one_line(input_data.structs):
         return [indent + print_line(name, type_, input_data)]
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None

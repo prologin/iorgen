@@ -68,7 +68,7 @@ class ParserJava():
     def read_line(self, decl: bool, name: str, type_: Type,
                   indent_lvl: int) -> List[str]:
         """Read an entire line and store it into the right place(s)"""
-        assert type_.fits_it_one_line(self.input.structs)
+        assert type_.fits_in_one_line(self.input.structs)
         indent = INDENTATION * indent_lvl
         if type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)
@@ -111,7 +111,7 @@ class ParserJava():
         # pylint: disable=too-many-arguments
         # pylint: disable=too-many-locals
         """Read one or several lines and store them into the right place(s)"""
-        if type_.fits_it_one_line(self.input.structs):
+        if type_.fits_in_one_line(self.input.structs):
             return self.read_line(decl, name, type_, indent_lvl)
         indent = INDENTATION * indent_lvl
         if type_.main == TypeEnum.STRUCT:
@@ -181,7 +181,7 @@ class ParserJava():
 
     def print_line(self, name: str, type_: Type) -> str:
         """Print the content of a var that holds in one line"""
-        assert type_.fits_it_one_line(self.input.structs)
+        assert type_.fits_in_one_line(self.input.structs)
         if type_.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.STR):
             return 'System.out.println({});'.format(name)
         if type_.main == TypeEnum.LIST:
@@ -206,7 +206,7 @@ class ParserJava():
     def print_lines(self, name: str, type_: Type, size: str,
                     indent_lvl: int) -> List[str]:
         """Print the content of a var that holds in one or more lines"""
-        if type_.fits_it_one_line(self.input.structs):
+        if type_.fits_in_one_line(self.input.structs):
             return [INDENTATION * indent_lvl + self.print_line(name, type_)]
         if type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)

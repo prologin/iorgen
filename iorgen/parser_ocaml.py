@@ -67,7 +67,7 @@ def declare_record(struct: Struct) -> List[str]:
 def read_line(type_: Type, input_data: Input) -> str:
     """Read an entire line into the correct type"""
     # pylint: disable=too-many-return-statements
-    assert type_.fits_it_one_line(input_data.structs)
+    assert type_.fits_in_one_line(input_data.structs)
     if type_.main == TypeEnum.INT:
         return 'Scanf.scanf "%d\\n" (fun x -> x)'
     if type_.main == TypeEnum.CHAR:
@@ -96,7 +96,7 @@ def read_line(type_: Type, input_data: Input) -> str:
 
 def read_lines(type_: Type, input_data: Input) -> str:
     """Read one or several lines into the correct type"""
-    if type_.fits_it_one_line(input_data.structs):
+    if type_.fits_in_one_line(input_data.structs):
         return read_line(type_, input_data)
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
@@ -116,7 +116,7 @@ def read_lines(type_: Type, input_data: Input) -> str:
 
 def print_line(name: str, type_: Type, input_data: Input) -> str:
     """Print a variable on one line"""
-    assert type_.fits_it_one_line(input_data.structs)
+    assert type_.fits_in_one_line(input_data.structs)
     if type_.main == TypeEnum.INT:
         return 'Printf.printf "%d\\n" ' + name
     if type_.main == TypeEnum.CHAR:
@@ -144,7 +144,7 @@ def print_line(name: str, type_: Type, input_data: Input) -> str:
 
 def print_lines(name: str, type_: Type, input_data: Input) -> str:
     """Print a variable on several lines"""
-    if type_.fits_it_one_line(input_data.structs):
+    if type_.fits_in_one_line(input_data.structs):
         return print_line(name, type_, input_data)
     if type_.main == TypeEnum.STRUCT:
         struct = input_data.get_struct(type_.struct_name)

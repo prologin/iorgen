@@ -90,7 +90,7 @@ class ParserRust():
         ]
         if Type(
                 TypeEnum.STRUCT,
-                struct_name=struct.name).fits_it_one_line(self.input.structs):
+                struct_name=struct.name).fits_in_one_line(self.input.structs):
             lines.extend([
                 INDENTATION + "let line = read_line();", INDENTATION +
                 "let words: Vec<&str> = line.split_whitespace().collect();",
@@ -112,7 +112,7 @@ class ParserRust():
 
     def read_line(self, type_: Type) -> str:
         """Return a Rust command for parsing a line into a given type"""
-        assert type_.fits_it_one_line(self.input.structs)
+        assert type_.fits_in_one_line(self.input.structs)
         if type_.main in (TypeEnum.INT, TypeEnum.CHAR):
             return "read_line().parse().unwrap()"
         if type_.main == TypeEnum.STR:
@@ -131,7 +131,7 @@ class ParserRust():
 
     def read_lines(self, name: str, type_: Type, indent_lvl: int) -> List[str]:
         """Return a Rust command for parsing some lines into a given type"""
-        assert not type_.fits_it_one_line(self.input.structs)
+        assert not type_.fits_in_one_line(self.input.structs)
         if type_.main == TypeEnum.STRUCT:
             return [
                 "{}let {}: {} = read_struct_{}();".format(
@@ -147,7 +147,7 @@ class ParserRust():
                 INDENTATION * indent_lvl + "for _ in 0..{} {{".format(
                     var_name(type_.size))
             ]
-            if type_.encapsulated.fits_it_one_line(self.input.structs):
+            if type_.encapsulated.fits_in_one_line(self.input.structs):
                 lines.append(INDENTATION * (indent_lvl + 1) + "{}.push({});".
                              format(name, self.read_line(type_.encapsulated)))
             else:
@@ -162,7 +162,7 @@ class ParserRust():
 
     def read_var(self, var: Variable) -> List[str]:
         """Return a Rust command for parsing a variable"""
-        if var.type.fits_it_one_line(self.input.structs):
+        if var.type.fits_in_one_line(self.input.structs):
             return [
                 INDENTATION + "let {}: {} = {};".format(
                     var_name(var.name), type_str(var.type),
@@ -192,7 +192,7 @@ class ParserRust():
 
     def print_line(self, name: str, type_: Type) -> str:
         """Print the content of a var that holds in one line"""
-        assert type_.fits_it_one_line(self.input.structs)
+        assert type_.fits_in_one_line(self.input.structs)
         if type_.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.STR):
             return 'print!("{{}}\\n", {});'.format(name)
         if type_.main == TypeEnum.LIST:
@@ -218,7 +218,7 @@ class ParserRust():
                     indent_lvl: int) -> List[str]:
         """Print the content of a var that holds in one or more lines"""
         indent = INDENTATION * indent_lvl
-        if type_.fits_it_one_line(self.input.structs):
+        if type_.fits_in_one_line(self.input.structs):
             return [indent + self.print_line(name, type_)]
         if type_.main == TypeEnum.STRUCT:
             lines = []

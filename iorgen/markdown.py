@@ -93,7 +93,7 @@ class Markdown:
     def describe_oneline(self, name: Optional[str], comment: Optional[str],
                          type_: Type, indent: int) -> List[str]:
         """Describe a line of input"""
-        assert type_.fits_it_one_line(self.input.structs)
+        assert type_.fits_in_one_line(self.input.structs)
         type_str = ""
         if type_.main == TypeEnum.INT:
             type_str = self.lang['int']
@@ -135,7 +135,7 @@ class Markdown:
                        type_: Type,
                        indent: int = 0) -> List[str]:
         """Describe a type taking several lines of input"""
-        if type_.fits_it_one_line(self.input.structs):
+        if type_.fits_in_one_line(self.input.structs):
             return self.describe_oneline(name, comment, type_, indent)
         if type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)

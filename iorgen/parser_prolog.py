@@ -63,7 +63,7 @@ def call_goal(goal: str, var: str) -> str:
 def print_line(name: str, type_: Type, input_data: Input) -> str:
     # pylint: disable=too-many-return-statements
     """Print a variable that fits in one line"""
-    assert type_.fits_it_one_line(input_data.structs)
+    assert type_.fits_in_one_line(input_data.structs)
     if type_.main == TypeEnum.INT:
         return "integer({0}), writeln({0})".format(name)
     if type_.main == TypeEnum.CHAR:
@@ -100,7 +100,7 @@ def print_lines(name: str, type_: Type,
 
     Return a list of declarations to be put before, and the actual code to
     print the variable"""
-    if type_.fits_it_one_line(input_data.structs):
+    if type_.fits_in_one_line(input_data.structs):
         return ([], print_line(name, type_, input_data))
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
@@ -139,7 +139,7 @@ class ParserProlog():
             name = "read_assoc_{}(X) :-".format(snake_case(struct.name))
             keys = ", ".join('"{}"'.format(i.name) for i in struct.fields)
             if Type(
-                    TypeEnum.STRUCT, struct_name=struct.name).fits_it_one_line(
+                    TypeEnum.STRUCT, struct_name=struct.name).fits_in_one_line(
                         self.input.structs):
                 if all(i.type.main == TypeEnum.INT for i in struct.fields):
                     self.read.add("List[int]")
@@ -188,7 +188,7 @@ class ParserProlog():
     def read_line(self, type_: Type) -> str:
         # pylint: disable=too-many-return-statements
         """Read an entire line and parse it"""
-        assert type_.fits_it_one_line(self.input.structs)
+        assert type_.fits_in_one_line(self.input.structs)
         if type_.main == TypeEnum.INT:
             self.read.add("int")
             return "read_int"
@@ -213,7 +213,7 @@ class ParserProlog():
 
     def read_lines(self, type_: Type) -> str:
         """Read one or several lines and parse them"""
-        if type_.fits_it_one_line(self.input.structs):
+        if type_.fits_in_one_line(self.input.structs):
             return self.read_line(type_)
         if type_.main == TypeEnum.STRUCT:
             return "read_assoc_{}".format(snake_case(type_.struct_name))

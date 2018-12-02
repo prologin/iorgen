@@ -66,7 +66,7 @@ def print_var_content(name: str, type_: Type, structs: List[Struct]) -> str:
     if type_.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.STR):
         return '(display {}) (newline)'.format(name)
     if type_.main == TypeEnum.STRUCT:
-        if type_.fits_it_one_line(structs):
+        if type_.fits_in_one_line(structs):
             return ("(let print_OnelineAssoc ((x {})) (if (null? x) (newline) "
                     "(begin (display (cdr (car x))) (if (not (null? (cdr x))) "
                     "(display #\\space)) (print_OnelineAssoc (cdr x)))))"
@@ -78,7 +78,7 @@ def print_var_content(name: str, type_: Type, structs: List[Struct]) -> str:
                 structs) for f in struct.fields))
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated
-        if type_.fits_it_one_line(structs):
+        if type_.fits_in_one_line(structs):
             if type_.encapsulated.main == TypeEnum.INT:
                 return ("(let print_IntList ((x {})) (if (null? x) (newline) "
                         "(begin (display (car x)) (if (not (null? (cdr x))) "
@@ -139,7 +139,7 @@ class ParserScheme():
     def read_line(self, type_: Type) -> str:
         """Read an entire line and parse it"""
         # pylint: disable=too-many-return-statements
-        assert type_.fits_it_one_line(self.input.structs)
+        assert type_.fits_in_one_line(self.input.structs)
         if type_.main == TypeEnum.INT:
             return "string->number (read-line)"
         if type_.main == TypeEnum.CHAR:
@@ -174,7 +174,7 @@ class ParserScheme():
 
     def read_lines(self, type_: Type, size: str) -> str:
         """Read one or several lines and parse them"""
-        if type_.fits_it_one_line(self.input.structs):
+        if type_.fits_in_one_line(self.input.structs):
             return self.read_line(type_)
         if type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)

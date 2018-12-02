@@ -87,7 +87,7 @@ class Type:
         """Can we parse several of this type on a single line"""
         return self.main in (TypeEnum.INT, TypeEnum.CHAR)
 
-    def fits_it_one_line(self: TYPE, structs: List[STRUCT]) -> bool:
+    def fits_in_one_line(self: TYPE, structs: List[STRUCT]) -> bool:
         """Return False if more than one line is needed for this struct"""
         if self.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.STR):
             return True
@@ -96,16 +96,7 @@ class Type:
             return self.encapsulated.can_be_inlined()
         if self.main == TypeEnum.STRUCT:
             struct = next(x for x in structs if x.name == self.struct_name)
-            if all(i.type.can_be_inlined() for i in struct.fields):
-                two_chars_in_a_row = False
-                for i in range(len(struct.fields) - 1):
-                    if struct.fields[i].type.main == TypeEnum.CHAR and \
-                       struct.fields[i + 1].type.main == TypeEnum.CHAR:
-                        two_chars_in_a_row = True
-                        break
-                if not two_chars_in_a_row:
-                    return True
-            return False
+            return all(i.type.can_be_inlined() for i in struct.fields)
         assert False
         return True
 
