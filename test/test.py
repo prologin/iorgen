@@ -12,7 +12,7 @@ from typing import Iterator, List
 
 sys.path.insert(0, "..")
 # pylint: disable=wrong-import-position
-from iorgen import Input, ALL_LANGUAGES, Language, parse_input
+from iorgen import Input, ALL_LANGUAGES, Language, parse_input, input_errors
 
 
 def print_color(lines: Iterator[str]) -> None:
@@ -73,6 +73,8 @@ def test_samples() -> None:
         prefix = "samples/{0}/{0}.".format(name)
         with open(prefix + "yaml", 'r') as stream:
             input_data = parse_input(stream)
+        sample_errors = input_errors(input_data, prefix + "sample_input")
+        assert not sample_errors, sample_errors
 
         for language in ALL_LANGUAGES:
             assert gen_is_same_as_sample(input_data, prefix, language)
