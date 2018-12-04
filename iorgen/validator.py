@@ -188,7 +188,17 @@ class Validator():
         return ""
 
 
-def input_errors(input_data: Input, filename: str) -> str:
+def input_errors(input_data: Input, filename: str,
+                 perf_mode: bool = False) -> str:
     """Return the first error found in a raw input, if any"""
-    return Validator(
-        input_data, [line.rstrip('\n') for line in open(filename)]).read_all()
+    validator = Validator(input_data,
+                          [line.rstrip('\n') for line in open(filename)])
+    error = validator.read_all()
+    if error:
+        return error
+    if validator.valid_for_perf_only != perf_mode:
+        if perf_mode:
+            return ("Input meant for performance, but do not "
+                    "use any performance constraints")
+        return "Input valid only for performance"
+    return ""
