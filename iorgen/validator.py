@@ -2,6 +2,7 @@
 # Copyright 2018 Sacha Delanoue
 """Check that a raw input is valid"""
 
+from string import printable, whitespace
 from typing import Dict  # pylint: disable=unused-import
 from typing import List, Optional, Tuple, Union
 import re
@@ -74,16 +75,21 @@ class Validator():
                     self.current_line, value))
 
     def check_char(self, string: str, constraints: Constraints,
-                   whitespace: bool) -> None:
+                   use_ws: bool) -> None:
         """Check that the input is a correct string"""
-        if len(string) != 1 or len(string.encode()) != 1:
+        if len(string) != 1 or string not in printable:
             raise ValidatorException(
                 "Line {}: '{}' is not an ASCII char".format(
                     self.current_line, string))
-        if not whitespace and len(string.strip()) != 1:
-            raise ValidatorException(
-                "Line {}: '{}' is a whitespace character".format(
-                    self.current_line, string))
+        if string in whitespace:
+            if not use_ws:
+                raise ValidatorException(
+                    "Line {}: '{}' is a whitespace character".format(
+                        self.current_line, string))
+            elif string != " ":
+                raise ValidatorException(
+                    "Line {}: '{}' is a whitespace character, but not space".
+                    format(self.current_line, string))
         if constraints.choices and string not in constraints.choices:
             raise ValidatorException("Line {}: {} not in {{{}}}".format(
                 self.current_line, string, ", ".join(
@@ -105,7 +111,7 @@ class Validator():
             self.check_integer(self.next_line(), constraints, name)
         elif type_.main == TypeEnum.CHAR:
             assert constraints is not None
-            self.check_char(self.next_line(), constraints, whitespace=False)
+            self.check_char(self.next_line(), constraints, use_ws=False)
         elif type_.main == TypeEnum.STR:
             assert constraints is not None
             line = self.next_line()
@@ -119,7 +125,7 @@ class Validator():
                     "Line {}: '{}' has leading/trailing whitespaces".format(
                         self.current_line, line))
             for i in line:
-                self.check_char(i, constraints, whitespace=True)
+                self.check_char(i, constraints, use_ws=True)
         elif type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
             (size, size_desc) = self.get_size(type_.size)
@@ -134,7 +140,7 @@ class Validator():
                         "Line {}: '{}' should be of size {}".format(
                             self.current_line, line, size_desc))
                 for i in line:
-                    self.check_char(i, constraints, whitespace=False)
+                    self.check_char(i, constraints, use_ws=False)
             elif type_.encapsulated.main == TypeEnum.INT:
                 assert constraints is not None
                 line = self.next_line()
@@ -173,8 +179,7 @@ class Validator():
                         self.check_integer(word, var.constraints, var.name)
                     else:
                         assert var.type.main == TypeEnum.CHAR
-                        self.check_char(
-                            word, var.constraints, whitespace=False)
+                        self.check_char(word, var.constraints, use_ws=False)
 
     def read_all(self) -> str:
         """Parse the entire raw input and return an error if there was one"""
