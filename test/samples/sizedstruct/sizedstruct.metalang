@@ -1,0 +1,69 @@
+/* contains a list */
+/* size1: the list's size */
+/* int list: the integer list */
+record @list
+    size1 : int
+    int_list : array<int>
+end
+
+/* contains a string */
+/* size2: the list's size */
+/* string list: the string list */
+record @string_
+    size2 : int
+    string_list : array<char>
+end
+
+/* contains a matrix */
+/* size3: the list's size */
+/* list list: the list list */
+record @matrix
+    size3 : int
+    list_list : array<array<int>>
+end
+
+/* this is not a 'sized struct', but a regular one! */
+/* size4: not the list's size */
+/* int list n: the integer list */
+record @not_a_sized_struct
+    size4 : int
+    int_list_n : array<int>
+end
+
+/* int n: the size of the lists */
+/* array<@list> lists: a list of list of different sizes */
+/* array<@string_> strings: a list of strings of different sizes */
+/* array<@matrix> matrices: a list of matrices of different sizes */
+/* array<@not_a_sized_struct> same: a list of list of same sizes */
+def void sized_struct(int n, array<@list> lists, array<@string_> strings, array<@matrix> matrices, array<@not_a_sized_struct> same)
+/* TODO The is a special case. */
+end
+
+main
+    def int n = read_int() /* the size of the lists */
+    def array<@list> lists[n] with i do
+        def int size1 = read_int()
+        def array<int> int_list = read_int_line(size1)
+        def @list list_i = record size1 = size1; int_list = int_list; end
+        return list_i
+    end /* a list of list of different sizes */
+    def array<@string_> strings[n] with j do
+        def int size2 = read_int()
+        def array<char> string_list = read_char_line(size2)
+        def @string_ string_i = record size2 = size2; string_list = string_list; end
+        return string_i
+    end /* a list of strings of different sizes */
+    def array<@matrix> matrices[2] with k do
+        def int size3 = read_int()
+        def array<array<int>> list_list = read_int_matrix(size3, 2)
+        def @matrix matrix_i = record size3 = size3; list_list = list_list; end
+        return matrix_i
+    end /* a list of matrices of different sizes */
+    def array<@not_a_sized_struct> same[n] with l do
+        def int size4 = read_int()
+        def array<int> int_list_n = read_int_line(n)
+        def @not_a_sized_struct not_a_sized_struct_i = record size4 = size4; int_list_n = int_list_n; end
+        return not_a_sized_struct_i
+    end /* a list of list of same sizes */
+    sized_struct(n, lists, strings, matrices, same)
+end

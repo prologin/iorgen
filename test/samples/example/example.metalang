@@ -1,0 +1,25 @@
+/* A struct for the example */
+/* integer: an integer */
+/* character: a char */
+record @a_struct
+    integer : int
+    character : char
+end
+
+/* int n: a number, used as a size */
+/* array<@a_struct> list: a list of structs */
+def void example(int n, array<@a_struct> list)
+/* TODO In a real life scenario, you will describe here what you want the end user to do with this generated code */
+end
+
+main
+    def int n = read_int() /* a number, used as a size */
+    def array<@a_struct> list[n] with i do
+        def int integer = read_int()
+        def array<char> character_tmp = read_char_line(1)
+        def char character = character_tmp[0]
+        def @a_struct a_struct_i = record integer = integer; character = character; end
+        return a_struct_i
+    end /* a list of structs */
+    example(n, list)
+end

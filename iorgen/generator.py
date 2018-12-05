@@ -25,6 +25,7 @@ from iorgen.parser_python import gen_python
 from iorgen.parser_ruby import gen_ruby
 from iorgen.parser_rust import gen_rust
 from iorgen.parser_scheme import gen_scheme
+from iorgen.parser_mtlg import gen_mtlg
 
 
 class Language:
@@ -99,7 +100,8 @@ ALL_LANGUAGES = [
     Language("py", gen_python, [], ["python3", "-S"]),
     Language("rb", gen_ruby, [], ["ruby"]),
     Language("rs", gen_rust, ["rustc", "-W", "warnings", "-O"]),
-    Language("scm", gen_scheme, [], ["gsi"])
+    Language("scm", gen_scheme, [], ["gsi"]),
+    #Language("metalang", gen_mtlg, [], []),
 ]
 
 ALL_MARKDOWN = [

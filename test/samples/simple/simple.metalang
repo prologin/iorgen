@@ -1,0 +1,11 @@
+/* int n: the first number */
+/* int other_number: the second number */
+def void simple(int n, int other_number)
+/* TODO Just do what you want with these numbers, like sum them. */
+end
+
+main
+    def int n = read_int() /* the first number */
+    def int other_number = read_int() /* the second number */
+    simple(n, other_number)
+end

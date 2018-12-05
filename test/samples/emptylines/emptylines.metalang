@@ -1,0 +1,60 @@
+/* a char struct */
+/* char1: a char */
+/* int2: an integer */
+record @struct_with_a_char
+    char1 : char
+    int2 : int
+end
+
+/* a struct */
+/* list in struct: a list in a struct */
+/* struct in struct: a struct in a struct */
+record @a
+    list_in_struct : array<int>
+    struct_in_struct : @struct_with_a_char
+end
+
+/* a sized struct */
+/* size: the size */
+/* string in struct: the string */
+record @sized_struct
+    size : int
+    string_in_struct : array<char>
+end
+
+/* array<int> empty_list: an empty list */
+/* array<char> buffer_string: here to check correct parsing of empty line above */
+/* int n: an integer, will be 0 in the sample input */
+/* array<int> empty_in_sample: an empty list (only in the sample) */
+/* array<char> empty_string: an empty string */
+/* array<char> main_: an other buffer string */
+/* array<char> empty_char_list: an empty char list */
+/* array<char> non_empty_char_list: an char list, non empty */
+/* @a struct_with_empty_line: a struct containing an empty line, then a struct */
+/* @sized_struct a_sized_struct: a sized struct containing an empty line */
+/* array<char> finish: a string to finish */
+def void empty_lines(array<int> empty_list, array<char> buffer_string, int n, array<int> empty_in_sample, array<char> empty_string, array<char> main_, array<char> empty_char_list, array<char> non_empty_char_list, @a struct_with_empty_line, @sized_struct a_sized_struct, array<char> finish)
+/* TODO Wow, lots of empty lines! */
+end
+
+main
+    def array<int> empty_list = read_int_line(0) /* an empty list */
+    def array<char> buffer_string = read_char_line(3) /* here to check correct parsing of empty line above */
+    def int n = read_int() /* an integer, will be 0 in the sample input */
+    def array<int> empty_in_sample = read_int_line(n) /* an empty list (only in the sample) */
+    def array<char> empty_string = read_char_line(0) /* an empty string */
+    def array<char> main_ = read_char_line(4) /* an other buffer string */
+    def array<char> empty_char_list = read_char_line(0) /* an empty char list */
+    def array<char> non_empty_char_list = read_char_line(5) /* an char list, non empty */
+    def array<int> list_in_struct = read_int_line(n)
+    def array<char> char1_tmp = read_char_line(1)
+    def char char1 = char1_tmp[0]
+    def int int2 = read_int()
+    def @struct_with_a_char struct_in_struct = record char1 = char1; int2 = int2; end
+    def @a struct_with_empty_line = record list_in_struct = list_in_struct; struct_in_struct = struct_in_struct; end /* a struct containing an empty line, then a struct */
+    def int size = read_int()
+    def array<char> string_in_struct = read_char_line(size)
+    def @sized_struct a_sized_struct = record size = size; string_in_struct = string_in_struct; end /* a sized struct containing an empty line */
+    def array<char> finish = read_char_line(6) /* a string to finish */
+    empty_lines(empty_list, buffer_string, n, empty_in_sample, empty_string, main_, empty_char_list, non_empty_char_list, struct_with_empty_line, a_sized_struct, finish)
+end

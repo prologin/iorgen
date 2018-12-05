@@ -1,0 +1,53 @@
+/* may conflict in c# */
+/* a: the first letter of the alphabet */
+/* static: an integer */
+record @console
+    a : int
+    static_ : int
+end
+
+/* may conflict in c# */
+/* return: not the end of the function */
+/* void: not nothing */
+record @system
+    return_ : int
+    void_ : array<int>
+end
+
+/* not the main function */
+/* int: not an integer */
+/* if true: should not cause conflict */
+record @main_
+    int_ : @system
+    if_true : int
+end
+
+/* int if_: not a condition */
+/* char class_: not a class */
+/* array<char> i: just a string */
+/* @console in_: not in */
+/* array<int> for_: not a loop */
+/* array<@main_> words: contains lots of things */
+def void keywords(int if_, char class_, array<char> i, @console in_, array<int> for_, array<@main_> words)
+/* TODO If this compiles, it is already a good step! */
+end
+
+main
+    def int if_ = read_int() /* not a condition */
+    def array<char> class__tmp = read_char_line(1)
+    def char class_ = class__tmp[0] /* not a class */
+    def array<char> i = read_char_line(8) /* just a string */
+    def int a = read_int()
+    def int static_ = read_int()
+    def @console in_ = record a = a; static_ = static_; end /* not in */
+    def array<int> for_ = read_int_line(if_) /* not a loop */
+    def array<@main_> words[2] with j do
+        def int return_ = read_int()
+        def array<int> void_ = read_int_line(3)
+        def @system int_ = record return_ = return_; void_ = void_; end
+        def int if_true = read_int()
+        def @main_ main_i = record int_ = int_; if_true = if_true; end
+        return main_i
+    end /* contains lots of things */
+    keywords(if_, class_, i, in_, for_, words)
+end

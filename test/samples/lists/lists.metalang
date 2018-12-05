@@ -1,0 +1,21 @@
+/* int n: the first list's size */
+/* array<int> list_int: a list containing ints */
+/* int size: an other size */
+/* array<char> list_char: a list of char */
+/* array<array<char>> list_string4: a list of strings of size 4 */
+/* array<array<int>> matrix: a matrix of int */
+def void lists(int n, array<int> list_int, int size, array<char> list_char, array<array<char>> list_string4, array<array<int>> matrix)
+/* TODO Aren't these lists beautifull? */
+end
+
+main
+    def int n = read_int() /* the first list's size */
+    def array<int> list_int = read_int_line(n) /* a list containing ints */
+    def int size = read_int() /* an other size */
+    def array<char> list_char = read_char_line(size) /* a list of char */
+    def array<array<char>> list_string4[size] with i do
+        return read_char_line(4)
+    end /* a list of strings of size 4 */
+    def array<array<int>> matrix = read_int_matrix(size, size) /* a matrix of int */
+    lists(n, list_int, size, list_char, list_string4, matrix)
+end

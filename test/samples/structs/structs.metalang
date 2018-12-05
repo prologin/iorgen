@@ -1,0 +1,75 @@
+/* A simple struct */
+/* foo: a field */
+/* bar: a field */
+record @struct_1
+    foo : int
+    bar : int
+end
+
+/* Represents a position */
+/* x: X */
+/* y: Y */
+/* z: Z */
+record @position
+    x : int
+    y : int
+    z : int
+end
+
+/* A point's name and position */
+/* name: the point's name (single character) */
+/* pos: the point's position */
+record @point
+    name : char
+    pos : @position
+end
+
+/* a struct of chars */
+/* first char: a first char */
+/* second char: a second char */
+/* third char: a third char */
+record @chars
+    first_char : char
+    second_char : char
+    third_char : char
+end
+
+/* @struct_1 struct_: a struct 1 instance */
+/* int n: a number */
+/* array<@struct_1> struct_list: a list a struct 1 */
+/* array<@point> triangle: a triangle */
+/* @chars struct_chars: a struct of chars */
+def void structs(@struct_1 struct_, int n, array<@struct_1> struct_list, array<@point> triangle, @chars struct_chars)
+/* TODO Look at them structs. */
+end
+
+main
+    def int foo = read_int()
+    def int bar = read_int()
+    def @struct_1 struct_ = record foo = foo; bar = bar; end /* a struct 1 instance */
+    def int n = read_int() /* a number */
+    def array<@struct_1> struct_list[n] with i do
+        def int foo_ = read_int()
+        def int bar_ = read_int()
+        def @struct_1 struct_1_i = record foo = foo_; bar = bar_; end
+        return struct_1_i
+    end /* a list a struct 1 */
+    def array<@point> triangle[3] with j do
+        def array<char> name_tmp = read_char_line(1)
+        def char name = name_tmp[0]
+        def int x = read_int()
+        def int y = read_int()
+        def int z = read_int()
+        def @position pos = record x = x; y = y; z = z; end
+        def @point point_i = record name = name; pos = pos; end
+        return point_i
+    end /* a triangle */
+    def array<char> first_char_tmp = read_char_line(1)
+    def char first_char = first_char_tmp[0]
+    def array<char> second_char_tmp = read_char_line(1)
+    def char second_char = second_char_tmp[0]
+    def array<char> third_char_tmp = read_char_line(1)
+    def char third_char = third_char_tmp[0]
+    def @chars struct_chars = record first_char = first_char; second_char = second_char; third_char = third_char; end /* a struct of chars */
+    structs(struct_, n, struct_list, triangle, struct_chars)
+end
