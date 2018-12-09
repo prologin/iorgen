@@ -32,9 +32,10 @@ class Generator():
         """Eval an integer, that can be a variable, or a string"""
         if isinstance(var, int):
             return var
-        if isinstance(var, str):
-            return self.integers[var]
-        return self.integers[var.name]
+        key = var if isinstance(var, str) else var.name
+        if key in self.integers:
+            return self.integers[key]
+        return int(key)
 
     def generate_integer(self, name: str, constraints: Constraints) -> str:
         """Generate a random integer, given some constraints"""
@@ -43,7 +44,10 @@ class Generator():
             value = random.choice([int(i) for i in constraints.choices])
         min_ = constraints.min_perf if self.perf_mode else constraints.min
         max_ = constraints.max_perf if self.perf_mode else constraints.max
-        value = random.randint(self.eval_var(min_), self.eval_var(max_))
+        min_eval = self.eval_var(min_)
+        if constraints.is_size:
+            min_eval = max(0, min_eval)
+        value = random.randint(min_eval, self.eval_var(max_))
         if name:
             self.integers[name] = value
         return str(value)
@@ -84,8 +88,9 @@ class Generator():
                 if var.type.main == TypeEnum.INT:
                     fields.append(
                         self.generate_integer(var.name, var.constraints))
-                assert var.type.main == TypeEnum.CHAR
-                fields.append(generate_char(var.constraints, False))
+                else:
+                    assert var.type.main == TypeEnum.CHAR
+                    fields.append(generate_char(var.constraints, False))
             return " ".join(fields)
         assert False
         return ""
@@ -104,6 +109,7 @@ class Generator():
             return lines
         if type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)
+            lines = []
             for var in struct.fields:
                 lines.extend(
                     self.generate_lines(var.name, var.type, var.constraints))
