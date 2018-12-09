@@ -37,6 +37,12 @@ def main() -> None:
         metavar="raw-input",
         help="Instead of generating, check that a raw input is correct")
     parser.add_argument(
+        '--perf_mode',
+        '-p',
+        default=False,
+        action='store_true',
+        help="Use with --validate option: validate in perf mode")
+    parser.add_argument(
         'yaml',
         metavar='input.yaml',
         type=open,
@@ -53,7 +59,7 @@ def main() -> None:
         exit(1)
 
     if args.validate:
-        status = input_errors(input_data, args.validate, False)
+        status = input_errors(input_data, args.validate, args.perf_mode)
         if status:
             print("Input is invalid: {}".format(status))
             exit(1)
