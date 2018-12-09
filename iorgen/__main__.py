@@ -8,6 +8,7 @@ from pathlib import Path
 
 from iorgen.generator import ALL_LANGUAGES
 from iorgen.checkinput import parse_input
+from iorgen.random_input import generate_random_input
 from iorgen.validator import input_errors
 
 
@@ -37,11 +38,17 @@ def main() -> None:
         metavar="raw-input",
         help="Instead of generating, check that a raw input is correct")
     parser.add_argument(
+        '--generate_random',
+        '-g',
+        default=False,
+        action='store_true',
+        help="Instead of generating a parser, generate a randow raw input")
+    parser.add_argument(
         '--perf_mode',
         '-p',
         default=False,
         action='store_true',
-        help="Use with --validate option: validate in perf mode")
+        help="Use with --validate or --generate_randow option: perf mode")
     parser.add_argument(
         'yaml',
         metavar='input.yaml',
@@ -59,11 +66,18 @@ def main() -> None:
         exit(1)
 
     if args.validate:
+        if args.generate_random:
+            print("Can not use both validate and generate_random modes")
+            exit(2)
         status = input_errors(input_data, args.validate, args.perf_mode)
         if status:
             print("Input is invalid: {}".format(status))
-            exit(1)
+            exit(3)
         print("Input is valid")
+        exit(0)
+
+    if args.generate_random:
+        print(generate_random_input(input_data, args.perf_mode), end='')
         exit(0)
 
     Path(args.output_dir).mkdir(exist_ok=True)
