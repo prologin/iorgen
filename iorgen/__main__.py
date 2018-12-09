@@ -18,12 +18,17 @@ def main() -> None:
         prog="python3 -m iorgen",
         description="Multi-languages parser generator")
     parser.add_argument(
-        '-l',
         '--languages',
+        '-l',
         action='append',
         help='languages for which to generate a parser',
         choices=list(languages.keys()))
-    parser.add_argument('-o', default="skeleton", help="output folder")
+    parser.add_argument(
+        '--output_dir',
+        '-o',
+        default="skeleton",
+        metavar="output-dir",
+        help="output folder")
     parser.add_argument(
         'yaml',
         metavar='input.yaml',
@@ -40,13 +45,14 @@ def main() -> None:
         print("Could not parse input data: {}".format(error))
         exit(1)
 
-    Path(args.o).mkdir(exist_ok=True)
+    Path(args.output_dir).mkdir(exist_ok=True)
     prefix = os.path.split(os.path.splitext(args.yaml.name)[0])[1] + "."
 
     selected_languages = args.languages or list(languages.keys())
     for language in selected_languages:
         path = Path(
-            os.path.join(args.o, prefix + languages[language].extension))
+            os.path.join(args.output_dir,
+                         prefix + languages[language].extension))
         path.write_text(languages[language].generate(input_data))
 
 
