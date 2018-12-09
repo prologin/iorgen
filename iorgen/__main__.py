@@ -8,6 +8,7 @@ from pathlib import Path
 
 from iorgen.generator import ALL_LANGUAGES
 from iorgen.checkinput import parse_input
+from iorgen.validator import input_errors
 
 
 def main() -> None:
@@ -30,6 +31,12 @@ def main() -> None:
         metavar="output-dir",
         help="output folder")
     parser.add_argument(
+        '--validate',
+        '-v',
+        default="",
+        metavar="raw-input",
+        help="Instead of generating, check that a raw input is correct")
+    parser.add_argument(
         'yaml',
         metavar='input.yaml',
         type=open,
@@ -44,6 +51,14 @@ def main() -> None:
     except ValueError as error:
         print("Could not parse input data: {}".format(error))
         exit(1)
+
+    if args.validate:
+        status = input_errors(input_data, args.validate, False)
+        if status:
+            print("Input is invalid: {}".format(status))
+            exit(1)
+        print("Input is valid")
+        exit(0)
 
     Path(args.output_dir).mkdir(exist_ok=True)
     prefix = os.path.split(os.path.splitext(args.yaml.name)[0])[1] + "."
