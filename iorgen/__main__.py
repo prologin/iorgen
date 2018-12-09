@@ -8,6 +8,7 @@ from pathlib import Path
 
 from iorgen.generator import ALL_LANGUAGES
 from iorgen.checkinput import parse_input
+from iorgen.markdown import gen_markdown
 from iorgen.random_input import generate_random_input
 from iorgen.validator import input_errors
 
@@ -25,6 +26,12 @@ def main() -> None:
         action='append',
         help='languages for which to generate a parser',
         choices=list(languages.keys()))
+    parser.add_argument(
+        '--markdown',
+        '-m',
+        default='fr',
+        help='language for the subject in markdown',
+        choices=['en', 'fr'])
     parser.add_argument(
         '--output_dir',
         '-o',
@@ -89,6 +96,8 @@ def main() -> None:
             os.path.join(args.output_dir,
                          prefix + languages[language].extension))
         path.write_text(languages[language].generate(input_data))
+    path = Path(os.path.join(args.output_dir, "..", "subject.md"))
+    path.write_text(gen_markdown(input_data, args.markdown))
 
 
 if __name__ == '__main__':

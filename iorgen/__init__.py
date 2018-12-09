@@ -22,6 +22,6 @@ from iorgen.parser_python import gen_python
 from iorgen.parser_ruby import gen_ruby
 from iorgen.parser_rust import gen_rust
 from iorgen.parser_scheme import gen_scheme
-from iorgen.generator import Language, ALL_LANGUAGES
+from iorgen.generator import Language, ALL_LANGUAGES, ALL_MARKDOWN
 from iorgen.random_input import generate_random_input
 from iorgen.validator import input_errors

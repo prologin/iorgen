@@ -75,10 +75,6 @@ class Language:
         """Generate an input parser with a function to complete"""
         return self.generator(input_data, False)
 
-    def is_pseudo_code(self) -> bool:
-        """True if the 'language' can neither be compiled or interpreted"""
-        return not self.compile_command and not self.exec_command
-
 
 ALL_LANGUAGES = [
     Language(
@@ -103,7 +99,10 @@ ALL_LANGUAGES = [
     Language("py", gen_python, [], ["python3", "-S"]),
     Language("rb", gen_ruby, [], ["ruby"]),
     Language("rs", gen_rust, ["rustc", "-W", "warnings", "-O"]),
-    Language("scm", gen_scheme, [], ["gsi"]),
+    Language("scm", gen_scheme, [], ["gsi"])
+]
+
+ALL_MARKDOWN = [
     Language("en.md", (lambda i, _: gen_markdown(i, 'en')), []),
     Language("fr.md", (lambda i, _: gen_markdown(i, 'fr')), [])
 ]

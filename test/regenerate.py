@@ -9,7 +9,7 @@ from pathlib import Path
 
 sys.path.insert(0, "..")
 # pylint: disable=wrong-import-position
-from iorgen import parse_input, ALL_LANGUAGES
+from iorgen import parse_input, ALL_LANGUAGES, ALL_MARKDOWN
 
 
 def regenerate_samples() -> None:
@@ -20,7 +20,7 @@ def regenerate_samples() -> None:
             input_data = parse_input(stream)
         assert input_data is not None
 
-        for language in ALL_LANGUAGES:
+        for language in ALL_LANGUAGES + ALL_MARKDOWN:
             Path(prefix + language.extension).write_text(
                 language.generate(input_data))
 

@@ -12,7 +12,8 @@ from typing import Iterator, List
 
 sys.path.insert(0, "..")
 # pylint: disable=wrong-import-position
-from iorgen import Input, ALL_LANGUAGES, Language, parse_input, input_errors
+from iorgen import Input, ALL_LANGUAGES, ALL_MARKDOWN, Language, parse_input
+from iorgen import input_errors
 
 
 def print_color(lines: Iterator[str]) -> None:
@@ -78,8 +79,10 @@ def test_samples() -> None:
 
         for language in ALL_LANGUAGES:
             assert gen_is_same_as_sample(input_data, prefix, language)
-            if not language.is_pseudo_code():
-                assert run_on_input(input_data, name, language)
+            assert run_on_input(input_data, name, language)
+
+        for language in ALL_MARKDOWN:
+            assert gen_is_same_as_sample(input_data, prefix, language)
 
         print("OK", name)
 
