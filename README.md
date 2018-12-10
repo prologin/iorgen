@@ -15,13 +15,30 @@ generated.
 ## Usage
 
 Make sure python (version 3.5 and above) and python-yaml are installed on your
-computer and run `python3 -m iorgen input.yaml`. You can see other options,
-like selecting only a subset of language, by displaying the help with the `-h`
-flag.
+computer and run `python3 -m iorgen input.yaml`. This will generate all
+languages parsers in a `skeleton` folder, and a `subject.md` describing the
+input (in French by default).
 
-The generated code is written in a directory specified by the `-o` flag
-(default to `skeleton`). The directory is relative to the call site of
-*Iorgen*, but you can specify an absolute path if you want.
+Several options are available:
+
+- The `--output_dir` option specify the path and name of the directory holding
+  the generated codes. The filenames will be the same as the input yaml, with
+  the extensions replaced by the canonical extension of each language.
+- The `--languages` option can generate a subselections of languages.
+- The `--markdown` option specify the language (not programming language) in
+  which the `subject.md` will be written. The `subject.md` is a file generated
+  next to the output directory, and not inside.
+- The `--validate` option, changes completly *Iorgen* behavior. Instead of
+  generating parsers reading some raw input, *Iorgen* will here directly read
+  a file containing such a raw input, and check that it is valid, that is,
+  that it matches the format described in the input YAML.
+- The `--generate_random` also changes the behavior. It will not generate a
+  parser, but a valid possible raw input.
+- The `perf_mode` option is used with the `--validate` or `--generate_random`
+  mode. This means that the raw input will be treated as in performance mode.
+  The performance mode is a mode where the constraints are differents, usually
+  the integers are bigger.
+
 
 ## Input format
 
