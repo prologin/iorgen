@@ -96,7 +96,7 @@ def main() -> None:
             os.path.join(args.output_dir,
                          prefix + languages[language].extension))
         path.write_text(languages[language].generate(input_data))
-    path = Path(os.path.join(args.output_dir, "..", "subject.md"))
+    path = Path(os.path.join(args.output_dir, "..", "subject-io-stub.md"))
     path.write_text(gen_markdown(input_data, args.markdown))
 
 
