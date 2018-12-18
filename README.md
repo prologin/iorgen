@@ -16,8 +16,8 @@ generated.
 
 Make sure python (version 3.5 and above) and python-yaml are installed on your
 computer and run `python3 -m iorgen input.yaml`. This will generate all
-languages parsers in a `skeleton` folder, and a `subject.md` describing the
-input (in French by default).
+languages parsers in a `skeleton` folder, and a `subject-io-stub.md` describing
+the input (in French by default).
 
 Several options are available:
 
@@ -26,8 +26,8 @@ Several options are available:
   the extensions replaced by the canonical extension of each language.
 - The `--languages` option can generate a subselections of languages.
 - The `--markdown` option specify the language (not programming language) in
-  which the `subject.md` will be written. The `subject.md` is a file generated
-  next to the output directory, and not inside.
+  which the `subject-io-stub.md` will be written. The `subject-io-stub.md` is a
+  file generated next to the output directory, and not inside.
 - The `--validate` option, changes completly *Iorgen* behavior. Instead of
   generating parsers reading some raw input, *Iorgen* will here directly read
   a file containing such a raw input, and check that it is valid, that is,
