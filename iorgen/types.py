@@ -194,7 +194,8 @@ class Constraints:
         if "max_perf" in dic:
             self.max_perf = get_int_or_var(dic["max_perf"], variables)
         if "choices" in dic:
-            if dic["type"] == "int":
+            if variables[
+                    dic["name"]].type.list_contained().main == TypeEnum.INT:
                 self.choices = set(int(i) for i in dic["choices"])
             else:
                 self.choices = set(i[0] for i in dic["choices"])
