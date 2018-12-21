@@ -12,6 +12,14 @@ Javascript, Lua, Ocaml, Pascal, Perl, PHP, Prolog, Python, Ruby, Rust, Scheme.
 A markdown description of the input in English and French can also be
 generated.
 
+## Installation
+
+Depends on python 3.5+
+
+```
+pip3 install git+git://github.com/prologin/iorgen.git
+```
+
 ## Usage
 
 Make sure python (version 3.5 and above) and python-yaml are installed on your
