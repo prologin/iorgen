@@ -1,0 +1,73 @@
+name: tuples
+subject: This reads several kinds of tuples.
+structs:
+    - name: sizes
+      tuple: True
+      fields:
+          - type: int
+            name: N
+            comment: the first list's size
+          - type: int
+            name: M
+            comment: the second list's size
+    - name: couple
+      tuple: True
+      fields:
+          - type: char
+            name: Ch
+            comment: some initial
+          - type: int
+            name: ID
+            comment: some id
+    - name: position
+      tuple: True
+      fields:
+          - type: int
+            name: x
+            comment: X
+          - type: int
+            name: y
+            comment: Y
+          - type: int
+            name: z
+            comment: Z
+    - name: weird
+      tuple: True
+      fields:
+          - type: "@position"
+            name: pos
+            comment: a position instance
+          - type: str(4)
+            name: a string
+            comment: some string
+    - name: quadrupel
+      tuple: True
+      fields:
+          - type: int
+            name: A
+            comment: A
+          - type: int
+            name: B
+            comment: B
+          - type: int
+            name: C
+            comment: C
+          - type: int
+            name: D
+            comment: D
+
+input:
+    - type: "@sizes"
+      name: size_couple
+      comment: sizes of lines
+    - type: "@couple"
+      name: couple_couple
+      comment: some couple
+    - type: "@weird"
+      name: weird_couple
+      comment: weird types tuple
+    - type: "@quadrupel"
+      name: quadrupel_quadrupel
+      comment: four at a time !
+
+output: This is so tupliful.
