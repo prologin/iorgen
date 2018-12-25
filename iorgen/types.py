@@ -288,10 +288,11 @@ class Struct:
     """Represent a struct (like in C)"""
 
     def __init__(self: STRUCT, name: str, comment: str,
-                 fields: List[Variable]) -> None:
+                 fields: List[Variable], is_tuple: bool = False) -> None:
         self.name = name
         self.comment = comment
         self.fields = fields
+        self.is_tuple = is_tuple
 
     @classmethod
     def from_dict(cls: T[STRUCT],
@@ -300,7 +301,10 @@ class Struct:
         """Create a Struct from its YAML (dictionary) representation"""
         try:
             name = dic["name"]
-            comment = dic["comment"]
+            is_tuple = 'tuple' in dic and dic['tuple']
+            comment = ''
+            if not is_tuple:
+                comment = dic["comment"]
             fields = dic["fields"]
             if not isinstance(name, str) or not isinstance(
                     comment, str) or not isinstance(fields, list):
