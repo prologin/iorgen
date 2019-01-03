@@ -14,11 +14,17 @@ generated.
 
 ## Installation
 
-Depends on python 3.5+
+You can install `iorgen` in a virtual environment like this:
 
 ```
-pip3 install git+git://github.com/prologin/iorgen.git
+git clone git@github.com:prologin/iorgen.git
+cd iorgen
+python3 -m venv .venv
+source .venv/bin/active
+pip install -e .
 ```
+
+You can then run it with the `iorgen` command.
 
 ## Usage
 
