@@ -48,6 +48,13 @@ Several options are available:
   that it matches the format described in the input YAML.
 - The `--generate_random` also changes the behavior. It will not generate a
   parser, but a valid possible raw input.
+- The `--specify` is to be used with `--generate_random`, it allows the user
+  to specify the value, the min value or the max value of a variable for this
+  output. `NAME VALUE` set the value. `NAME_max VALUE` (or `NAME_min VALUE`)
+  set the maximum value (or the minimum).
+  ```shell
+  $ iorgen -g -s N_max 10 integer 42 -- example.yaml
+  ```
 - The `perf_mode` option is used with the `--validate` or `--generate_random`
   mode. This means that the raw input will be treated as in performance mode.
   The performance mode is a mode where the constraints are differents, usually

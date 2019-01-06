@@ -23,10 +23,11 @@ def generate_char(constraints: Constraints, whitespace: bool) -> str:
 class Generator():
     """Generate some random valid raw_input"""
 
-    def __init__(self, input_data: Input, perf_mode: bool) -> None:
+    def __init__(self, input_data: Input, specs: Dict[str, int], perf_mode: bool) -> None:
         self.input = input_data
         self.integers = {}  # type: Dict[str, int]
         self.perf_mode = perf_mode
+        self.specs = specs
 
     def eval_var(self, var: Union[int, str, Variable]) -> int:
         """Eval an integer, that can be a variable, or a string"""
@@ -40,14 +41,28 @@ class Generator():
     def generate_integer(self, name: str, constraints: Constraints) -> str:
         """Generate a random integer, given some constraints"""
         value = 0
+
         if constraints.choices:
             value = random.choice([int(i) for i in constraints.choices])
+
         min_ = constraints.min_perf if self.perf_mode else constraints.min
         max_ = constraints.max_perf if self.perf_mode else constraints.max
-        min_eval = self.eval_var(min_)
-        if constraints.is_size:
-            min_eval = max(0, min_eval)
-        value = random.randint(min_eval, self.eval_var(max_))
+        if name + '_min' in self.specs:
+            assert(self.eval_var(min_) < self.specs[name + '_min'])
+            min_ = self.specs[name + '_min']
+        if name + '_max' in self.specs:
+            assert(self.eval_var(max_) > self.specs[name + '_max'])
+            max_ = self.specs[name + '_max']
+
+        if name in self.specs:
+            assert(self.specs[name] >= self.eval_var(min_) and self.specs[name] <= self.eval_var(max_)
+                   and self.specs[name] in constraints.choices if constraints.choices else True)
+            value = self.specs[name]
+        else:
+            min_eval = self.eval_var(min_)
+            if constraints.is_size:
+                min_eval = max(0, min_eval)
+            value = random.randint(min_eval, self.eval_var(max_))
         if name:
             self.integers[name] = value
         return str(value)
@@ -75,7 +90,7 @@ class Generator():
             size = self.eval_var(type_.size)
             if type_.encapsulated.main == TypeEnum.INT:
                 return " ".join(
-                    self.generate_integer("", constraints)
+                    self.generate_integer(name, constraints)
                     for _ in range(size))
             assert type_.encapsulated.main == TypeEnum.CHAR
             return "".join(
@@ -118,9 +133,12 @@ class Generator():
         return []
 
 
-def generate_random_input(input_data: Input, perf_mode: bool = False) -> str:
+def generate_random_input(input_data: Input, specs: List[str], perf_mode: bool = False) -> str:
     """Generate a randow raw input, as described by input_data"""
-    generator = Generator(input_data, perf_mode)
+    specs_dict = {}
+    for i in range(0, len(specs), 2):
+        specs_dict[specs[i]] = int(specs[i + 1])
+    generator = Generator(input_data, specs_dict, perf_mode)
     lines = []
     for var in input_data.input:
         lines.extend(
