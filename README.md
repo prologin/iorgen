@@ -78,6 +78,14 @@ Several options are available:
   mode. This means that the raw input will be treated as in performance mode.
   The performance mode is a mode where the constraints are differents, usually
   the integers are bigger.
+- The `--run` option changes the behavior of *Iorgen*: generated parsers are
+  written in a temporary folder, and *Iorgen* will compile those parsers and
+  run them with the input given in arguments to the `run` option (a single
+  path that can represent many input files thanks to a wildcard support).
+  It will check that the parser is able to recreate exactly the input, and can
+  be used as a proof that the generated parser is working. Using this option
+  requires compilers of all tested languages to be installed (see
+  [this section](#testing-the-languages) to know more).
 
 
 ## Input format

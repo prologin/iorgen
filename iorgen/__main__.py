@@ -6,26 +6,25 @@
 import argparse
 import os
 import sys
+import glob
 from pathlib import Path
 
-from iorgen.generator import ALL_LANGUAGES
+from iorgen.generator import ALL_LANGUAGES, gen_compile_run_and_compare
 from iorgen.checkinput import parse_input
 from iorgen.markdown import gen_markdown
 from iorgen.random_input import generate_random_input
 from iorgen.validator import input_errors
 
 
-def main() -> None:
-    """The iorgen module execution"""
-    languages = {i.extension: i for i in ALL_LANGUAGES}
-
+def get_parser() -> argparse.ArgumentParser:
+    """Create the ArgumentParser for iorgen"""
     parser = argparse.ArgumentParser(
         description="Multi-languages parser generator")
     parser.add_argument('--languages',
                         '-l',
                         action='append',
                         help='languages for which to generate a parser',
-                        choices=list(languages.keys()))
+                        choices=[i.extension for i in ALL_LANGUAGES])
     parser.add_argument('--markdown',
                         '-m',
                         default='fr',
@@ -66,6 +65,18 @@ def main() -> None:
                         metavar='input.yaml',
                         type=open,
                         help='the yaml file describing the input')
+    parser.add_argument('--run',
+                        '-r',
+                        default="",
+                        help=("Run mode: check that generated parser prints "
+                              "the input it is fed in. Argument is the "
+                              "filename of the inputs (wildcard supported)"))
+    return parser
+
+
+def main() -> None:
+    """The iorgen module execution"""
+    parser = get_parser()
     try:
         args = parser.parse_args()
     except FileNotFoundError as error:
@@ -93,14 +104,33 @@ def main() -> None:
               end='')
         sys.exit(0)
 
-    Path(args.output_dir).mkdir(exist_ok=True)
-    prefix = os.path.split(os.path.splitext(args.yaml.name)[0])[1] + "."
-
+    languages = {i.extension: i for i in ALL_LANGUAGES}
     selected_languages = args.languages or list(languages.keys())
+    prefix = os.path.split(os.path.splitext(args.yaml.name)[0])[1]
+
+    if args.run:
+        success = True
+        check_files = glob.glob(args.run)
+        print("Check with {} (found {} match): ".format(
+            args.run, len(check_files)),
+              end="",
+              flush=True)
+        for language in selected_languages:
+            print(language, end=" ", flush=True)
+            if not gen_compile_run_and_compare(input_data, prefix,
+                                               languages[language], "run",
+                                               check_files, False):
+                print("\nError with", language)
+                success = False
+        print("SUCCESS" if success else "FAILURE")
+        sys.exit(0 if success else 1)
+
+    Path(args.output_dir).mkdir(exist_ok=True)
+
     for language in selected_languages:
         path = Path(
             os.path.join(args.output_dir,
-                         prefix + languages[language].extension))
+                         prefix + "." + languages[language].extension))
         path.write_text(languages[language].generate(input_data))
     path = Path(os.path.join(args.output_dir, "..", "subject-io-stub.md"))
     path.write_text(gen_markdown(input_data, args.markdown))
