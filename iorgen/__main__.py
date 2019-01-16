@@ -56,8 +56,8 @@ def main() -> None:
         default=[],
         nargs='*',
         metavar='NAME VALUE',
-        help='Use with --generate_random option : specify values, max or min of input lists you want (NAME_max VALUE for specify max)'
-    )
+        help=('Use with --generate_random option : specify values, max or'
+              ' min of input lists you want (NAME_max VALUE for specify max)'))
     parser.add_argument(
         '--perf_mode',
         '-p',
@@ -92,7 +92,9 @@ def main() -> None:
         exit(0)
 
     if args.generate_random:
-        print(generate_random_input(input_data, args.specify, args.perf_mode), end='')
+        print(
+            generate_random_input(input_data, args.specify, args.perf_mode),
+            end='')
         exit(0)
 
     Path(args.output_dir).mkdir(exist_ok=True)
