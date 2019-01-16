@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018 Sacha Delanoue
+# Copyright 2018-2019 Sacha Delanoue
+# Copyright 2019 Matthieu Moatti
 """Generate a valid raw input"""
 
 from typing import Dict  # pylint: disable=unused-import

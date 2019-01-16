@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright 2018 Florian Amsallem
 from setuptools import setup, find_packages
 
 setup(

@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright 2018 Sacha Delanoue
+# Copyright 2018 Matthieu Moatti
 """Multi-languages parser generator"""
 
 import argparse
