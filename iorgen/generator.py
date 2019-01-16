@@ -1,10 +1,13 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018 Sacha Delanoue
+# Copyright 2018-2019 Sacha Delanoue
 """Helpers to generate, compile and run parsers for all supported languages"""
 
 import subprocess
 import os
-from typing import Callable, Optional, List
+import tempfile
+from difflib import unified_diff
+from pathlib import Path
+from typing import Callable, Iterator, List, Optional
 
 from iorgen.types import Input
 from iorgen.markdown import gen_markdown
@@ -56,9 +59,8 @@ class Language:
             return name
         return filename
 
-    def compile_and_run(self, filename: str, input_file: str) -> str:
-        """Compile filename, and run the executable with input_file as stdin"""
-        exe = self.compile(filename)
+    def run(self, exe: str, filename: str, input_file: str) -> str:
+        """Run the executable (by self.compile) with input_file as stdin"""
         out = ""
         with open(input_file) as sample_input:
             res = subprocess.run(self.exec_command + [exe],
@@ -105,3 +107,63 @@ ALL_MARKDOWN = [
     Language("en.md", (lambda i, _: gen_markdown(i, 'en')), []),
     Language("fr.md", (lambda i, _: gen_markdown(i, 'fr')), [])
 ]
+
+
+def print_colored_diff(lines: Iterator[str]) -> None:
+    """Print a diff with some console colors"""
+    for i, line in enumerate(lines):
+        if i < 2:
+            print('\033[1m' + line + '\033[0m', end='')
+        elif line[0:2] == '@@':
+            print('\033[96m' + line + '\033[0m', end='')
+        elif line[0] == '+':
+            print('\033[92m' + line + '\033[0m', end='')
+        elif line[0] == '-':
+            print('\033[91m' + line + '\033[0m', end='')
+        else:
+            print(line, end='')
+
+
+def compare_files(generated_content: List[str],
+                  reference_filename: str,
+                  tofile: str = 'generated') -> bool:
+    """Check if a generated result is the same as a reference file"""
+    ref = Path(reference_filename).read_text("utf8").splitlines(True)
+    if generated_content != ref:
+        print_colored_diff(
+            unified_diff(ref,
+                         generated_content,
+                         fromfile=reference_filename,
+                         tofile=tofile))
+        return False
+    return True
+
+
+def gen_compile_run_and_compare(input_data: Input,
+                                name: str,
+                                language: Language,
+                                folder_for_generated_source: str,
+                                stdin_filename: List[str],
+                                no_compile: bool = False) -> bool:
+    # pylint: disable = too-many-arguments
+    """Check that the generated parser prints the input it is fed in"""
+    source = os.path.join(tempfile.gettempdir(), "iorgen",
+                          folder_for_generated_source, language.extension,
+                          name + "." + language.extension)
+
+    # Generate source
+    generated = language.generator(input_data, True)
+    Path(os.path.dirname(source)).mkdir(parents=True, exist_ok=True)
+    Path(source).write_text(generated)
+
+    if no_compile:
+        return True
+
+    # Compile and compare
+    exe = language.compile(source)
+    success = True
+    for file_ in stdin_filename:
+        stdout = language.run(exe, source, file_).splitlines(True)
+        success = compare_files(
+            stdout, file_, 'generated from ' + language.extension) and success
+    return success
