@@ -20,8 +20,8 @@ You can install `iorgen` in a virtual environment like this:
 git clone git@github.com:prologin/iorgen.git
 cd iorgen
 python3 -m venv .venv
-source .venv/bin/active
-pip install -e .
+source .venv/bin/activate
+pip3 install -e .
 ```
 
 You can then run it with the `iorgen` command.
