@@ -24,6 +24,26 @@ def struct_name(name: str) -> str:
     return candidate + '_' if iskeyword(candidate) else candidate
 
 
+def type_str(type_: Type, input_data: Input) -> str:
+    """Return a description for a type"""
+    if type_.main == TypeEnum.INT:
+        return "int"
+    if type_.main == TypeEnum.STR:
+        return "str"
+    if type_.main == TypeEnum.CHAR:
+        return "str"
+    if type_.main == TypeEnum.STRUCT:
+        struct = input_data.get_struct(type_.struct_name)
+        return "dict[{}]".format(", ".join(
+            '"{}": {}'.format(v.name, type_str(v.type, input_data))
+            for v in struct.fields))
+    assert type_.encapsulated
+    if type_.main == TypeEnum.LIST:
+        return "list[{}]".format(type_str(type_.encapsulated, input_data))
+    assert False
+    return ""
+
+
 def read_line(type_: Type, input_data: Input) -> str:
     """Generate the Python code to read a line of given type"""
     assert type_.fits_in_one_line(input_data.structs)
@@ -136,10 +156,12 @@ class ParserPython():
         self.method.append("def {}({}):".format(
             name, ", ".join(var_name(i.name) for i in self.input.input)))
         self.method.append(INDENTATION + '"""')
-        self.method.extend([
-            "{}:param {}: {}".format(INDENTATION, var_name(arg.name),
-                                     arg.comment) for arg in self.input.input
-        ])
+        for arg in self.input.input:
+            self.method.append("{}:param {}: {}".format(
+                INDENTATION, var_name(arg.name), arg.comment))
+            self.method.append("{}:type {}: {}".format(
+                INDENTATION, var_name(arg.name), type_str(
+                    arg.type, self.input)))
         self.method.append(INDENTATION + '"""')
         if reprint:
             for var in self.input.input:

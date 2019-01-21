@@ -1,11 +1,17 @@
 def keywords(if_, class_, i, in_, for_, words):
     """
     :param if_: not a condition
+    :type if_: int
     :param class_: not a class
+    :type class_: str
     :param i: just a string
+    :type i: str
     :param in_: not in
+    :type in_: dict["a": int, "static": int]
     :param for_: not a loop
+    :type for_: list[int]
     :param words: contains lots of things
+    :type words: list[dict["int": dict["return": int, "void": list[int]], "if true": int]]
     """
     # TODO If this compiles, it is already a good step!
     pass
