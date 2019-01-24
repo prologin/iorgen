@@ -27,7 +27,10 @@ $matrices = [];
 for ($i = 0; $i < 2; $i++) {
     $matrices[$i] = [];
     $matrices[$i]["size3"] = intval(trim(fgets(STDIN)));
-    $matrices[$i]["list list"] = array_map(function() { return array_map('intval', preg_split('/ /', trim(fgets(STDIN)), -1, PREG_SPLIT_NO_EMPTY)); }, range(1, $matrices[$i]["size3"]));
+    $matrices[$i]["list list"] = [];
+    for ($j = 0; $j < $matrices[$i]["size3"]; $j++) {
+        $matrices[$i]["list list"][$j] = array_map('intval', preg_split('/ /', trim(fgets(STDIN)), -1, PREG_SPLIT_NO_EMPTY));
+    }
 }
 $same = [];
 for ($i = 0; $i < $n; $i++) {

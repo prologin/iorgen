@@ -12,7 +12,10 @@ function structs(&$struct, $n, &$struct_list, &$triangle, &$struct_chars) {
 
 $struct = array_combine(["foo", "bar"], array_map('intval', explode(' ', fgets(STDIN))));
 $n = intval(trim(fgets(STDIN)));
-$struct_list = array_map(function() { return array_combine(["foo", "bar"], array_map('intval', explode(' ', fgets(STDIN)))); }, range(1, $n));
+$struct_list = [];
+for ($i = 0; $i < $n; $i++) {
+    $struct_list[$i] = array_combine(["foo", "bar"], array_map('intval', explode(' ', fgets(STDIN))));
+}
 $triangle = [];
 for ($i = 0; $i < 3; $i++) {
     $triangle[$i] = [];

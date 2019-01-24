@@ -15,6 +15,12 @@ $n = intval(trim(fgets(STDIN)));
 $list_int = array_map('intval', preg_split('/ /', trim(fgets(STDIN)), -1, PREG_SPLIT_NO_EMPTY));
 $size = intval(trim(fgets(STDIN)));
 $list_char = preg_split('//', trim(fgets(STDIN)), -1, PREG_SPLIT_NO_EMPTY);
-$list_string4 = array_map(function() { return trim(fgets(STDIN)); }, range(1, $size));
-$matrix = array_map(function() { return array_map('intval', preg_split('/ /', trim(fgets(STDIN)), -1, PREG_SPLIT_NO_EMPTY)); }, range(1, $size));
+$list_string4 = [];
+for ($i = 0; $i < $size; $i++) {
+    $list_string4[$i] = trim(fgets(STDIN));
+}
+$matrix = [];
+for ($i = 0; $i < $size; $i++) {
+    $matrix[$i] = array_map('intval', preg_split('/ /', trim(fgets(STDIN)), -1, PREG_SPLIT_NO_EMPTY));
+}
 lists($n, $list_int, $size, $list_char, $list_string4, $matrix);

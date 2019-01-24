@@ -88,10 +88,7 @@ class ParserPHP:
                                     var_name(type_.encapsulated.size))
             self.iterator.pop_it()
             if len(lines) == 1:
-                return [
-                    "array_map(function() {{ return {}; }}, range(1, {}))".
-                    format(lines[0], size)
-                ]
+                lines[0] = '{}[{}] = {};'.format(name, iterator, lines[0])
             prefix = [
                 "{} = [];".format(name),
                 "for ({0} = 0; {0} < {1}; {0}++) {{".format(iterator, size)

@@ -9,5 +9,8 @@ function example($n, &$list) {
 }
 
 $n = intval(trim(fgets(STDIN)));
-$list = array_map(function() { return array_combine(["integer", "character"], explode(' ', trim(fgets(STDIN)))); }, range(1, $n));
+$list = [];
+for ($i = 0; $i < $n; $i++) {
+    $list[$i] = array_combine(["integer", "character"], explode(' ', trim(fgets(STDIN))));
+}
 example($n, $list);
