@@ -216,7 +216,7 @@ class ParserC():
             init = " = getchar()"
         elif var.type.main == TypeEnum.STR:
             self.includes.add("stdlib.h")
-            init = " = calloc({} + 1, sizeof(char));".format(
+            init = " = calloc({} + 1, sizeof(char))".format(
                 var_name(var.type.size))
         elif var.type.main == TypeEnum.LIST:
             assert var.type.encapsulated is not None

@@ -39,7 +39,7 @@ int main() {
     for (int i = 0; i < 0; ++i)
         scanf("%d", &empty_list[i]);
     getchar(); // \n
-    char* buffer_string = calloc(3 + 1, sizeof(char));; ///< here to check correct parsing of empty line above
+    char* buffer_string = calloc(3 + 1, sizeof(char)); ///< here to check correct parsing of empty line above
     fgets(buffer_string, 3 + 1, stdin);
     int n; ///< an integer, will be 0 in the sample input
     scanf("%d", &n);
@@ -48,10 +48,10 @@ int main() {
     for (int i = 0; i < n; ++i)
         scanf("%d", &empty_in_sample[i]);
     getchar(); // \n
-    char* empty_string = calloc(0 + 1, sizeof(char));; ///< an empty string
+    char* empty_string = calloc(0 + 1, sizeof(char)); ///< an empty string
     fgets(empty_string, 0 + 1, stdin);
     getchar(); // \n
-    char* main_ = calloc(4 + 1, sizeof(char));; ///< an other buffer string
+    char* main_ = calloc(4 + 1, sizeof(char)); ///< an other buffer string
     fgets(main_, 4 + 1, stdin);
     getchar(); // \n
     char* empty_char_list = calloc(0 + 1, sizeof(char)); ///< an empty char list
@@ -72,7 +72,7 @@ int main() {
     a_sized_struct.string_in_struct = calloc(a_sized_struct.size + 1, sizeof(char));
     fgets(a_sized_struct.string_in_struct, a_sized_struct.size + 1, stdin);
     getchar(); // \n
-    char* finish = calloc(6 + 1, sizeof(char));; ///< a string to finish
+    char* finish = calloc(6 + 1, sizeof(char)); ///< a string to finish
     fgets(finish, 6 + 1, stdin);
     empty_lines(empty_list, buffer_string, n, empty_in_sample, empty_string, main_, empty_char_list, non_empty_char_list, struct_with_empty_line, a_sized_struct, finish);
 

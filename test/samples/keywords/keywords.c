@@ -35,7 +35,7 @@ int main() {
     getchar(); // \n
     char class = getchar(); ///< not a class
     getchar(); // \n
-    char* i = calloc(8 + 1, sizeof(char));; ///< just a string
+    char* i = calloc(8 + 1, sizeof(char)); ///< just a string
     fgets(i, 8 + 1, stdin);
     struct console in; ///< not in
     scanf("%d %d", &in.a, &in.static_);
