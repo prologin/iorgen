@@ -1,4 +1,4 @@
-name: empty lines
+function_name: empty lines
 subject: Very rarely, some lines may be empty, because we read a list or a
     string that has an empty size. Here we check that those cases work well.
 structs:

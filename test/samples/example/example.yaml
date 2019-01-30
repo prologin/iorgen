@@ -1,4 +1,4 @@
-name: example
+function_name: example
 subject: This input is an example for Iorgen's README
 structs:
     - name: a struct

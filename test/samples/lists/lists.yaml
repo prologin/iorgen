@@ -1,4 +1,4 @@
-name: lists
+function_name: lists
 subject: This reads several kinds of list.
 input:
     - type: int

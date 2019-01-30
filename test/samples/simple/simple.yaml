@@ -1,4 +1,4 @@
-name: simple
+function_name: simple
 subject: This is a simple test, just reading two numbers
 input:
     - type: int

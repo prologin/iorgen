@@ -92,10 +92,13 @@ def error_parse_input(dic: Dict[str, Any]) -> str:
     """Explain why we an input fails to parse"""
     # pylint: disable=too-many-return-statements
     assert Input.from_dict(dic) is None
-    if "name" not in dic:
-        return "missing name field"
-    if not isinstance(dic["name"], str):
-        return "name is not a string"
+    if "function_name" not in dic:
+        if "name" in dic:
+            dic["function_name"] = dic["name"]
+        else:
+            return "missing name field"
+    if not isinstance(dic["function_name"], str):
+        return "function_name is not a string"
     if "structs" in dic:  # non mandatory
         if not isinstance(dic["structs"], list):
             return "'structs' is not a list"

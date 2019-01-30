@@ -1,4 +1,4 @@
-name: sized struct
+function_name: sized struct
 subject: A special kind a struct containing the size of a list, or string.
 structs:
     - name: list

@@ -1,4 +1,4 @@
-name: structs
+function_name: structs
 subject: This will generate a program reading structs.
 structs:
     - name: struct 1

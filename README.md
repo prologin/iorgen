@@ -7,7 +7,7 @@ IO Reader GENerator
 template. The user writes a YAML describing the input, and *Iorgen* will
 generate the code to read this input from stdin, in all supported languages.
 
-The list of currently supported languages is: C, C++, C#, Go, Haskell, Java,
+The list of currently supported languages is: C, C++, C#, D, Go, Haskell, Java,
 Javascript, Lua, Ocaml, Pascal, Perl, PHP, Prolog, Python, Ruby, Rust, Scheme.
 A markdown description of the input in English and French can also be
 generated.
@@ -80,8 +80,7 @@ Several options are available:
 The input is described in [YAML](http://yaml.org/), and must have the following
 format:
 
-- A `"name"` field, containing a short string: the input’s name (this will be
-  the name of the generated function)
+- A `"function_name"` field, containing the name of the generated function
 - A `"subject"` field, containing a string (can be several paragraphs)
   describing what the input is about (will no be used in generated code)
 - An `"ouput"` field, containing a string (can be several paragraphs)
@@ -116,10 +115,11 @@ format:
 
 ### Syntax
 
-Any `"name"` field can hold any alphanumic character or spaces, but must start
-with a letter, and can not have trailing whitespaces. You do not have to worry
-about the name beeing a language’s keyword: it will automatically be modified
-if that is the case, usually by adding a trailing underscore.
+Any `"name"` field (or `"function_name"`) can hold any alphanumic character or
+spaces, but must start with a letter, and can not have trailing whitespaces.
+You do not have to worry about the name beeing a language’s keyword: it will
+automatically be modified if that is the case, usually by adding a trailing
+underscore.
 
 A `"comment"` field can hold any character other than a newline. For now,
 strings that end comments in some languages, such as `*/` should be avoided. A
@@ -140,7 +140,7 @@ and `structname` following this guidelines:
 ### Example
 
 ```yaml
-name: example
+function_name: example
 subject: This input is an example for Iorgen's README
 structs:
     - name: a struct
