@@ -87,11 +87,11 @@ class ParserD:
         """Read a variable in one line of stdin"""
         assert type_.fits_in_one_line(self.input.structs)
         if type_.main == TypeEnum.INT:
-            return 'stdin.readf("%d\\n", {});'.format(name)
+            return 'stdin.readf("%d\\n", &{});'.format(name)
         if type_.main == TypeEnum.STR:
-            return 'stdin.readf("%s\\n", {});'.format(name)
+            return 'stdin.readf("%s\\n", &{});'.format(name)
         if type_.main == TypeEnum.CHAR:
-            return 'stdin.readf("%c\\n", {});'.format(name)
+            return 'stdin.readf("%c\\n", &{});'.format(name)
         if type_.main == TypeEnum.LIST:
             assert type_.encapsulated
             self.add_import("std.array", "split")
@@ -108,7 +108,8 @@ class ParserD:
         return 'stdin.readf("{}\\n", {});'.format(
             " ".join("%c" if i.type.main == TypeEnum.CHAR else "%d"
                      for i in struct.fields),
-            ", ".join(name + "." + var_name(i.name) for i in struct.fields))
+            ", ".join(
+                "&" + name + "." + var_name(i.name) for i in struct.fields))
 
     def read_lines(self, name: str, type_: Type, size: str) -> List[str]:
         """Read a variable in one line or several lines of stdin"""

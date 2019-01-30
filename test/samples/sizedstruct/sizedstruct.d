@@ -47,26 +47,26 @@ void sizedStruct(int n, List[] lists, String[] strings, Matrix[] matrices, NotAS
 void main()
 {
     int n;
-    stdin.readf("%d\n", n);
+    stdin.readf("%d\n", &n);
     List[] lists;
     lists.length = n;
     for (size_t i = 0; i < lists.length; i++)
     {
-        stdin.readf("%d\n", lists[i].size1);
+        stdin.readf("%d\n", &lists[i].size1);
         lists[i].intList = stdin.readln.split.map!(to!int).array;
     }
     String[] strings;
     strings.length = n;
     for (size_t i = 0; i < strings.length; i++)
     {
-        stdin.readf("%d\n", strings[i].size2);
-        stdin.readf("%s\n", strings[i].stringList);
+        stdin.readf("%d\n", &strings[i].size2);
+        stdin.readf("%s\n", &strings[i].stringList);
     }
     Matrix[] matrices;
     matrices.length = 2;
     for (size_t i = 0; i < matrices.length; i++)
     {
-        stdin.readf("%d\n", matrices[i].size3);
+        stdin.readf("%d\n", &matrices[i].size3);
         matrices[i].listList.length = matrices[i].size3;
         for (size_t j = 0; j < matrices[i].listList.length; j++)
         {
@@ -77,7 +77,7 @@ void main()
     same.length = n;
     for (size_t i = 0; i < same.length; i++)
     {
-        stdin.readf("%d\n", same[i].size4);
+        stdin.readf("%d\n", &same[i].size4);
         same[i].intListN = stdin.readln.split.map!(to!int).array;
     }
 

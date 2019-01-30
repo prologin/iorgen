@@ -49,27 +49,27 @@ void main()
     int[] emptyList;
     emptyList = stdin.readln.split.map!(to!int).array;
     string bufferString;
-    stdin.readf("%s\n", bufferString);
+    stdin.readf("%s\n", &bufferString);
     int n;
-    stdin.readf("%d\n", n);
+    stdin.readf("%d\n", &n);
     int[] emptyInSample;
     emptyInSample = stdin.readln.split.map!(to!int).array;
     string emptyString;
-    stdin.readf("%s\n", emptyString);
+    stdin.readf("%s\n", &emptyString);
     string main_;
-    stdin.readf("%s\n", main_);
+    stdin.readf("%s\n", &main_);
     char[] emptyCharList;
     emptyCharList = stdin.readln.chop.to!(char[]);
     char[] nonEmptyCharList;
     nonEmptyCharList = stdin.readln.chop.to!(char[]);
     A structWithEmptyLine;
     structWithEmptyLine.listInStruct = stdin.readln.split.map!(to!int).array;
-    stdin.readf("%c %d\n", structWithEmptyLine.structInStruct.char1, structWithEmptyLine.structInStruct.int2);
+    stdin.readf("%c %d\n", &structWithEmptyLine.structInStruct.char1, &structWithEmptyLine.structInStruct.int2);
     SizedStruct aSizedStruct;
-    stdin.readf("%d\n", aSizedStruct.size);
-    stdin.readf("%s\n", aSizedStruct.stringInStruct);
+    stdin.readf("%d\n", &aSizedStruct.size);
+    stdin.readf("%s\n", &aSizedStruct.stringInStruct);
     string finish;
-    stdin.readf("%s\n", finish);
+    stdin.readf("%s\n", &finish);
 
     emptyLines(emptyList, bufferString, n, emptyInSample, emptyString, main_, emptyCharList, nonEmptyCharList, structWithEmptyLine, aSizedStruct, finish);
 }

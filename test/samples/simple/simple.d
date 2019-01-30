@@ -13,9 +13,9 @@ void simple(int n, int otherNumber)
 void main()
 {
     int n;
-    stdin.readf("%d\n", n);
+    stdin.readf("%d\n", &n);
     int otherNumber;
-    stdin.readf("%d\n", otherNumber);
+    stdin.readf("%d\n", &otherNumber);
 
     simple(n, otherNumber);
 }

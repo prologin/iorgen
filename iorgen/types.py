@@ -409,7 +409,8 @@ class Input():
             if "function_name" not in dic and "name" in dic:
                 print('WARNING: "name" is deprecated, use "function_name"')
                 dic["function_name"] = dic["name"]
-            return cls(dic["function_name"], structs, variables, subject, dic["output"])
+            return cls(dic["function_name"], structs, variables, subject,
+                       dic["output"])
         except KeyError:
             return None
 

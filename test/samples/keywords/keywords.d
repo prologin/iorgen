@@ -41,22 +41,22 @@ void keywords(int if_, char class_, string i, Console in_, int[] for_, Main[] wo
 void main()
 {
     int if_;
-    stdin.readf("%d\n", if_);
+    stdin.readf("%d\n", &if_);
     char class_;
-    stdin.readf("%c\n", class_);
+    stdin.readf("%c\n", &class_);
     string i;
-    stdin.readf("%s\n", i);
+    stdin.readf("%s\n", &i);
     Console in_;
-    stdin.readf("%d %d\n", in_.a, in_.static_);
+    stdin.readf("%d %d\n", &in_.a, &in_.static_);
     int[] for_;
     for_ = stdin.readln.split.map!(to!int).array;
     Main[] words;
     words.length = 2;
     for (size_t j = 0; j < words.length; j++)
     {
-        stdin.readf("%d\n", words[j].int_.return_);
+        stdin.readf("%d\n", &words[j].int_.return_);
         words[j].int_.void_ = stdin.readln.split.map!(to!int).array;
-        stdin.readf("%d\n", words[j].ifTrue);
+        stdin.readf("%d\n", &words[j].ifTrue);
     }
 
     keywords(if_, class_, i, in_, for_, words);

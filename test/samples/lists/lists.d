@@ -21,18 +21,18 @@ void lists(int n, int[] listInt, int size, char[] listChar, string[] listString4
 void main()
 {
     int n;
-    stdin.readf("%d\n", n);
+    stdin.readf("%d\n", &n);
     int[] listInt;
     listInt = stdin.readln.split.map!(to!int).array;
     int size;
-    stdin.readf("%d\n", size);
+    stdin.readf("%d\n", &size);
     char[] listChar;
     listChar = stdin.readln.chop.to!(char[]);
     string[] listString4;
     listString4.length = size;
     for (size_t i = 0; i < listString4.length; i++)
     {
-        stdin.readf("%s\n", listString4[i]);
+        stdin.readf("%s\n", &listString4[i]);
     }
     int[][] matrix;
     matrix.length = size;

@@ -46,24 +46,24 @@ void structs(Struct1 struct_, int n, Struct1[] structList, Point[] triangle, Cha
 void main()
 {
     Struct1 struct_;
-    stdin.readf("%d %d\n", struct_.foo, struct_.bar);
+    stdin.readf("%d %d\n", &struct_.foo, &struct_.bar);
     int n;
-    stdin.readf("%d\n", n);
+    stdin.readf("%d\n", &n);
     Struct1[] structList;
     structList.length = n;
     for (size_t i = 0; i < structList.length; i++)
     {
-        stdin.readf("%d %d\n", structList[i].foo, structList[i].bar);
+        stdin.readf("%d %d\n", &structList[i].foo, &structList[i].bar);
     }
     Point[] triangle;
     triangle.length = 3;
     for (size_t i = 0; i < triangle.length; i++)
     {
-        stdin.readf("%c\n", triangle[i].name);
-        stdin.readf("%d %d %d\n", triangle[i].pos.x, triangle[i].pos.y, triangle[i].pos.z);
+        stdin.readf("%c\n", &triangle[i].name);
+        stdin.readf("%d %d %d\n", &triangle[i].pos.x, &triangle[i].pos.y, &triangle[i].pos.z);
     }
     Chars structChars;
-    stdin.readf("%c %c %c\n", structChars.firstChar, structChars.secondChar, structChars.thirdChar);
+    stdin.readf("%c %c %c\n", &structChars.firstChar, &structChars.secondChar, &structChars.thirdChar);
 
     structs(struct_, n, structList, triangle, structChars);
 }

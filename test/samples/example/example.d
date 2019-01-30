@@ -21,12 +21,12 @@ void example(int n, AStruct[] list)
 void main()
 {
     int n;
-    stdin.readf("%d\n", n);
+    stdin.readf("%d\n", &n);
     AStruct[] list;
     list.length = n;
     for (size_t i = 0; i < list.length; i++)
     {
-        stdin.readf("%d %c\n", list[i].integer, list[i].character);
+        stdin.readf("%d %c\n", &list[i].integer, &list[i].character);
     }
 
     example(n, list);
