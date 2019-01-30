@@ -8,6 +8,7 @@ from iorgen.markdown import gen_markdown
 from iorgen.parser_c import gen_c
 from iorgen.parser_cpp import gen_cpp
 from iorgen.parser_csharp import gen_csharp
+from iorgen.parser_d import gen_d
 from iorgen.parser_go import gen_go
 from iorgen.parser_haskell import gen_haskell
 from iorgen.parser_java import gen_java

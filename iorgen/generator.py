@@ -11,6 +11,7 @@ from iorgen.markdown import gen_markdown
 from iorgen.parser_c import gen_c
 from iorgen.parser_cpp import gen_cpp
 from iorgen.parser_csharp import gen_csharp
+from iorgen.parser_d import gen_d
 from iorgen.parser_go import gen_go
 from iorgen.parser_haskell import gen_haskell
 from iorgen.parser_java import gen_java
@@ -83,6 +84,7 @@ ALL_LANGUAGES = [
     Language("cpp", gen_cpp,
              ["g++", "-std=c++17", "-Wall", "-Wextra", "-O2", "-o", "{name}"]),
     Language("cs", gen_csharp, ["mcs", "-optimize", "-out:{name}"], ["mono"]),
+    Language("d", gen_d, ["dmd"]),
     Language("go", gen_go, ["go", "build", "-buildmode=exe"]),
     Language(
         "hs", gen_haskell,
