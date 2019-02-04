@@ -1,6 +1,7 @@
 "use strict";
 const fs = require("fs");
 
+
 /**
  * @param {number} if_ not a condition
  * @param {string} class_ not a class
@@ -14,8 +15,7 @@ function keywords(if_, class_, i, in_, for_, words) {
     /* TODO If this compiles, it is already a good step! */
 }
 
-{
-    const stdin = fs.readFileSync("/dev/stdin").toString().split("\n");
+function main(stdin) {
     let line = 0;
 
     const if_ = Number(stdin[line++]);
@@ -38,3 +38,7 @@ function keywords(if_, class_, i, in_, for_, words) {
     }
     keywords(if_, class_, i, in_, for_, words);
 }
+
+let stdin = "";
+process.stdin.on("data", data => stdin += data.toString())
+             .on("end", () => main(stdin.split("\n")));

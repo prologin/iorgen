@@ -1,6 +1,7 @@
 "use strict";
 const fs = require("fs");
 
+
 /**
  * @param {number} n the size of the lists
  * @param {Array.<Object>} lists a list of list of different sizes
@@ -13,8 +14,7 @@ function sizedStruct(n, lists, strings, matrices, same) {
     /* TODO The is a special case. */
 }
 
-{
-    const stdin = fs.readFileSync("/dev/stdin").toString().split("\n");
+function main(stdin) {
     let line = 0;
 
     const n = Number(stdin[line++]);
@@ -52,3 +52,7 @@ function sizedStruct(n, lists, strings, matrices, same) {
     }
     sizedStruct(n, lists, strings, matrices, same);
 }
+
+let stdin = "";
+process.stdin.on("data", data => stdin += data.toString())
+             .on("end", () => main(stdin.split("\n")));

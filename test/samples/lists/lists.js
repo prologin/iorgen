@@ -1,6 +1,7 @@
 "use strict";
 const fs = require("fs");
 
+
 /**
  * @param {number} n the first list's size
  * @param {Array.<number>} listInt a list containing ints
@@ -14,8 +15,7 @@ function lists(n, listInt, size, listChar, listString4, matrix) {
     /* TODO Aren't these lists beautifull? */
 }
 
-{
-    const stdin = fs.readFileSync("/dev/stdin").toString().split("\n");
+function main(stdin) {
     let line = 0;
 
     const n = Number(stdin[line++]);
@@ -34,3 +34,7 @@ function lists(n, listInt, size, listChar, listString4, matrix) {
     }
     lists(n, listInt, size, listChar, listString4, matrix);
 }
+
+let stdin = "";
+process.stdin.on("data", data => stdin += data.toString())
+             .on("end", () => main(stdin.split("\n")));

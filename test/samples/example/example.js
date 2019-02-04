@@ -1,6 +1,7 @@
 "use strict";
 const fs = require("fs");
 
+
 /**
  * @param {number} n a number, used as a size
  * @param {Array.<Object>} list a list of structs
@@ -11,8 +12,7 @@ function example(n, list) {
     end user to do with this generated code */
 }
 
-{
-    const stdin = fs.readFileSync("/dev/stdin").toString().split("\n");
+function main(stdin) {
     let line = 0;
 
     const n = Number(stdin[line++]);
@@ -27,3 +27,7 @@ function example(n, list) {
     }
     example(n, list);
 }
+
+let stdin = "";
+process.stdin.on("data", data => stdin += data.toString())
+             .on("end", () => main(stdin.split("\n")));

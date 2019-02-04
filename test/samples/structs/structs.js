@@ -1,6 +1,7 @@
 "use strict";
 const fs = require("fs");
 
+
 /**
  * @param {Object} struct a struct 1 instance
  * @param {number} n a number
@@ -13,8 +14,7 @@ function structs(struct, n, structList, triangle, structChars) {
     /* TODO Look at them structs. */
 }
 
-{
-    const stdin = fs.readFileSync("/dev/stdin").toString().split("\n");
+function main(stdin) {
     let line = 0;
 
     const words = stdin[line++].split(" ");
@@ -52,3 +52,7 @@ function structs(struct, n, structList, triangle, structChars) {
     };
     structs(struct, n, structList, triangle, structChars);
 }
+
+let stdin = "";
+process.stdin.on("data", data => stdin += data.toString())
+             .on("end", () => main(stdin.split("\n")));

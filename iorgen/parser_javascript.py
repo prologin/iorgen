@@ -212,13 +212,32 @@ def call(input_data: Input, reprint: bool) -> List[str]:
 
 def gen_javascript(input_data: Input, reprint: bool = False) -> str:
     """Generate a Javascript code to parse input"""
-    output = '"use strict";\nconst fs = require("fs");\n\n'
-    output += "\n".join(call(input_data, reprint))
-    output += '\n\n{\n' + INDENTATION + 'const stdin = ' + \
-        'fs.readFileSync("/dev/stdin").toString().split("\\n");\n' + \
-        INDENTATION + 'let line = 0;\n\n'
-    output += "\n".join(ParserJS(input_data).read_vars())
+
+    placeholder = "\n".join(call(input_data, reprint))
+    parser = "\n".join(ParserJS(input_data).read_vars())
     args = (var_name(i.name) for i in input_data.input)
-    output += "\n{}{}({});".format(INDENTATION, var_name(input_data.name),
-                                   ", ".join(args))
-    return output + "\n}\n"
+    placeholder_call = "{}({});".format(
+        var_name(input_data.name), ", ".join(args))
+
+    return '''"use strict";
+const fs = require("fs");
+
+
+{placeholder}
+
+function main(stdin) {{
+{ind}let line = 0;
+
+{parser}
+{ind}{placeholder_call}
+}}
+
+let stdin = "";
+process.stdin.on("data", data => stdin += data.toString())
+             .on("end", () => main(stdin.split("\\n")));
+'''.format(
+        ind=INDENTATION,
+        placeholder=placeholder,
+        parser=parser,
+        placeholder_call=placeholder_call,
+    )

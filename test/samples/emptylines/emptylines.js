@@ -1,6 +1,7 @@
 "use strict";
 const fs = require("fs");
 
+
 /**
  * @param {Array.<number>} emptyList an empty list
  * @param {string} bufferString here to check correct parsing of empty line above
@@ -19,8 +20,7 @@ function emptyLines(emptyList, bufferString, n, emptyInSample, emptyString, main
     /* TODO Wow, lots of empty lines! */
 }
 
-{
-    const stdin = fs.readFileSync("/dev/stdin").toString().split("\n");
+function main(stdin) {
     let line = 0;
 
     const emptyList = stdin[line++].split(" ", 0).map(Number);
@@ -44,3 +44,7 @@ function emptyLines(emptyList, bufferString, n, emptyInSample, emptyString, main
     const finish = stdin[line++];
     emptyLines(emptyList, bufferString, n, emptyInSample, emptyString, main, emptyCharList, nonEmptyCharList, structWithEmptyLine, aSizedStruct, finish);
 }
+
+let stdin = "";
+process.stdin.on("data", data => stdin += data.toString())
+             .on("end", () => main(stdin.split("\n")));
