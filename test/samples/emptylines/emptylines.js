@@ -20,7 +20,7 @@ function emptyLines(emptyList, bufferString, n, emptyInSample, emptyString, main
 }
 
 {
-    const stdin = fs.readFileSync("/dev/stdin").toString().split("\n");
+    const stdin = fs.readFileSync(0).toString().split("\n");
     let line = 0;
 
     const emptyList = stdin[line++].split(" ", 0).map(Number);

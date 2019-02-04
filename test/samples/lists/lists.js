@@ -15,7 +15,7 @@ function lists(n, listInt, size, listChar, listString4, matrix) {
 }
 
 {
-    const stdin = fs.readFileSync("/dev/stdin").toString().split("\n");
+    const stdin = fs.readFileSync(0).toString().split("\n");
     let line = 0;
 
     const n = Number(stdin[line++]);

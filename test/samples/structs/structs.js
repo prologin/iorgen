@@ -14,7 +14,7 @@ function structs(struct, n, structList, triangle, structChars) {
 }
 
 {
-    const stdin = fs.readFileSync("/dev/stdin").toString().split("\n");
+    const stdin = fs.readFileSync(0).toString().split("\n");
     let line = 0;
 
     const words = stdin[line++].split(" ");

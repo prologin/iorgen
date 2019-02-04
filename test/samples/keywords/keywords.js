@@ -15,7 +15,7 @@ function keywords(if_, class_, i, in_, for_, words) {
 }
 
 {
-    const stdin = fs.readFileSync("/dev/stdin").toString().split("\n");
+    const stdin = fs.readFileSync(0).toString().split("\n");
     let line = 0;
 
     const if_ = Number(stdin[line++]);

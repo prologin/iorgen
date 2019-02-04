@@ -215,7 +215,7 @@ def gen_javascript(input_data: Input, reprint: bool = False) -> str:
     output = '"use strict";\nconst fs = require("fs");\n\n'
     output += "\n".join(call(input_data, reprint))
     output += '\n\n{\n' + INDENTATION + 'const stdin = ' + \
-        'fs.readFileSync("/dev/stdin").toString().split("\\n");\n' + \
+        'fs.readFileSync(0).toString().split("\\n");\n' + \
         INDENTATION + 'let line = 0;\n\n'
     output += "\n".join(ParserJS(input_data).read_vars())
     args = (var_name(i.name) for i in input_data.input)
