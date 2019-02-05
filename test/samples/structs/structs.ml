@@ -36,9 +36,13 @@ let structs struct_ n structList triangle structChars =
   ()
 
 let () =
+  let listinit n f =
+    let rec aux i = if i >= n then [] else let r = f i in r :: aux (i+1) in
+    aux 0 in
+
   let struct_ = Scanf.scanf "%d %d\n" (fun foo bar -> {foo = foo; bar = bar}) in
   let n = Scanf.scanf "%d\n" (fun x -> x) in
-  let structList = List.init n (fun _ -> Scanf.scanf "%d %d\n" (fun foo bar -> {foo = foo; bar = bar})) in
-  let triangle = List.init 3 (fun _ -> let name = Scanf.scanf "%c\n" (fun x -> x) in let pos = Scanf.scanf "%d %d %d\n" (fun x y z -> {x = x; y = y; z = z}) in {name = name; pos = pos}) in
+  let structList = listinit n (fun _ -> Scanf.scanf "%d %d\n" (fun foo bar -> {foo = foo; bar = bar})) in
+  let triangle = listinit 3 (fun _ -> let name = Scanf.scanf "%c\n" (fun x -> x) in let pos = Scanf.scanf "%d %d %d\n" (fun x y z -> {x = x; y = y; z = z}) in {name = name; pos = pos}) in
   let structChars = Scanf.scanf "%c %c %c\n" (fun firstChar secondChar thirdChar -> {firstChar = firstChar; secondChar = secondChar; thirdChar = thirdChar}) in
   structs struct_ n structList triangle structChars

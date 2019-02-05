@@ -18,21 +18,25 @@ KEYWORDS = [
     "virtual", "when", "while", "with"
 ]
 
+USED_SYMBOLS = ["int", "char", "string", "list", "listinit"]
+
 INDENTATION = "  "
 
 
 def var_name(name: str) -> str:
     """Transform a variable name into a valid one for OCaml"""
     candidate = camel_case(name)
-    return candidate + '_' if candidate in KEYWORDS else candidate
+    if candidate in KEYWORDS or candidate in USED_SYMBOLS:
+        return candidate + '_'
+    return candidate
 
 
 def record_name(name: str) -> str:
     """Transform a record name into a valid one for OCaml"""
     candidate = snake_case(name)
-    if candidate in ("int", "char", "string", "list"):
+    if candidate in KEYWORDS or candidate in USED_SYMBOLS:
         return candidate + '_'
-    return candidate + '_' if candidate in KEYWORDS else candidate
+    return candidate
 
 
 def type_str(type_: Type) -> str:
@@ -82,7 +86,7 @@ def read_line(type_: Type, input_data: Input) -> str:
                     ).format('if String.equal "" x then [] else ' if type_.
                              can_be_empty else "")
         if type_.encapsulated.main == TypeEnum.CHAR:
-            return '{} (fun x -> List.init {} (String.get x))'.format(
+            return '{} (fun x -> listinit {} (String.get x))'.format(
                 'Scanf.scanf "%s@\\n"', var_name(type_.size))
     if type_.main == TypeEnum.STRUCT:
         struct = input_data.get_struct(type_.struct_name)
@@ -101,7 +105,7 @@ def read_lines(type_: Type, input_data: Input) -> str:
         return read_line(type_, input_data)
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
-        return "List.init {} (fun _ -> {})".format(
+        return "listinit {} (fun _ -> {})".format(
             var_name(type_.size), read_lines(type_.encapsulated, input_data))
     if type_.main == TypeEnum.STRUCT:
         struct = input_data.get_struct(type_.struct_name)
@@ -192,10 +196,18 @@ def gen_ocaml(input_data: Input, reprint: bool = False) -> str:
         output += "\n\n"
     output += "\n".join(method(input_data, reprint))
     output += "\n\nlet () =\n"
+    main = ""
     for var in input_data.input:
-        output += INDENTATION + "let {} = {} in\n".format(
+        main += INDENTATION + "let {} = {} in\n".format(
             var_name(var.name), read_lines(var.type, input_data))
     args = (var_name(i.name) for i in input_data.input)
-    output += "{}{} {}\n".format(INDENTATION, var_name(input_data.name),
-                                 " ".join(args))
+    main += "{}{} {}\n".format(INDENTATION, var_name(input_data.name),
+                               " ".join(args))
+    if " listinit " in main:
+        # This is a quick fix to avoid dependency of OCaml 4.06 for List.init
+        output += INDENTATION + "let listinit n f =\n"
+        output += INDENTATION * 2 + ("let rec aux i = if i >= n then [] else "
+                                   "let r = f i in r :: aux (i+1) in\n")
+        output += INDENTATION * 2 + "aux 0 in\n\n"
+    output += main
     return output
