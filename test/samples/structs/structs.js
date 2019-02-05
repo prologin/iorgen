@@ -1,6 +1,4 @@
 "use strict";
-const fs = require("fs");
-
 
 /**
  * @param {Object} struct a struct 1 instance

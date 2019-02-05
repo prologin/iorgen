@@ -1,6 +1,4 @@
 "use strict";
-const fs = require("fs");
-
 
 /**
  * @param {Array.<number>} emptyList an empty list
@@ -8,7 +6,7 @@ const fs = require("fs");
  * @param {number} n an integer, will be 0 in the sample input
  * @param {Array.<number>} emptyInSample an empty list (only in the sample)
  * @param {string} emptyString an empty string
- * @param {string} main an other buffer string
+ * @param {string} main_ an other buffer string
  * @param {Array.<string>} emptyCharList an empty char list
  * @param {Array.<string>} nonEmptyCharList an char list, non empty
  * @param {Object} structWithEmptyLine a struct containing an empty line, then a struct
@@ -16,7 +14,7 @@ const fs = require("fs");
  * @param {string} finish a string to finish
  * @returns {void}
  */
-function emptyLines(emptyList, bufferString, n, emptyInSample, emptyString, main, emptyCharList, nonEmptyCharList, structWithEmptyLine, aSizedStruct, finish) {
+function emptyLines(emptyList, bufferString, n, emptyInSample, emptyString, main_, emptyCharList, nonEmptyCharList, structWithEmptyLine, aSizedStruct, finish) {
     /* TODO Wow, lots of empty lines! */
 }
 
@@ -28,7 +26,7 @@ function main(stdin) {
     const n = Number(stdin[line++]);
     const emptyInSample = stdin[line++].split(" ", n).map(Number);
     const emptyString = stdin[line++];
-    const main = stdin[line++];
+    const main_ = stdin[line++];
     const emptyCharList = stdin[line++].split("");
     const nonEmptyCharList = stdin[line++].split("");
     const structWithEmptyLine = {};
@@ -42,7 +40,7 @@ function main(stdin) {
     aSizedStruct.size = Number(stdin[line++]);
     aSizedStruct.stringInStruct = stdin[line++];
     const finish = stdin[line++];
-    emptyLines(emptyList, bufferString, n, emptyInSample, emptyString, main, emptyCharList, nonEmptyCharList, structWithEmptyLine, aSizedStruct, finish);
+    emptyLines(emptyList, bufferString, n, emptyInSample, emptyString, main_, emptyCharList, nonEmptyCharList, structWithEmptyLine, aSizedStruct, finish);
 }
 
 let stdin = "";

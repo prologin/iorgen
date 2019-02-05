@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018 Sacha Delanoue
+# Copyright 2018-2019 Sacha Delanoue
+# Copyright 2019 Victor Collod
 """Generate a Javascript parser"""
 
 import textwrap
@@ -26,7 +27,7 @@ INDENTATION = "    "
 def var_name(name: str) -> str:
     """Transform a variable name into a valid one for Javascript"""
     candidate = camel_case(name)
-    if candidate in ("fs", "stdin", "line"):
+    if candidate in ("process", "stdin", "line", "main"):
         return candidate + "_"
     return candidate + "_" if candidate in KEYWORDS else candidate
 
@@ -220,8 +221,6 @@ def gen_javascript(input_data: Input, reprint: bool = False) -> str:
         var_name(input_data.name), ", ".join(args))
 
     return '''"use strict";
-const fs = require("fs");
-
 
 {placeholder}
 

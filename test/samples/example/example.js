@@ -1,6 +1,4 @@
 "use strict";
-const fs = require("fs");
-
 
 /**
  * @param {number} n a number, used as a size

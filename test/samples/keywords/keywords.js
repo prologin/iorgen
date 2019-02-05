@@ -1,6 +1,4 @@
 "use strict";
-const fs = require("fs");
-
 
 /**
  * @param {number} if_ not a condition

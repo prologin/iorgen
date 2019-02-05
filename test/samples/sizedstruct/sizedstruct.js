@@ -1,6 +1,4 @@
 "use strict";
-const fs = require("fs");
-
 
 /**
  * @param {number} n the size of the lists
