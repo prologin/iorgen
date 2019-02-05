@@ -1,4 +1,4 @@
-function_name: Keywords
+function_name: keywords
 subject: The names used here are often keywords in many languages
 structs:
     - name: console
