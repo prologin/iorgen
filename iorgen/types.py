@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright 2018 Sacha Delanoue
+# Copyright 2019 Matthieu Moatti
 """Generic types in a programming language"""
 
 import re
@@ -410,7 +411,8 @@ class Input():
                 print('WARNING: "name" is deprecated, use "function_name"')
                 dic["function_name"] = dic["name"]
             if not re.fullmatch('[a-z][a-z0-9 ]*', dic['function_name']):
-                raise ValueError('Field `function_name` should match [a-z][a-z0-9 ]*')
+                raise ValueError(
+                    'Field `function_name` should match [a-z][a-z0-9 ]*')
             return cls(dic["function_name"], structs, variables, subject,
                        dic["output"])
         except KeyError:

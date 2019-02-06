@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018 Sacha Delanoue
+# Copyright 2018-2019 Sacha Delanoue
 """Check that a YAML input is well formed"""
 
 import re
@@ -91,6 +91,7 @@ def error_parse_struct(
 def error_parse_input(dic: Dict[str, Any]) -> str:
     """Explain why we an input fails to parse"""
     # pylint: disable=too-many-return-statements
+    # pylint: disable=too-many-branches
     assert Input.from_dict(dic) is None
     if "function_name" not in dic:
         if "name" in dic:
