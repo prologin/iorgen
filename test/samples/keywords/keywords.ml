@@ -33,10 +33,21 @@ let () =
     let rec aux i = if i >= n then [] else let r = f i in r :: aux (i+1) in
     aux 0 in
 
+  let stringsplit_on_char sep s = (* OCaml 4.04: String.split_on_char *)
+    let r = ref [] in
+    let j = ref (String.length s) in
+    for i = String.length s - 1 downto 0 do
+      if String.unsafe_get s i = sep then begin
+        r := String.sub s (i + 1) (!j - i - 1) :: !r;
+        j := i
+      end
+    done;
+    String.sub s 0 !j :: !r in
+
   let if_ = Scanf.scanf "%d\n" (fun x -> x) in
   let class_ = Scanf.scanf "%c\n" (fun x -> x) in
   let i = Scanf.scanf "%s@\n" (fun x -> x) in
   let in_ = Scanf.scanf "%d %d\n" (fun a static -> {a = a; static = static}) in
-  let for_ = Scanf.scanf "%s@\n" (fun x -> if String.equal "" x then [] else List.map int_of_string (String.split_on_char ' ' x)) in
-  let words = listinit 2 (fun _ -> let int_ = let return = Scanf.scanf "%d\n" (fun x -> x) in let void = Scanf.scanf "%s@\n" (fun x -> List.map int_of_string (String.split_on_char ' ' x)) in {return = return; void = void} in let ifTrue = Scanf.scanf "%d\n" (fun x -> x) in {int_ = int_; ifTrue = ifTrue}) in
+  let for_ = Scanf.scanf "%s@\n" (fun x -> if String.length x == 0 then [] else List.map int_of_string (stringsplit_on_char ' ' x)) in
+  let words = listinit 2 (fun _ -> let int_ = let return = Scanf.scanf "%d\n" (fun x -> x) in let void = Scanf.scanf "%s@\n" (fun x -> List.map int_of_string (stringsplit_on_char ' ' x)) in {return = return; void = void} in let ifTrue = Scanf.scanf "%d\n" (fun x -> x) in {int_ = int_; ifTrue = ifTrue}) in
   keywords if_ class_ i in_ for_ words

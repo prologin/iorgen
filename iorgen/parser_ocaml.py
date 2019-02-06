@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018 Sacha Delanoue
+# Copyright 2018-2019 Sacha Delanoue
 """Generate a OCaml parser"""
 
 import textwrap
@@ -18,7 +18,9 @@ KEYWORDS = [
     "virtual", "when", "while", "with"
 ]
 
-USED_SYMBOLS = ["int", "char", "string", "list", "listinit"]
+USED_SYMBOLS = [
+    "int", "char", "string", "list", "listinit", "stringsplit_on_char"
+]
 
 INDENTATION = "  "
 
@@ -82,8 +84,8 @@ def read_line(type_: Type, input_data: Input) -> str:
         assert type_.encapsulated is not None
         if type_.encapsulated.main == TypeEnum.INT:
             return ('Scanf.scanf "%s@\\n" (fun x -> {}List.map int_of_string '
-                    '(String.split_on_char \' \' x))'
-                    ).format('if String.equal "" x then [] else ' if type_.
+                    '(stringsplit_on_char \' \' x))'
+                    ).format('if String.length x == 0 then [] else ' if type_.
                              can_be_empty else "")
         if type_.encapsulated.main == TypeEnum.CHAR:
             return '{} (fun x -> listinit {} (String.get x))'.format(
@@ -207,7 +209,21 @@ def gen_ocaml(input_data: Input, reprint: bool = False) -> str:
         # This is a quick fix to avoid dependency of OCaml 4.06 for List.init
         output += INDENTATION + "let listinit n f =\n"
         output += INDENTATION * 2 + ("let rec aux i = if i >= n then [] else "
-                                   "let r = f i in r :: aux (i+1) in\n")
+                                     "let r = f i in r :: aux (i+1) in\n")
         output += INDENTATION * 2 + "aux 0 in\n\n"
+    if "stringsplit_on_char " in main:
+        output += INDENTATION + ("let stringsplit_on_char sep s = "
+                                 "(* OCaml 4.04: String.split_on_char *)\n")
+        output += INDENTATION * 2 + "let r = ref [] in\n"
+        output += INDENTATION * 2 + "let j = ref (String.length s) in\n"
+        output += INDENTATION * 2 + "for i = String.length s - 1 downto 0 do\n"
+        output += INDENTATION * 3 + ("if String.unsafe_get s i = "
+                                     "sep then begin\n")
+        output += INDENTATION * 4 + ("r := String.sub s (i + 1) "
+                                     "(!j - i - 1) :: !r;\n")
+        output += INDENTATION * 4 + "j := i\n"
+        output += INDENTATION * 3 + "end\n"
+        output += INDENTATION * 2 + "done;\n"
+        output += INDENTATION * 2 + "String.sub s 0 !j :: !r in\n\n"
     output += main
     return output
