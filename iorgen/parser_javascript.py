@@ -32,8 +32,9 @@ def var_name(name: str) -> str:
     return candidate + "_" if candidate in KEYWORDS else candidate
 
 
-def type_str(type_: Type) -> str:
+def type_str(type_: Type, input_data: Input) -> str:
     """Return the Javascript name for a type"""
+    # http://usejsdoc.org/tags-type.html
     if type_.main == TypeEnum.INT:
         return "number"
     if type_.main == TypeEnum.CHAR:
@@ -41,10 +42,13 @@ def type_str(type_: Type) -> str:
     if type_.main == TypeEnum.STR:
         return "string"
     if type_.main == TypeEnum.STRUCT:
-        return "Object"  # {field1: type1, field2: type2}
+        struct = input_data.get_struct(type_.struct_name)
+        return "{{{}}}".format(", ".join("{}: {}".format(
+            v.name if " " not in v.name else "'{}'".format(v.name),
+            type_str(v.type, input_data)) for v in struct.fields))
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated
-        return "Array.<{}>".format(type_str(type_.encapsulated))
+        return "Array.<{}>".format(type_str(type_.encapsulated, input_data))
     assert False
     return ""
 
@@ -192,7 +196,7 @@ def call(input_data: Input, reprint: bool) -> List[str]:
     """Declare the function that takes all inputs in arguments"""
     out = ["/**"] + [
         " * @param {{{}}} {} {}".format(
-            type_str(arg.type), var_name(arg.name), arg.comment)
+            type_str(arg.type, input_data), var_name(arg.name), arg.comment)
         for arg in input_data.input
     ] + [" * @returns {void}", " */"]
     out.append("function {}({}) {{".format(

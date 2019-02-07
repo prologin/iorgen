@@ -4,9 +4,9 @@
  * @param {number} if_ not a condition
  * @param {string} class_ not a class
  * @param {string} i just a string
- * @param {Object} in_ not in
+ * @param {{a: number, static: number}} in_ not in
  * @param {Array.<number>} for_ not a loop
- * @param {Array.<Object>} words contains lots of things
+ * @param {Array.<{int: {return: number, void: Array.<number>}, 'if true': number}>} words contains lots of things
  * @returns {void}
  */
 function keywords(if_, class_, i, in_, for_, words) {

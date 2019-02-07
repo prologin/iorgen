@@ -2,10 +2,10 @@
 
 /**
  * @param {number} n the size of the lists
- * @param {Array.<Object>} lists a list of list of different sizes
- * @param {Array.<Object>} strings a list of strings of different sizes
- * @param {Array.<Object>} matrices a list of matrices of different sizes
- * @param {Array.<Object>} same a list of list of same sizes
+ * @param {Array.<{size1: number, 'int list': Array.<number>}>} lists a list of list of different sizes
+ * @param {Array.<{size2: number, 'string list': string}>} strings a list of strings of different sizes
+ * @param {Array.<{size3: number, 'list list': Array.<Array.<number>>}>} matrices a list of matrices of different sizes
+ * @param {Array.<{size4: number, 'int list n': Array.<number>}>} same a list of list of same sizes
  * @returns {void}
  */
 function sizedStruct(n, lists, strings, matrices, same) {

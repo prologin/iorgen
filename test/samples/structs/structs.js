@@ -1,11 +1,11 @@
 "use strict";
 
 /**
- * @param {Object} struct a struct 1 instance
+ * @param {{foo: number, bar: number}} struct a struct 1 instance
  * @param {number} n a number
- * @param {Array.<Object>} structList a list a struct 1
- * @param {Array.<Object>} triangle a triangle
- * @param {Object} structChars a struct of chars
+ * @param {Array.<{foo: number, bar: number}>} structList a list a struct 1
+ * @param {Array.<{name: string, pos: {x: number, y: number, z: number}}>} triangle a triangle
+ * @param {{'first char': string, 'second char': string, 'third char': string}} structChars a struct of chars
  * @returns {void}
  */
 function structs(struct, n, structList, triangle, structChars) {

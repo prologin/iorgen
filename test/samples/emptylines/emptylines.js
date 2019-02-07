@@ -9,8 +9,8 @@
  * @param {string} main_ an other buffer string
  * @param {Array.<string>} emptyCharList an empty char list
  * @param {Array.<string>} nonEmptyCharList an char list, non empty
- * @param {Object} structWithEmptyLine a struct containing an empty line, then a struct
- * @param {Object} aSizedStruct a sized struct containing an empty line
+ * @param {{'list in struct': Array.<number>, 'struct in struct': {char1: string, int2: number}}} structWithEmptyLine a struct containing an empty line, then a struct
+ * @param {{size: number, 'string in struct': string}} aSizedStruct a sized struct containing an empty line
  * @param {string} finish a string to finish
  * @returns {void}
  */

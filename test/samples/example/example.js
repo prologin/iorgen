@@ -2,7 +2,7 @@
 
 /**
  * @param {number} n a number, used as a size
- * @param {Array.<Object>} list a list of structs
+ * @param {Array.<{integer: number, character: string}>} list a list of structs
  * @returns {void}
  */
 function example(n, list) {
