@@ -211,12 +211,12 @@ class Constraints:
         return max(0, value) if self.is_size else value
 
     def max_possible(self) -> int:
-        """Return the minimal possible value for an integer"""
+        """Return the maximal possible value for an integer"""
         if self.choices:
             return int(max(self.choices))
         value = self.MIN_INT
         for max_ in (self.max, self.max_perf):
-            value = min(value, get_max_value(max_))
+            value = max(value, get_max_value(max_))
         return value
 
     def simple_repr(self, name: str) -> str:
