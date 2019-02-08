@@ -97,7 +97,7 @@ def error_parse_input(dic: Dict[str, Any]) -> str:
         if "name" in dic:
             dic["function_name"] = dic["name"]
         else:
-            return "missing name field"
+            return "missing function_name field"
     if not isinstance(dic["function_name"], str):
         return "function_name is not a string"
     if "structs" in dic:  # non mandatory
