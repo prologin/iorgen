@@ -41,6 +41,7 @@ func emptyLines(emptyList []int, bufferString string, n int, emptyInSample []int
 
 func main() {
     scanner := bufio.NewScanner(os.Stdin)
+    scanner.Buffer(make([]byte, 0, 64 * 1024), 25769803764)
     emptyList := make([]int, 0)
     scanner.Scan()
     for i, iValue := range strings.SplitN(scanner.Text(), " ", 0) {

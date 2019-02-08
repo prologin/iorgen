@@ -40,6 +40,7 @@ func sizedStruct(n int, lists []List, strings_ []String, matrices []Matrix, same
 
 func main() {
     scanner := bufio.NewScanner(os.Stdin)
+    scanner.Buffer(make([]byte, 0, 64 * 1024), 25769803764)
     var n int
     scanner.Scan()
     n, _ = strconv.Atoi(scanner.Text())

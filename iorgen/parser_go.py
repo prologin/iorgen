@@ -3,8 +3,8 @@
 """Generate a Go parser"""
 
 import textwrap
-from typing import List
-from iorgen.types import Input, Type, TypeEnum, Variable
+from typing import List, Optional
+from iorgen.types import Constraints, Input, Type, TypeEnum, Variable
 from iorgen.utils import pascal_case, camel_case, IteratorName
 
 KEYWORDS = [
@@ -51,6 +51,46 @@ def type_str(type_: Type) -> str:
         return "[]{}".format(type_str(type_.encapsulated))
     assert False
     return ""
+
+
+def max_size(type_: Type, constraints: Optional[Constraints],
+             input_data: Input) -> int:
+    """Computes the maximum number of bytes the type can take on stdin"""
+    if type_.main == TypeEnum.INT:
+        assert constraints
+        return max(
+            len(str(constraints.min_possible())),
+            len(str(constraints.max_possible())))
+    if type_.main == TypeEnum.CHAR:
+        return 1
+    if type_.main == TypeEnum.STRUCT:
+        struct = input_data.get_struct(type_.struct_name)
+        sizes = [
+            max_size(i.type, i.constraints, input_data) for i in struct.fields
+        ]
+        if type_.fits_in_one_line(input_data.structs):
+            return sum(sizes) + len(struct.fields) - 1
+        return max(sizes)
+    size = -1
+    size_vars = [x for x in input_data.input if x.name == type_.size]
+    if not size_vars:
+        size_vars = [
+            x for s in input_data.structs for x in s.fields
+            if x.name == type_.size
+        ]
+    if size_vars:
+        varconstraints = size_vars[0].constraints
+        assert varconstraints
+        size = varconstraints.max_possible()
+    else:
+        size = int(type_.size)
+    if type_.main == TypeEnum.STR:
+        return size
+    assert type_.main == TypeEnum.LIST
+    assert type_.encapsulated
+    value = max_size(type_.encapsulated, constraints, input_data)
+    return value * size + max(0, size - 1) if type_.fits_in_one_line(
+        input_data.structs) else value
 
 
 class ParserGo():
@@ -272,6 +312,13 @@ class ParserGo():
         output += "\n".join(self.call(reprint)) + "\n\n"
         output += "func main() {\n"
         output += INDENTATION + "scanner := bufio.NewScanner(os.Stdin)\n"
+        max_line_length = max(
+            max_size(i.type, i.constraints, self.input)
+            for i in self.input.input)
+        if max_line_length > 64 * 1024:  # bufio.MaxScanTokenSize
+            output += INDENTATION + (
+                "scanner.Buffer(make([]byte, 0, "
+                "64 * 1024), {})\n").format(max_line_length + 1)
         for var in self.input.input:
             for line in self.read_var(var):
                 output += INDENTATION + line + "\n"

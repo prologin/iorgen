@@ -36,6 +36,7 @@ func keywords(if_ int, class byte, i string, in Console, for_ []int, words []Mai
 
 func main() {
     scanner := bufio.NewScanner(os.Stdin)
+    scanner.Buffer(make([]byte, 0, 64 * 1024), 8589934588)
     var if_ int
     scanner.Scan()
     if_, _ = strconv.Atoi(scanner.Text())
