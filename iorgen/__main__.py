@@ -8,11 +8,10 @@ import os
 from pathlib import Path
 
 from iorgen.generator import ALL_LANGUAGES
-from iorgen.checkinput import parse_input
+from iorgen.check_input import parse_input
 from iorgen.markdown import gen_markdown
 from iorgen.random_input import generate_random_input
 from iorgen.validator import input_errors
-
 
 def main() -> None:
     """The iorgen module execution"""
