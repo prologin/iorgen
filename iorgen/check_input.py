@@ -69,19 +69,63 @@ def check_subject(dic: Dict[str, Any]) -> None:
     """Check that field `subject` is good"""
     check_string_fields('subject', dic)
 
+def check_type_int(dic: Dict[str, Any]) -> None:
+    """Check that input int is good"""
+    if not isinstance(dic['name'], str):
+        print_error('field `name` is not a string')
+    dic['name'] = check_names(dic['name'])
+    check_string_fields('comment', dic, True)
+
+    # Check if there are constraints
+    if 'choices' in dic:
+        return
+    if not 'min' in dic:
+        print_warning(dic['name'] + ' has no constraint min')
+    if not 'max' in dic:
+        print_warning(dic['name'] + ' has no constraint max')
+
+def check_type_char(dic: Dict[str, Any]) -> None:
+    """Check that input char is good"""
+    if not isinstance(dic['name'], str):
+        print_error('field `name` is not a string')
+    dic['name'] = check_names(dic['name'])
+    check_string_fields('comment', dic, True)
+
+    # Check if there are constrachars
+    if not 'choices' in dic:
+        print_warning(dic['name'] + ' has no choices')
+
+def check_input(dic: Dict[str, Any]) -> None:
+    """Check that input is good"""
+    if not 'input' in dic:
+        return print_error('field `input` is missing')
+    if not isinstance(dic['input'], list):
+        return print_error('output is not a list')
+    for node in dic['input']:
+        if not node['type']:
+            print_error('missing field type in input')
+            continue
+        if node['type'] == 'int':
+            check_type_int(node)
+        elif node['type'] == 'char':
+            check_type_char(node)
+        else:
+            print_error('unknown type ' + node['type'])
+
 def check_output(dic: Dict[str, Any]) -> None:
     """Check that field `output` is good"""
     check_string_fields('output', dic)
 
-def check_input(dic: Dict[str, Any]) -> None:
+def check_input_dic(dic: Dict[str, Any]) -> None:
     """Check the whole input dict"""
     check_function_name(dic)
     check_subject(dic)
+    check_input(dic)
     check_output(dic)
 
 def input_from_dict(dic: Dict[str, Any]) -> Input:
     """Parse a input from a dict, or return a ValueError"""
-    check_input(dic)
+    check_input_dic(dic)
     print('---------\nErrors: {}; Warnings: {}'.format(
         Counter.errors, Counter.warnings
     ))
