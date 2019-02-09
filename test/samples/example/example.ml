@@ -14,6 +14,6 @@ let example n list =
   ()
 
 let () =
-  let n = Scanf.scanf "%d\n" (fun x -> x) in
-  let list = List.init n (fun _ -> Scanf.scanf "%d %c\n" (fun integer character -> {integer = integer; character = character})) in
+  let n = read_int () in
+  let list = List.init n (fun _ -> Scanf.sscanf (read_line ()) "%d %c" (fun integer character -> {integer; character})) in
   example n list

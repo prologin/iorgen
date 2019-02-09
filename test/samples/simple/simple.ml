@@ -7,6 +7,6 @@ let simple n otherNumber =
   ()
 
 let () =
-  let n = Scanf.scanf "%d\n" (fun x -> x) in
-  let otherNumber = Scanf.scanf "%d\n" (fun x -> x) in
+  let n = read_int () in
+  let otherNumber = read_int () in
   simple n otherNumber

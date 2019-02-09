@@ -69,28 +69,27 @@ def read_line(type_: Type, input_data: Input) -> str:
     # pylint: disable=too-many-return-statements
     assert type_.fits_in_one_line(input_data.structs)
     if type_.main == TypeEnum.INT:
-        return 'Scanf.scanf "%d\\n" (fun x -> x)'
+        return 'read_int ()'
     if type_.main == TypeEnum.CHAR:
-        return 'Scanf.scanf "%c\\n" (fun x -> x)'
+        return '(read_line ()).[0]'
     if type_.main == TypeEnum.STR:
-        return 'Scanf.scanf "%s@\\n" (fun x -> x)'
+        return 'read_line ()'
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
         if type_.encapsulated.main == TypeEnum.INT:
-            return ('Scanf.scanf "%s@\\n" (fun x -> {}List.map int_of_string '
-                    '(String.split_on_char \' \' x))'
-                    ).format('if String.equal "" x then [] else ' if type_.
-                             can_be_empty else "")
+            return ('read_line () |> fun x -> if x = "" then [] else String.split_on_char \' \' x'
+                    ' |> List.map int_of_string'
+                    )
         if type_.encapsulated.main == TypeEnum.CHAR:
-            return '{} (fun x -> List.init {} (String.get x))'.format(
-                'Scanf.scanf "%s@\\n"', var_name(type_.size))
+            return 'List.init {} (String.get (read_line ()))'.format(
+                    var_name(type_.size))
     if type_.main == TypeEnum.STRUCT:
         struct = input_data.get_struct(type_.struct_name)
         args = [var_name(field.name) for field in struct.fields]
-        return 'Scanf.scanf "{}\\n" (fun {} -> {{{}}})'.format(
+        return 'Scanf.sscanf (read_line ()) "{}" (fun {} -> {{{}}})'.format(
             " ".join("%d" if f.type.main == TypeEnum.INT else "%c"
                      for f in struct.fields), " ".join(args),
-            "; ".join("{0} = {0}".format(i) for i in args))
+            "; ".join("{0}".format(i) for i in args))
     assert False
     return ""
 
@@ -110,7 +109,7 @@ def read_lines(type_: Type, input_data: Input) -> str:
                 var_name(field.name), read_lines(field.type, input_data))
                      for field in struct.fields),
             "; ".join(
-                "{0} = {0}".format(var_name(f.name)) for f in struct.fields))
+                "{0}".format(var_name(f.name)) for f in struct.fields))
     assert False
     return ""
 

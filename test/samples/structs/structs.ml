@@ -36,9 +36,9 @@ let structs struct_ n structList triangle structChars =
   ()
 
 let () =
-  let struct_ = Scanf.scanf "%d %d\n" (fun foo bar -> {foo = foo; bar = bar}) in
-  let n = Scanf.scanf "%d\n" (fun x -> x) in
-  let structList = List.init n (fun _ -> Scanf.scanf "%d %d\n" (fun foo bar -> {foo = foo; bar = bar})) in
-  let triangle = List.init 3 (fun _ -> let name = Scanf.scanf "%c\n" (fun x -> x) in let pos = Scanf.scanf "%d %d %d\n" (fun x y z -> {x = x; y = y; z = z}) in {name = name; pos = pos}) in
-  let structChars = Scanf.scanf "%c %c %c\n" (fun firstChar secondChar thirdChar -> {firstChar = firstChar; secondChar = secondChar; thirdChar = thirdChar}) in
+  let struct_ = Scanf.sscanf (read_line ()) "%d %d" (fun foo bar -> {foo; bar}) in
+  let n = read_int () in
+  let structList = List.init n (fun _ -> Scanf.sscanf (read_line ()) "%d %d" (fun foo bar -> {foo; bar})) in
+  let triangle = List.init 3 (fun _ -> let name = (read_line ()).[0] in let pos = Scanf.sscanf (read_line ()) "%d %d %d" (fun x y z -> {x; y; z}) in {name; pos}) in
+  let structChars = Scanf.sscanf (read_line ()) "%c %c %c" (fun firstChar secondChar thirdChar -> {firstChar; secondChar; thirdChar}) in
   structs struct_ n structList triangle structChars
