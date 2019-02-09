@@ -1,3 +1,14 @@
+module List = struct
+  include List
+
+  let init n f =
+    let rec aux i =
+      if i >= n then [] else
+        let r = f i in
+        r :: aux (i+1) in
+    aux 0
+end
+
 (** A struct for the example *)
 type a_struct = {
   integer : int; (** an integer *)
