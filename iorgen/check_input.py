@@ -43,6 +43,14 @@ def check_names(name: str) -> str:
         print('Using ' + name)
     return name
 
+def check_string_fields(field: str, dic: Dict[str, Any], mandatory: bool = False) -> None:
+    """Check that field `field` exists and is a string"""
+    if field in dic:
+        if not isinstance(dic[field], str):
+            print_error('field `{}` is not a string'.format(field))
+    elif mandatory:
+        print_error('field `{}` is missing'.format(field))
+
 
 def check_function_name(dic: Dict[str, Any]) -> None:
     """Check that field `function_name` is good"""
@@ -57,11 +65,19 @@ def check_function_name(dic: Dict[str, Any]) -> None:
         print_error('field `function_name` is not a string')
     dic['function_name'] = check_names(dic['function_name'])
 
+def check_subject(dic: Dict[str, Any]) -> None:
+    """Check that field `subject` is good"""
+    check_string_fields('subject', dic)
+
+def check_output(dic: Dict[str, Any]) -> None:
+    """Check that field `output` is good"""
+    check_string_fields('output', dic)
 
 def check_input(dic: Dict[str, Any]) -> None:
     """Check the whole input dict"""
     check_function_name(dic)
-
+    check_subject(dic)
+    check_output(dic)
 
 def input_from_dict(dic: Dict[str, Any]) -> Input:
     """Parse a input from a dict, or return a ValueError"""
