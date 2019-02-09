@@ -12,13 +12,13 @@ import warnings
 
 from iorgen.types import Input, Struct, Type, Variable
 
-ERROR_COUNTER_NAME = 'error'
-WARNING_COUNTER_NAME = 'warning'
-counter = {ERROR_COUNTER_NAME: 0, WARNING_COUNTER_NAME: 0}
+class Counter:
+    errors = 0
+    warnings = 0
 
 def increase_error() -> None:
     """Increase error counter"""
-    counter[ERROR_COUNTER_NAME] += 1
+    Counter.errors += 1
 
 def print_error(msg: str) -> None:
     """Print error and increase error counter"""
@@ -27,7 +27,7 @@ def print_error(msg: str) -> None:
 
 def increase_warning() -> None:
     """Increase warning counter"""
-    counter[WARNING_COUNTER_NAME] += 1
+    Counter.warnings += 1
 
 def print_warning(msg: str) -> None:
     """Print warning and increase warning counter"""
@@ -67,9 +67,9 @@ def input_from_dict(dic: Dict[str, Any]) -> Input:
     """Parse a input from a dict, or return a ValueError"""
     check_input(dic)
     print('---------\nErrors: {}; Warnings: {}'.format(
-        counter[ERROR_COUNTER_NAME], counter[WARNING_COUNTER_NAME]
+        Counter.errors, Counter.warnings
     ))
-    if counter[ERROR_COUNTER_NAME] > 0:
+    if Counter.errors > 0:
         exit(1)
     value = Input.from_dict(dic)
     if value is None:
