@@ -83,12 +83,12 @@ class ParserCS():
             ]
             return lines + [
                 "{}{}{} = new {}{{{}}};".format(
-                    indent, s_name if decl else "", name, s_name, ", ".join(
-                        "{} = {}".format(
-                            var_name(f.name), "int.Parse({}[{}])".
-                            format(words, i) if f.type.main == TypeEnum.
-                            INT else "{}[{}][0]".format(words, i))
-                        for i, f in enumerate(struct.fields)))
+                    indent, s_name if decl else "", name, s_name,
+                    ", ".join("{} = {}".format(
+                        var_name(f.name),
+                        "int.Parse({}[{}])".format(words, i) if f.type.main ==
+                        TypeEnum.INT else "{}[{}][0]".format(words, i))
+                              for i, f in enumerate(struct.fields)))
             ]
         type_decl = (type_str(type_) + " ") if decl else ""
         command = ""
