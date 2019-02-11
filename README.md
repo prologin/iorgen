@@ -26,6 +26,36 @@ pip3 install -e .
 
 You can then run it with the `iorgen` command.
 
+### Testing the languages
+
+You should be able to trust that *Iorgen* will generate valid files. But if you
+want to be sure that those files are valid, and want to generate the test suite
+for instance, you will have to install lots of compilers.
+
+The complete dependencies for Archlinux are:
+```shell
+pacman -S --needed python-yaml fpc gambit-c gcc gdc ghc go jdk8-openjdk lua \
+    mono nodejs ocaml perl php ruby rust swi-prolog
+```
+
+For Debian 9 (and probably Ubuntu), they are:
+```shell
+sudo apt install python3-yaml mono-mcs gdc golang ghc openjdk-8-jdk-headless \
+    nodejs-legacy lua5.3 ocaml-nox fp-compiler php-cli swi-prolog-nox ruby \
+    rustc gambc
+```
+
+The only issue with Debian and Ubuntu is that their version of OCaml is too
+old. Soon *Iorgen* will generate code working on OCaml 4.02, but until then,
+you might want to install ocaml through opam for instance.
+
+```shell
+sudo apt install opam
+opam init -y
+eval `opam config env`
+opam switch 4.07.0
+```
+
 ## Usage
 
 Make sure python (version 3.5 and above) and python-yaml are installed on your
