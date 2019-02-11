@@ -19,7 +19,7 @@ need to install:
   probably be named `python-yaml`, or `python3-yaml`), or with
   `pip3 install pyyaml`.
 - Every compiler for every language supported by *Iorgen*, as listed
-  [in the README](README.md#testing-the/languages). If you are working only on
+  [in the README](README.md#testing-the-languages). If you are working only on
   one language, and do not touch the others, you may only install a subset of
   the compilers.
 - The tools to check the code quality: yapf, mypy and pylint. Be sure to have
@@ -96,7 +96,7 @@ Contributing code
 When your changes are to your liking, please check the following before doing a
 pull request:
 
-- You have run the tests with success (`cd test && ./test.py`).
+- You have ran the tests with success (`cd test && ./test.py`).
 - Your code respects the coding style (`pip3 install -U mypy pylint pyyaml`
   (optional), then `./check_code.py`).
 - You agree to publish your code under the
