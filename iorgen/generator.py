@@ -84,7 +84,7 @@ ALL_LANGUAGES = [
     Language("cpp", gen_cpp,
              ["g++", "-std=c++17", "-Wall", "-Wextra", "-O2", "-o", "{name}"]),
     Language("cs", gen_csharp, ["mcs", "-optimize", "-out:{name}"], ["mono"]),
-    Language("d", gen_d, ["gdc", "-Wall", "-o", "{name}"]),
+    Language("d", gen_d, ["gdc", "-Wall", "-O2", "-o", "{name}"]),
     Language("go", gen_go, ["go", "build", "-buildmode=exe"]),
     Language(
         "hs", gen_haskell,
