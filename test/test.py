@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018 Sacha Delanoue
+# Copyright 2018-2019 Sacha Delanoue
 """Check that parsers are the same as before, and parse correctly"""
 
+import argparse
 import os
 import shutil
 import sys
@@ -70,6 +71,16 @@ def test_samples() -> None:
         shutil.rmtree("/tmp/iorgen/tests/")
     except FileNotFoundError:
         pass
+    languages = {i.extension: i for i in ALL_LANGUAGES}
+    parser = argparse.ArgumentParser(description="Tests for Iorgen")
+    parser.add_argument(
+        '--languages',
+        '-l',
+        action='append',
+        help='languages to check',
+        choices=list(languages.keys()))
+    args = parser.parse_args()
+    selected_languages = args.languages or list(languages.keys())
     for name in os.listdir("samples"):
         prefix = "samples/{0}/{0}.".format(name)
         with open(prefix + "yaml", 'r') as stream:
@@ -79,7 +90,8 @@ def test_samples() -> None:
 
         for language in ALL_LANGUAGES:
             assert gen_is_same_as_sample(input_data, prefix, language)
-            assert run_on_input(input_data, name, language)
+            if language.extension in selected_languages:
+                assert run_on_input(input_data, name, language)
 
         for language in ALL_MARKDOWN:
             assert gen_is_same_as_sample(input_data, prefix, language)

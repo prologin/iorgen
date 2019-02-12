@@ -90,6 +90,10 @@ To run the tests, run the command `./test.py`. You will often to run
 `./regenerate.py` beforehand: be sure to then check with a `git diff` that the
 modifications are the one you wanted to make to the generated files.
 
+If you want to run the tests for one language only (because you do not have all
+the compilers installed, or simply because it is much faster), run
+`./test -l {language_extension}`.
+
 Contributing code
 -----------------
 
