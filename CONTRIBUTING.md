@@ -34,6 +34,10 @@ The code should follow the Python
 [PEP 8](https://www.python.org/dev/peps/pep-0008/), and other Python good
 practices.
 
+Also, all code uses [type
+hints](https://docs.python.org/3/library/typing.html). This helps tool to check
+the code better.
+
 To ensure your code follow the coding style, please run the `./check_code.sh`
 script.
 
