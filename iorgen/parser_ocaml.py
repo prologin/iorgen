@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright 2018 Sacha Delanoue
+# Copyright 2019 Fardale
 """Generate a OCaml parser"""
 
 import textwrap
@@ -77,12 +78,11 @@ def read_line(type_: Type, input_data: Input) -> str:
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
         if type_.encapsulated.main == TypeEnum.INT:
-            return ('read_line () |> fun x -> if x = "" then [] else String.split_on_char \' \' x'
-                    ' |> List.map int_of_string'
-                    )
+            return ('read_line () |> fun x -> if x = "" then [] else '
+                    'String.split_on_char \' \' x |> List.map int_of_string')
         if type_.encapsulated.main == TypeEnum.CHAR:
             return 'List.init {} (String.get (read_line ()))'.format(
-                    var_name(type_.size))
+                var_name(type_.size))
     if type_.main == TypeEnum.STRUCT:
         struct = input_data.get_struct(type_.struct_name)
         args = [var_name(field.name) for field in struct.fields]
@@ -108,8 +108,7 @@ def read_lines(type_: Type, input_data: Input) -> str:
             " ".join("let {} = {} in".format(
                 var_name(field.name), read_lines(field.type, input_data))
                      for field in struct.fields),
-            "; ".join(
-                "{0}".format(var_name(f.name)) for f in struct.fields))
+            "; ".join("{0}".format(var_name(f.name)) for f in struct.fields))
     assert False
     return ""
 
@@ -200,6 +199,7 @@ def gen_ocaml(input_data: Input, reprint: bool = False) -> str:
                                " ".join(args))
     if "List.init " in main:
         # This is a quick fix to avoid dependency of OCaml 4.06 for List.init
+        output += "(* Emulate List.init from OCaml 4.06 *)\n"
         output += "module List = struct\n"
         output += INDENTATION + "include List\n\n"
         output += INDENTATION + "let init n f =\n"
@@ -210,10 +210,10 @@ def gen_ocaml(input_data: Input, reprint: bool = False) -> str:
         output += INDENTATION * 2 + "aux 0\n"
         output += "end\n\n"
     if "String.split_on_char " in main:
+        output += "(* Copy String.split_on_char from OCaml 4.04 *)\n"
         output += "module String = struct\n"
         output += INDENTATION + "include String\n\n"
-        output += INDENTATION + ("let split_on_char sep s = "
-                                 "(* OCaml 4.04: String.split_on_char *)\n")
+        output += INDENTATION + "let split_on_char sep s =\n"
         output += INDENTATION * 2 + "let r = ref [] in\n"
         output += INDENTATION * 2 + "let j = ref (String.length s) in\n"
         output += INDENTATION * 2 + "for i = String.length s - 1 downto 0 do\n"

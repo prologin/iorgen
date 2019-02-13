@@ -1,3 +1,4 @@
+(* Emulate List.init from OCaml 4.06 *)
 module List = struct
   include List
 

@@ -1,3 +1,4 @@
+(* Emulate List.init from OCaml 4.06 *)
 module List = struct
   include List
 
@@ -9,10 +10,11 @@ module List = struct
     aux 0
 end
 
+(* Copy String.split_on_char from OCaml 4.04 *)
 module String = struct
   include String
 
-  let split_on_char sep s = (* OCaml 4.04: String.split_on_char *)
+  let split_on_char sep s =
     let r = ref [] in
     let j = ref (String.length s) in
     for i = String.length s - 1 downto 0 do
