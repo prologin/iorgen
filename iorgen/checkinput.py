@@ -130,4 +130,4 @@ def input_from_dict(dic: Dict[str, Any]) -> Input:
 
 def parse_input(stream: TextIO) -> Input:
     """Parse a input from a file stream, or return a ValueError"""
-    return input_from_dict(yaml.load(stream))
+    return input_from_dict(yaml.safe_load(stream))
