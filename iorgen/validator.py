@@ -12,7 +12,6 @@ from iorgen.types import Constraints, Input, Type, TypeEnum, Variable
 
 class ValidatorException(Exception):
     """A custom exception for the Validator class"""
-
     def __init__(self, message: str) -> None:
         super(ValidatorException, self).__init__(message)
         self.message = message
@@ -20,7 +19,6 @@ class ValidatorException(Exception):
 
 class Validator():
     """Check the format of a raw input: it should match the declaration"""
-
     def __init__(self, input_data: Input, lines: List[str]) -> None:
         self.input = input_data
         self.current_line = 0
@@ -67,8 +65,8 @@ class Validator():
                 self.valid_for_perf_only = True
         if constraints.choices and value not in constraints.choices:
             raise ValidatorException("Line {}: {} not in {{{}}}".format(
-                self.current_line, value, ", ".join(
-                    str(i) for i in sorted(constraints.choices))))
+                self.current_line, value,
+                ", ".join(str(i) for i in sorted(constraints.choices))))
         if constraints.is_size and value < 0:
             raise ValidatorException(
                 "Line {}: {} is negative but used as a size".format(
@@ -92,8 +90,8 @@ class Validator():
                     format(self.current_line, string))
         if constraints.choices and string not in constraints.choices:
             raise ValidatorException("Line {}: {} not in {{{}}}".format(
-                self.current_line, string, ", ".join(
-                    str(i) for i in sorted(constraints.choices))))
+                self.current_line, string,
+                ", ".join(str(i) for i in sorted(constraints.choices))))
 
     def get_size(self, size: str) -> Tuple[int, str]:
         """Get the integer size, and a string description of it"""

@@ -70,7 +70,6 @@ def read_line(type_: Type, input_data: Input) -> str:
 
 class ParserPHP:
     """Create the PHP code to parse an input"""
-
     def __init__(self, input_data: Input):
         self.input = input_data
         self.iterator = IteratorName([var.name for var in input_data.input] +
@@ -111,8 +110,8 @@ class ParserPHP:
         """Generate the PHP code to read all input variables"""
         lines = []
         for var in self.input.input:
-            read = self.read_lines(
-                var_name(var.name), var.type, var_name(var.type.size))
+            read = self.read_lines(var_name(var.name), var.type,
+                                   var_name(var.type.size))
             if len(read) == 1:
                 read[0] = "{} = {};".format(var_name(var.name), read[0])
             lines.extend(read)
@@ -169,13 +168,12 @@ def call(input_data: Input, reprint: bool) -> List[str]:
     ] + [" */"]
     out.append("function {}({}) {{".format(
         function_name(input_data.name), ", ".join(
-            ("" if i.type.main in (TypeEnum.INT,
-                                   TypeEnum.CHAR) else "&") + var_name(i.name)
-            for i in input_data.input)))
+            ("" if i.type.main in (TypeEnum.INT, TypeEnum.CHAR) else "&") +
+            var_name(i.name) for i in input_data.input)))
     if reprint:
         for var in input_data.input:
-            out.extend(
-                print_lines(input_data, var_name(var.name), var.type, 1))
+            out.extend(print_lines(input_data, var_name(var.name), var.type,
+                                   1))
     else:
         out.extend([
             INDENTATION + i
@@ -192,6 +190,6 @@ def gen_php(input_data: Input, reprint: bool = False) -> str:
     output += "\n\n"
     output += "\n".join(ParserPHP(input_data).read_vars())
     args = (var_name(i.name) for i in input_data.input)
-    output += "\n{}({});".format(
-        function_name(input_data.name), ", ".join(args))
+    output += "\n{}({});".format(function_name(input_data.name),
+                                 ", ".join(args))
     return output + "\n"

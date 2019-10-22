@@ -59,8 +59,9 @@ def read_lines(type_: Type, size: str, input_data: Input,
         return [read_line(type_, input_data)]
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
-        lines = read_lines(type_.encapsulated, var_name(
-            type_.encapsulated.size), input_data, iterator)
+        lines = read_lines(type_.encapsulated,
+                           var_name(type_.encapsulated.size), input_data,
+                           iterator)
         if len(lines) == 1:
             candidate = "Array.new({}) {{ {} }}".format(size, lines[0])
             if len(candidate) <= 75:
@@ -123,8 +124,8 @@ def print_line(name: str, type_: Type, input_data: Input) -> str:
             return 'puts {}.join(" ")'.format(name)
     if type_.main == TypeEnum.STRUCT:
         struct = input_data.get_struct(type_.struct_name)
-        return "print {}".format(", ".join(
-            '{}["{}"]'.format(name, i.name) for i in struct.fields))
+        return "print {}".format(", ".join('{}["{}"]'.format(name, i.name)
+                                           for i in struct.fields))
     assert False
     return ""
 
@@ -169,11 +170,10 @@ def call(input_data: Input, reprint: bool) -> List[str]:
                 print_lines(var_name(var.name), var.type, input_data, 1))
     else:
         lines.extend(
-            textwrap.wrap(
-                input_data.output,
-                79,
-                initial_indent=INDENTATION + "# " + "TODO ",
-                subsequent_indent=INDENTATION + "# "))
+            textwrap.wrap(input_data.output,
+                          79,
+                          initial_indent=INDENTATION + "# " + "TODO ",
+                          subsequent_indent=INDENTATION + "# "))
     return lines + ["end"]
 
 

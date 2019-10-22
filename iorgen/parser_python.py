@@ -130,15 +130,14 @@ def print_line(name: str, type_: Type, input_data: Input) -> str:
             return "print(' '.join(map(str, {})))".format(name)
     if type_.main == TypeEnum.STRUCT:
         struct = input_data.get_struct(type_.struct_name)
-        return "print({})".format(", ".join(
-            '{}["{}"]'.format(name, i.name) for i in struct.fields))
+        return "print({})".format(", ".join('{}["{}"]'.format(name, i.name)
+                                            for i in struct.fields))
     assert False
     return ""
 
 
 class ParserPython():
     """Create the Python code to parse an input"""
-
     def __init__(self, input_data: Input) -> None:
         self.input = input_data
         self.main = []  # type: List[str]
@@ -160,8 +159,8 @@ class ParserPython():
             self.method.append("{}:param {}: {}".format(
                 INDENTATION, var_name(arg.name), arg.comment))
             self.method.append("{}:type {}: {}".format(
-                INDENTATION, var_name(arg.name), type_str(
-                    arg.type, self.input)))
+                INDENTATION, var_name(arg.name),
+                type_str(arg.type, self.input)))
         self.method.append(INDENTATION + '"""')
         if reprint:
             for var in self.input.input:
@@ -169,11 +168,10 @@ class ParserPython():
                     self.print_lines(var_name(var.name), var.type, 1))
         else:
             self.method.extend(
-                textwrap.wrap(
-                    self.input.output,
-                    79,
-                    initial_indent=INDENTATION + "# " + "TODO ",
-                    subsequent_indent=INDENTATION + "# "))
+                textwrap.wrap(self.input.output,
+                              79,
+                              initial_indent=INDENTATION + "# " + "TODO ",
+                              subsequent_indent=INDENTATION + "# "))
             self.method.append(INDENTATION + "pass")
         self.main.append("{}({})".format(
             name, ", ".join([var_name(i.name) for i in self.input.input])))

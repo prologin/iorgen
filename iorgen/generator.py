@@ -30,7 +30,6 @@ from iorgen.parser_scheme import gen_scheme
 
 class Language:
     """Describe how to generate, compile and run, the parser for a language"""
-
     def __init__(self,
                  extension: str,
                  generator: Callable[[Input, bool], str],
@@ -64,10 +63,9 @@ class Language:
         with open(input_file) as sample_input:
             cwd = os.getcwd()
             os.chdir(os.path.dirname(filename))
-            res = subprocess.run(
-                self.exec_command + [exe],
-                stdin=sample_input,
-                stdout=subprocess.PIPE)
+            res = subprocess.run(self.exec_command + [exe],
+                                 stdin=sample_input,
+                                 stdout=subprocess.PIPE)
             os.chdir(cwd)
             out = res.stdout.decode()
         return out

@@ -58,9 +58,8 @@ def max_size(type_: Type, constraints: Optional[Constraints],
     """Computes the maximum number of bytes the type can take on stdin"""
     if type_.main == TypeEnum.INT:
         assert constraints
-        return max(
-            len(str(constraints.min_possible())),
-            len(str(constraints.max_possible())))
+        return max(len(str(constraints.min_possible())),
+                   len(str(constraints.max_possible())))
     if type_.main == TypeEnum.CHAR:
         return 1
     if type_.main == TypeEnum.STRUCT:
@@ -95,7 +94,6 @@ def max_size(type_: Type, constraints: Optional[Constraints],
 
 class ParserGo():
     """Create the Go code to parse an input"""
-
     def __init__(self, input_data: Input) -> None:
         self.input = input_data
         self.imports = set(["bufio", "os"])
@@ -166,8 +164,9 @@ class ParserGo():
         """Read one or several lines and store them into the right place(s)"""
         lines = []
         if type_.main == TypeEnum.LIST and indent_lvl != 0:
-            lines.append("{}{} = make({}, {})".format(
-                INDENTATION * indent_lvl, name, type_str(type_), size))
+            lines.append("{}{} = make({}, {})".format(INDENTATION * indent_lvl,
+                                                      name, type_str(type_),
+                                                      size))
         if type_.fits_in_one_line(self.input.structs):
             return lines + self.read_line(name, size, type_, indent_lvl)
         if type_.main == TypeEnum.STRUCT:
@@ -183,9 +182,10 @@ class ParserGo():
             lines.append("{}for {} := range {} {{".format(
                 INDENTATION * indent_lvl, inner_name, name))
             lines.extend(
-                self.read_lines(
-                    "{}[{}]".format(name, inner_name), type_.encapsulated,
-                    var_name(type_.encapsulated.size), indent_lvl + 1))
+                self.read_lines("{}[{}]".format(name, inner_name),
+                                type_.encapsulated,
+                                var_name(type_.encapsulated.size),
+                                indent_lvl + 1))
             lines.append(INDENTATION * indent_lvl + "}")
             self.iterator.pop_it()
             return lines
@@ -201,15 +201,15 @@ class ParserGo():
                 make = True
         lines = []
         if make:
-            lines.append("{} := make({}, {})".format(
-                var_name(var.name), type_str(var.type),
-                var_name(var.type.size)))
+            lines.append("{} := make({}, {})".format(var_name(var.name),
+                                                     type_str(var.type),
+                                                     var_name(var.type.size)))
         else:
-            lines.append("var {} {}".format(
-                var_name(var.name), type_str(var.type)))
+            lines.append("var {} {}".format(var_name(var.name),
+                                            type_str(var.type)))
         lines.extend(
-            self.read_lines(
-                var_name(var.name), var.type, var_name(var.type.size), 0))
+            self.read_lines(var_name(var.name), var.type,
+                            var_name(var.type.size), 0))
         return lines
 
     def call(self, reprint: bool) -> List[str]:
@@ -252,8 +252,9 @@ class ParserGo():
                 indent + INDENTATION + "fmt.Print({}[{}])".format(name, index)
             ]
             lines.extend([
-                indent + INDENTATION + "if {} < len({}) - 1 {{".format(
-                    index, name), indent + 2 * INDENTATION + 'fmt.Print(" ")',
+                indent + INDENTATION +
+                "if {} < len({}) - 1 {{".format(index, name),
+                indent + 2 * INDENTATION + 'fmt.Print(" ")',
                 indent + INDENTATION + "}"
             ])
             self.iterator.pop_it()

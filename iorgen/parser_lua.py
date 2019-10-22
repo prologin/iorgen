@@ -47,8 +47,8 @@ def read_line(name: str, type_: Type, input_data: Input,
             return [
                 '{} = {{}}'.format(name),
                 'for {} in string.gmatch(io.read(), "-?%d+") do'.format(inner),
-                INDENTATION + 'table.insert({}, tonumber({}))'.format(
-                    name, inner), 'end'
+                INDENTATION +
+                'table.insert({}, tonumber({}))'.format(name, inner), 'end'
             ]
     if type_.main == TypeEnum.STRUCT:
         struct = input_data.get_struct(type_.struct_name)
@@ -58,9 +58,10 @@ def read_line(name: str, type_: Type, input_data: Input,
                            for i in struct.fields)
         keys = ('["{}"]'.format(i.name) if " " in i.name else i.name
                 for i in struct.fields)
-        values = ("tonumber({}[{}])".format(words, i + 1)
-                  if f.type.main == TypeEnum.INT else "{}[{}]".format(
-                      words, i + 1) for (i, f) in enumerate(struct.fields))
+        values = ("tonumber({}[{}])".format(words, i +
+                                            1) if f.type.main == TypeEnum.INT
+                  else "{}[{}]".format(words, i + 1)
+                  for (i, f) in enumerate(struct.fields))
         return [
             'local {} = {{string.match(io.read(), "{}")}}'.format(
                 words, pattern), "{} = {{{}}}".format(
@@ -109,9 +110,8 @@ def read_lines(name: str, type_: Type, size: str, input_data: Input,
 def read_var(var: Variable, input_data: Input,
              iterator: IteratorName) -> List[str]:
     """Read a Lua variable"""
-    lines = read_lines(
-        var_name(var.name), var.type, var_name(var.type.size), input_data,
-        iterator)
+    lines = read_lines(var_name(var.name), var.type, var_name(var.type.size),
+                       input_data, iterator)
     if lines[0].startswith("local"):  # struct
         lines[1] = "local " + lines[1]
     else:
@@ -177,11 +177,10 @@ def call(input_data: Input, reprint: bool) -> List[str]:
                 print_lines(var_name(var.name), var.type, input_data, 1))
     else:
         lines.extend(
-            textwrap.wrap(
-                input_data.output,
-                79,
-                initial_indent=INDENTATION + "-- TODO ",
-                subsequent_indent=INDENTATION + "-- "))
+            textwrap.wrap(input_data.output,
+                          79,
+                          initial_indent=INDENTATION + "-- TODO ",
+                          subsequent_indent=INDENTATION + "-- "))
     return lines + ["end"]
 
 

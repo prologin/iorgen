@@ -129,7 +129,6 @@ def print_var_content(type_: Type, structs: List[Struct]) -> str:
 
 class ParserHaskell():
     """Create the Haskell code to parse an input"""
-
     def __init__(self, input_data: Input) -> None:
         self.input = input_data
 
@@ -215,8 +214,9 @@ class ParserHaskell():
                     name) if i == 0 else " " * length + " ->"
                 self.method.append("{} {: <{}}  -- ^ {}".format(
                     begin, type_str(arg.type), length_type, arg.comment))
-            self.method.append(" " * length + " -> {: <{}}  -- ^ TODO".format(
-                "String", length_type))
+            self.method.append(
+                " " * length +
+                " -> {: <{}}  -- ^ TODO".format("String", length_type))
         else:
             self.method.append("{} :: String  -- ^ TODO".format(name))
         args = " ".join([var_name(i.name) for i in self.input.input])

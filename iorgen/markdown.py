@@ -63,16 +63,14 @@ LANG = {
 
 def wrap_item(content: str, indent: int) -> List[str]:
     """Wrap list item to 79 characters max. Add identation and list bullet"""
-    return textwrap.wrap(
-        content,
-        79,
-        initial_indent="    " * indent + "- ",
-        subsequent_indent="    " * indent + "  ")
+    return textwrap.wrap(content,
+                         79,
+                         initial_indent="    " * indent + "- ",
+                         subsequent_indent="    " * indent + "  ")
 
 
 class Markdown:
     """Create the markdown describing the input"""
-
     def __init__(self, input_data: Input, lang: str = "en") -> None:
         self.input = input_data
         self.lang = LANG[lang]
@@ -140,9 +138,9 @@ class Markdown:
         if type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)
             out = wrap_item(
-                "{} {}.".format(
-                    self.line_description(True),
-                    self.lang['struct lines']).format(struct.name), indent)
+                "{} {}.".format(self.line_description(True),
+                                self.lang['struct lines']).format(struct.name),
+                indent)
             self.first_line = True
             for i in struct.fields:
                 out.extend(
@@ -155,9 +153,9 @@ class Markdown:
                 comment_and_name = "{} **{}**, {}".format(
                     self.lang[':'], name, comment)
             out = wrap_item(
-                "{} {}{}.".format(
-                    self.line_description(True), self.lang['list'].format(
-                        type_.size), comment_and_name), indent)
+                "{} {}{}.".format(self.line_description(True),
+                                  self.lang['list'].format(type_.size),
+                                  comment_and_name), indent)
             self.start_list = True
             return out + self.describe_multi(None, None, type_.encapsulated,
                                              indent + 1)
@@ -198,10 +196,9 @@ def gen_markdown(input_data: Input, lang: str = "en") -> str:
     output = "## {}\n\n".format(LANG[lang]['subject'])
     if input_data.subject:
         output += '\n'.join(
-            textwrap.wrap(
-                input_data.subject.replace("\n", "\n\n"),
-                79,
-                replace_whitespace=False)) + '\n\n'
+            textwrap.wrap(input_data.subject.replace("\n", "\n\n"),
+                          79,
+                          replace_whitespace=False)) + '\n\n'
     output += "### {}\n\n".format(LANG[lang]['input'])
     output += LANG[lang]['input decl'] + '\n\n'
     output += Markdown(input_data, lang).content()

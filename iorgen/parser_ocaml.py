@@ -56,8 +56,8 @@ def type_str(type_: Type) -> str:
 def declare_record(struct: Struct) -> List[str]:
     """Declare an OCaml record"""
     out = [
-        "(** {} *)".format(struct.comment), "type {} = {{".format(
-            record_name(struct.name))
+        "(** {} *)".format(struct.comment),
+        "type {} = {{".format(record_name(struct.name))
     ]
     out.extend(INDENTATION + "{} : {}; (** {} *)".format(
         var_name(field.name), type_str(field.type), field.comment)
@@ -135,8 +135,8 @@ def print_line(name: str, type_: Type, input_data: Input) -> str:
         return 'Printf.printf "{}\\n" {}'.format(
             " ".join("%d" if f.type.main == TypeEnum.INT else "%c"
                      for f in struct.fields),
-            " ".join(
-                "{}.{}".format(name, var_name(f.name)) for f in struct.fields))
+            " ".join("{}.{}".format(name, var_name(f.name))
+                     for f in struct.fields))
     assert False
     return ""
 
@@ -167,8 +167,8 @@ def method(input_data: Input, reprint: bool) -> List[str]:
         for var in input_data.input
     ] + ["*)"]
     out.append("let {} {} =".format(
-        var_name(input_data.name), " ".join(
-            var_name(i.name) for i in input_data.input)))
+        var_name(input_data.name),
+        " ".join(var_name(i.name) for i in input_data.input)))
     if not reprint:
         out.extend(
             INDENTATION + i

@@ -41,7 +41,6 @@ def struct_name(name: str) -> str:
 
 class ParserCpp():
     """Create the C++ code to parse an input"""
-
     def __init__(self, input_data: Input) -> None:
         self.input = input_data
 
@@ -84,8 +83,8 @@ class ParserCpp():
             if type_.can_be_empty:
                 self.main.append(indent + "if ({} > 0)".format(size))
             self.main.append(
-                indent +
-                " " * (self.indentation if type_.can_be_empty else 0) +
+                indent + " " *
+                (self.indentation if type_.can_be_empty else 0) +
                 "std::getline(std::cin >> std::ws, {});".format(name))
         elif type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
@@ -142,8 +141,9 @@ class ParserCpp():
                 size = "({})".format(int(var.type.size))
             except ValueError:
                 size = "({})".format(var_name(var.type.size))
-        self.main.append("{} {}{}; ///< {}".format(
-            self.type_str(var.type), var_name(var.name), size, var.comment))
+        self.main.append("{} {}{}; ///< {}".format(self.type_str(var.type),
+                                                   var_name(var.name), size,
+                                                   var.comment))
         self.read_lines(var_name(var.name), var.type, var_name(var.type.size))
 
     def call(self, reprint: bool) -> None:
@@ -155,11 +155,11 @@ class ParserCpp():
             self.method.append("/// \\param {} {}".format(
                 arg_name, arg.comment))
             if arg.type.main in (TypeEnum.STR, TypeEnum.LIST, TypeEnum.STRUCT):
-                arguments.append("const {}& {}".format(
-                    self.type_str(arg.type), arg_name))
+                arguments.append("const {}& {}".format(self.type_str(arg.type),
+                                                       arg_name))
             else:
-                arguments.append("{} {}".format(
-                    self.type_str(arg.type), arg_name))
+                arguments.append("{} {}".format(self.type_str(arg.type),
+                                                arg_name))
         self.method.append("void {}({}) {{".format(name, ", ".join(arguments)))
         if reprint:
             for var in self.input.input:

@@ -127,7 +127,6 @@ def print_lines(name: str, type_: Type,
 
 class ParserProlog():
     """Create the Prolog code to parse an input"""
-
     def __init__(self, input_data: Input) -> None:
         self.input = input_data
         self.read = set(["str"])
@@ -138,9 +137,8 @@ class ParserProlog():
         for struct in self.input.structs:
             name = "read_assoc_{}(X) :-".format(snake_case(struct.name))
             keys = ", ".join('"{}"'.format(i.name) for i in struct.fields)
-            if Type(
-                    TypeEnum.STRUCT, struct_name=struct.name).fits_in_one_line(
-                        self.input.structs):
+            if Type(TypeEnum.STRUCT, struct_name=struct.name).fits_in_one_line(
+                    self.input.structs):
                 if all(i.type.main == TypeEnum.INT for i in struct.fields):
                     self.read.add("List[int]")
                     output += ('{} read_int_list(L), pairs_keys_values(P, '
@@ -236,8 +234,8 @@ class ParserProlog():
         reprint_code = []
         if reprint:
             for var in self.input.input:
-                (decl, code) = print_lines(
-                    var_name(var.name), var.type, self.input)
+                (decl, code) = print_lines(var_name(var.name), var.type,
+                                           self.input)
                 lines.extend(decl)
                 reprint_code.append(INDENTATION + code + ",")
             reprint_code[-1] = reprint_code[-1][:-1] + "."
@@ -250,11 +248,10 @@ class ParserProlog():
         lines.extend(reprint_code)
         if not reprint:
             lines.extend(
-                textwrap.wrap(
-                    self.input.output,
-                    79,
-                    initial_indent=INDENTATION + "% " + "TODO ",
-                    subsequent_indent=INDENTATION + "% "))
+                textwrap.wrap(self.input.output,
+                              79,
+                              initial_indent=INDENTATION + "% " + "TODO ",
+                              subsequent_indent=INDENTATION + "% "))
             lines.append(INDENTATION + "nl.")
         return lines
 

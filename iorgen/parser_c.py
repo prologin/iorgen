@@ -43,7 +43,6 @@ class IntegerOrString(Enum):
 
 class ParserC():
     """Create the C code to parse an input"""
-
     def __init__(self, input_data: Input) -> None:
         self.input = input_data
 
@@ -199,9 +198,10 @@ class ParserC():
                 self.main.append(
                     "{0}for (int {1} = 0; {1} < {2}; ++{1}) {{".format(
                         " " * self.indentation * indent_lvl, index, size))
-                self.read_lines(
-                    "{}[{}]".format(name, index), type_.encapsulated,
-                    var_name(type_.encapsulated.size), indent_lvl + 1)
+                self.read_lines("{}[{}]".format(name,
+                                                index), type_.encapsulated,
+                                var_name(type_.encapsulated.size),
+                                indent_lvl + 1)
                 self.main.append(" " * self.indentation * indent_lvl + "}")
                 self.iterator.pop_it()
                 self.decl_end_scope()
@@ -225,8 +225,9 @@ class ParserC():
                 var_name(var.type.size),
                 " + 1" if var.type.encapsulated.main == TypeEnum.CHAR else "",
                 self.type_str(var.type.encapsulated))
-        self.main.append("{} {}{}; ///< {}".format(
-            self.type_str(var.type), var_name(var.name), init, var.comment))
+        self.main.append("{} {}{}; ///< {}".format(self.type_str(var.type),
+                                                   var_name(var.name), init,
+                                                   var.comment))
         self.read_lines(var_name(var.name), var.type, var_name(var.type.size))
 
     def call(self, reprint: bool) -> None:
@@ -241,8 +242,8 @@ class ParserC():
         self.method.append("void {}({}) {{".format(name, ", ".join(arguments)))
         if reprint:
             for var in self.input.input:
-                self.print_lines(
-                    var_name(var.name), var.type, var_name(var.type.size), 1)
+                self.print_lines(var_name(var.name), var.type,
+                                 var_name(var.type.size), 1)
         else:
             self.method.extend([
                 " " * self.indentation + i
@@ -310,9 +311,10 @@ class ParserC():
                 self.method.append(
                     "{0}for (int {1} = 0; {1} < {2}; ++{1}) {{".format(
                         " " * self.indentation * indent_lvl, index, size))
-                self.print_lines(
-                    "{}[{}]".format(name, index), type_.encapsulated,
-                    var_name(type_.encapsulated.size), indent_lvl + 1)
+                self.print_lines("{}[{}]".format(name,
+                                                 index), type_.encapsulated,
+                                 var_name(type_.encapsulated.size),
+                                 indent_lvl + 1)
                 self.method.append(" " * self.indentation * indent_lvl + "}")
                 self.iterator.pop_it()
             else:

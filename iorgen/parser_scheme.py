@@ -127,7 +127,6 @@ def wrap_code(code: str, indentation: str, skip_indent: bool = False) -> str:
 
 class ParserScheme():
     """Create the Scheme code to parse an input"""
-
     def __init__(self, input_data: Input) -> None:
         self.input = input_data
 
@@ -215,11 +214,10 @@ class ParserScheme():
                     var_name(var.name), var.type, self.input.structs))
         else:
             lines.extend(
-                textwrap.wrap(
-                    self.input.output,
-                    79,
-                    initial_indent=INDENTATION + ";;; " + "TODO ",
-                    subsequent_indent=INDENTATION + ";;; "))
+                textwrap.wrap(self.input.output,
+                              79,
+                              initial_indent=INDENTATION + ";;; " + "TODO ",
+                              subsequent_indent=INDENTATION + ";;; "))
             lines.append(INDENTATION + "(newline)")
         lines[-1] += ")"
         return lines

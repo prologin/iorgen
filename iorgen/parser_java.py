@@ -55,7 +55,6 @@ def type_str(type_: Type) -> str:
 
 class ParserJava():
     """Create the Java code to parse an input"""
-
     def __init__(self, input_data: Input) -> None:
         self.input = input_data
 
@@ -145,9 +144,10 @@ class ParserJava():
             lines.append("{0}for (int {1} = 0; {1} < {2}; ++{1}) {{".format(
                 indent, index, size))
             lines.extend(
-                self.read_lines(
-                    False, "{}[{}]".format(name, index), type_.encapsulated,
-                    var_name(type_.encapsulated.size), indent_lvl + 1))
+                self.read_lines(False, "{}[{}]".format(name, index),
+                                type_.encapsulated,
+                                var_name(type_.encapsulated.size),
+                                indent_lvl + 1))
             self.words.pop_scope()
             self.iterator.pop_it()
             return lines + [indent + "}"]
@@ -169,9 +169,8 @@ class ParserJava():
         if reprint:
             for var in self.input.input:
                 lines.extend(
-                    self.print_lines(
-                        var_name(var.name), var.type, var_name(var.type.size),
-                        2))
+                    self.print_lines(var_name(var.name), var.type,
+                                     var_name(var.type.size), 2))
         else:
             lines.extend([
                 2 * INDENTATION + i
@@ -199,8 +198,8 @@ class ParserJava():
             return 'System.out.printf("{}\\n", {});'.format(
                 " ".join("%d" if f.type.main == TypeEnum.INT else "%c"
                          for f in fields),
-                ", ".join(
-                    "{}.{}".format(name, var_name(f.name)) for f in fields))
+                ", ".join("{}.{}".format(name, var_name(f.name))
+                          for f in fields))
         assert False
         return ""
 
@@ -226,9 +225,10 @@ class ParserJava():
                     INDENTATION * indent_lvl, index, size)
             ]
             lines.extend(
-                self.print_lines(
-                    "{}[{}]".format(name, index), type_.encapsulated,
-                    var_name(type_.encapsulated.size), indent_lvl + 1))
+                self.print_lines("{}[{}]".format(name,
+                                                 index), type_.encapsulated,
+                                 var_name(type_.encapsulated.size),
+                                 indent_lvl + 1))
             lines.append(INDENTATION * indent_lvl + "}")
             self.words.pop_scope()
             self.iterator.pop_it()

@@ -89,7 +89,6 @@ def decl_types(variables: List[Variable]) -> List[str]:
 
 class ParserPascal():
     """Create the Pascal code to parse an input"""
-
     def __init__(self, input_data: Input) -> None:
         self.input = input_data
 
@@ -163,9 +162,10 @@ class ParserPascal():
                 self.main.append("{}for {} := 0 to {} - 1 do".format(
                     INDENTATION * indent_lvl, index, size))
                 self.main.append(INDENTATION * indent_lvl + "begin")
-                self.read_lines(
-                    "{}[{}]".format(name, index), type_.encapsulated,
-                    var_name(type_.encapsulated.size), indent_lvl + 1)
+                self.read_lines("{}[{}]".format(name,
+                                                index), type_.encapsulated,
+                                var_name(type_.encapsulated.size),
+                                indent_lvl + 1)
                 self.main.append(INDENTATION * indent_lvl + "end;")
                 self.iterator.pop_it()
             else:
@@ -186,20 +186,20 @@ class ParserPascal():
                                                       "; ".join(arguments)))
         if reprint and self.local_integers:
             self.method.append("var")
-            self.method.append(INDENTATION + "{}: longint;".format(", ".join(
-                sorted(self.local_integers))))
+            self.method.append(
+                INDENTATION +
+                "{}: longint;".format(", ".join(sorted(self.local_integers))))
         self.method.append("begin")
         if reprint:
             for var in self.input.input:
-                self.print_lines(
-                    var_name(var.name), var.type, var_name(var.type.size), 1)
+                self.print_lines(var_name(var.name), var.type,
+                                 var_name(var.type.size), 1)
         else:
             self.method.extend(
-                textwrap.wrap(
-                    self.input.output + " *}",
-                    79,
-                    initial_indent=INDENTATION + "{* " + "TODO ",
-                    subsequent_indent=INDENTATION))
+                textwrap.wrap(self.input.output + " *}",
+                              79,
+                              initial_indent=INDENTATION + "{* " + "TODO ",
+                              subsequent_indent=INDENTATION))
         self.method.append("end;")
 
     def print_line(self, name: str, type_: Type, size: str,
@@ -222,8 +222,9 @@ class ParserPascal():
                 try:
                     size_int = int(size)
                     if size_int > 0:
-                        self.method.append(indent + "write({}[{}]);".format(
-                            name, size_int - 1))
+                        self.method.append(
+                            indent +
+                            "write({}[{}]);".format(name, size_int - 1))
                 except ValueError:
                     self.method.append(indent +
                                        "if ({0} > 0) then write({1}[{0} - 1]);"
@@ -259,9 +260,10 @@ class ParserPascal():
                 self.method.append("{}for {} := 0 to {} - 1 do".format(
                     INDENTATION * indent_lvl, index, size))
                 self.method.append(INDENTATION * indent_lvl + "begin")
-                self.print_lines(
-                    "{}[{}]".format(name, index), type_.encapsulated,
-                    var_name(type_.encapsulated.size), indent_lvl + 1)
+                self.print_lines("{}[{}]".format(name,
+                                                 index), type_.encapsulated,
+                                 var_name(type_.encapsulated.size),
+                                 indent_lvl + 1)
                 self.method.append(INDENTATION * indent_lvl + "end;")
                 self.iterator.pop_it()
             else:
@@ -271,8 +273,8 @@ class ParserPascal():
         """Return the parser content"""
         for var in self.input.input:
             self.main.extend(init_list(var_name(var.name), var.type))
-            self.read_lines(
-                var_name(var.name), var.type, var_name(var.type.size))
+            self.read_lines(var_name(var.name), var.type,
+                            var_name(var.type.size))
         self.call(reprint)
         output = "program {};\n\n".format(var_name(self.input.name))
         types = decl_types(self.input.input)

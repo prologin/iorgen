@@ -29,7 +29,6 @@ class TypeEnum(Enum):
 
 class Type:
     """Represents the type of a variable"""
-
     def __init__(self: TYPE,
                  enum: TypeEnum,
                  size: str = "",
@@ -237,7 +236,6 @@ class Constraints:
 
 class Variable:
     """Everything there is to know about a variable"""
-
     def __init__(self: VAR, name: str, comment: str, type_: Type) -> None:
         self.name = name
         self.comment = comment
@@ -287,7 +285,6 @@ class Variable:
 
 class Struct:
     """Represent a struct (like in C)"""
-
     def __init__(self: STRUCT, name: str, comment: str,
                  fields: List[Variable]) -> None:
         self.name = name
@@ -323,9 +320,9 @@ class Struct:
                 TypeEnum.STR, TypeEnum.LIST
             ) and self.fields[0].name == self.fields[1].type.size
 
-    def fields_name_type_size(
-            self, format_spec: str,
-            var_name: Callable[[str], str]) -> Iterator[Tuple[str, Type, str]]:
+    def fields_name_type_size(self, format_spec: str,
+                              var_name: Callable[[str], str]
+                              ) -> Iterator[Tuple[str, Type, str]]:
         """Return name, type and size for each field"""
         types = [var_name(field.type.size) for field in self.fields]
         if self.is_sized_struct():
@@ -371,7 +368,6 @@ def set_constraints(variables: Dict[str, Variable],
 
 class Input():
     """Represents the user input, parsed"""
-
     def __init__(self: INPUT, name: str, structs: List[Struct],
                  inputs: List[Variable], subject: str, output: str) -> None:
         # pylint: disable=too-many-arguments

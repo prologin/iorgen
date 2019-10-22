@@ -70,7 +70,6 @@ def type_str(type_: Type) -> str:
 
 class ParserD:
     """Create the D code to parse an input"""
-
     def __init__(self, input_data: Input) -> None:
         self.input = input_data
         self.imports = {"std.stdio": {"stdin"}}
@@ -108,8 +107,8 @@ class ParserD:
         return 'stdin.readf("{}\\n", {});'.format(
             " ".join("%c" if i.type.main == TypeEnum.CHAR else "%d"
                      for i in struct.fields),
-            ", ".join(
-                "&" + name + "." + var_name(i.name) for i in struct.fields))
+            ", ".join("&" + name + "." + var_name(i.name)
+                      for i in struct.fields))
 
     def read_lines(self, name: str, type_: Type, size: str) -> List[str]:
         """Read a variable in one line or several lines of stdin"""
@@ -141,8 +140,8 @@ class ParserD:
     def read_var(self, var: Variable) -> List[str]:
         """Read a variable from stdin"""
         return ["{} {};".format(type_str(var.type), var_name(var.name))
-                ] + self.read_lines(
-                    var_name(var.name), var.type, var_name(var.type.size))
+                ] + self.read_lines(var_name(var.name), var.type,
+                                    var_name(var.type.size))
 
     def print_lines(self, name: str, type_: Type) -> List[str]:
         """Print a D variable"""
@@ -175,8 +174,8 @@ class ParserD:
                 'writefln("{}", {});'.format(
                     " ".join("%c" if i.type.main == TypeEnum.CHAR else "%d"
                              for i in struct.fields),
-                    ", ".join(
-                        name + "." + var_name(i.name) for i in struct.fields))
+                    ", ".join(name + "." + var_name(i.name)
+                              for i in struct.fields))
             ]
         lines = []
         for field in struct.fields:
@@ -205,11 +204,10 @@ class ParserD:
                     for i in self.print_lines(var_name(var.name), var.type))
         else:
             lines.extend(
-                textwrap.wrap(
-                    self.input.output,
-                    79,
-                    initial_indent=INDENTATION + "// TODO ",
-                    subsequent_indent=INDENTATION + "// "))
+                textwrap.wrap(self.input.output,
+                              79,
+                              initial_indent=INDENTATION + "// TODO ",
+                              subsequent_indent=INDENTATION + "// "))
         return lines + ["}"]
 
     def content(self, reprint: bool) -> str:
@@ -228,8 +226,9 @@ class ParserD:
             output += "\n".join(INDENTATION + i
                                 for i in self.read_var(var)) + "\n"
         args = (var_name(i.name) for i in self.input.input)
-        output += "\n{}{}({});\n".format(INDENTATION, var_name(
-            self.input.name), ", ".join(args))
+        output += "\n{}{}({});\n".format(INDENTATION,
+                                         var_name(self.input.name),
+                                         ", ".join(args))
         output += "}\n"
 
         imports = ""

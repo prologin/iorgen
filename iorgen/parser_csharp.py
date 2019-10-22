@@ -60,7 +60,6 @@ def type_str(type_: Type) -> str:
 
 class ParserCS():
     """Create the C# code to parse an input"""
-
     def __init__(self, input_data: Input) -> None:
         self.input = input_data
 
@@ -152,9 +151,10 @@ class ParserCS():
                 indent, index, size))
             lines.append(indent + "{")
             lines.extend(
-                self.read_lines(
-                    False, "{}[{}]".format(name, index), type_.encapsulated,
-                    var_name(type_.encapsulated.size), indent_lvl + 1))
+                self.read_lines(False, "{}[{}]".format(name, index),
+                                type_.encapsulated,
+                                var_name(type_.encapsulated.size),
+                                indent_lvl + 1))
             self.words.pop_scope()
             self.iterator.pop_it()
             return lines + [indent + "}"]
@@ -198,8 +198,8 @@ class ParserCS():
             fields = self.input.get_struct(type_.struct_name).fields
             return 'Console.WriteLine("{}", {});'.format(
                 " ".join("{{{}}}".format(i) for i in range(len(fields))),
-                ", ".join(
-                    "{}.{}".format(name, var_name(f.name)) for f in fields))
+                ", ".join("{}.{}".format(name, var_name(f.name))
+                          for f in fields))
         assert False
         return ""
 

@@ -21,24 +21,21 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         prog="python3 -m iorgen",
         description="Multi-languages parser generator")
-    parser.add_argument(
-        '--languages',
-        '-l',
-        action='append',
-        help='languages for which to generate a parser',
-        choices=list(languages.keys()))
-    parser.add_argument(
-        '--markdown',
-        '-m',
-        default='fr',
-        help='language for the subject in markdown',
-        choices=['en', 'fr'])
-    parser.add_argument(
-        '--output_dir',
-        '-o',
-        default="skeleton",
-        metavar="output-dir",
-        help="output folder")
+    parser.add_argument('--languages',
+                        '-l',
+                        action='append',
+                        help='languages for which to generate a parser',
+                        choices=list(languages.keys()))
+    parser.add_argument('--markdown',
+                        '-m',
+                        default='fr',
+                        help='language for the subject in markdown',
+                        choices=['en', 'fr'])
+    parser.add_argument('--output_dir',
+                        '-o',
+                        default="skeleton",
+                        metavar="output-dir",
+                        help="output folder")
     parser.add_argument(
         '--validate',
         '-v',
@@ -65,11 +62,10 @@ def main() -> None:
         default=False,
         action='store_true',
         help="Use with --validate or --generate_randow option: perf mode")
-    parser.add_argument(
-        'yaml',
-        metavar='input.yaml',
-        type=open,
-        help='the yaml file describing the input')
+    parser.add_argument('yaml',
+                        metavar='input.yaml',
+                        type=open,
+                        help='the yaml file describing the input')
     try:
         args = parser.parse_args()
     except FileNotFoundError as error:
@@ -93,9 +89,8 @@ def main() -> None:
         exit(0)
 
     if args.generate_random:
-        print(
-            generate_random_input(input_data, args.specify, args.perf_mode),
-            end='')
+        print(generate_random_input(input_data, args.specify, args.perf_mode),
+              end='')
         exit(0)
 
     Path(args.output_dir).mkdir(exist_ok=True)

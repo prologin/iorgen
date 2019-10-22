@@ -63,8 +63,8 @@ def error_parse_variable(dic: Dict[str, str]) -> str:
     return "unknown error"
 
 
-def error_parse_struct(
-        dic: Dict[str, Union[str, List[Dict[str, str]]]]) -> str:
+def error_parse_struct(dic: Dict[str, Union[str, List[Dict[str, str]]]]
+                       ) -> str:
     """Explain why we a struct fails to parse"""
     # pylint: disable=too-many-return-statements
     assert Struct.from_dict(dic) is None

@@ -174,9 +174,8 @@ def read_lines(name: str, decl: str, type_: Type, size: str, input_data: Input,
 
 def read_var(var: Variable, input_data: Input, words: WordsName) -> List[str]:
     """Read a Perl variable"""
-    return read_lines(
-        var_name(var), "my {} = {{}};".format(var_name(var)), var.type,
-        size_name(var.type.size), input_data, words)
+    return read_lines(var_name(var), "my {} = {{}};".format(var_name(var)),
+                      var.type, size_name(var.type.size), input_data, words)
 
 
 def print_line(varname: str, type_: Type, input_data: Input) -> str:
@@ -229,18 +228,18 @@ def call(input_data: Input, reprint: bool) -> List[str]:
         for arg in input_data.input
     ]
     lines.append("sub {} {{".format(name))
-    lines.append(INDENTATION + "my ({}) = @_;".format(", ".join(
-        "$" + var_name(i)[1:] for i in input_data.input)))
+    lines.append(INDENTATION +
+                 "my ({}) = @_;".format(", ".join("$" + var_name(i)[1:]
+                                                  for i in input_data.input)))
     if reprint:
         for var in input_data.input:
             lines.extend(print_lines(var_name(var), var.type, input_data, 1))
     else:
         lines.extend(
-            textwrap.wrap(
-                input_data.output,
-                79,
-                initial_indent=INDENTATION + "# " + "TODO ",
-                subsequent_indent=INDENTATION + "# "))
+            textwrap.wrap(input_data.output,
+                          79,
+                          initial_indent=INDENTATION + "# " + "TODO ",
+                          subsequent_indent=INDENTATION + "# "))
     return lines + ["}"]
 
 

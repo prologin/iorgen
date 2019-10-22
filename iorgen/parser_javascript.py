@@ -55,7 +55,6 @@ def type_str(type_: Type, input_data: Input) -> str:
 
 class ParserJS:
     """Create the Javascript code to parse an input"""
-
     def __init__(self, input_data: Input) -> None:
         self.input = input_data
         existing_names = [var_name(var.name) for var in input_data.input
@@ -114,8 +113,9 @@ class ParserJS:
             ]
             iterator = self.iterator.new_it()
             inner_name = self.iterator.new_it()
-            lines.append(indent + "for (let {0} = 0; {0} < {1}; {0}++) {{".
-                         format(iterator, size))
+            lines.append(indent +
+                         "for (let {0} = 0; {0} < {1}; {0}++) {{".format(
+                             iterator, size))
             self.words.push_scope()
             lines.extend(
                 self.read_lines(True, inner_name, type_.encapsulated,
@@ -195,17 +195,17 @@ def print_lines(input_data: Input, name: str, type_: Type,
 def call(input_data: Input, reprint: bool) -> List[str]:
     """Declare the function that takes all inputs in arguments"""
     out = ["/**"] + [
-        " * @param {{{}}} {} {}".format(
-            type_str(arg.type, input_data), var_name(arg.name), arg.comment)
+        " * @param {{{}}} {} {}".format(type_str(arg.type, input_data),
+                                        var_name(arg.name), arg.comment)
         for arg in input_data.input
     ] + [" * @returns {void}", " */"]
     out.append("function {}({}) {{".format(
-        var_name(input_data.name), ", ".join(
-            var_name(i.name) for i in input_data.input)))
+        var_name(input_data.name),
+        ", ".join(var_name(i.name) for i in input_data.input)))
     if reprint:
         for var in input_data.input:
-            out.extend(
-                print_lines(input_data, var_name(var.name), var.type, 1))
+            out.extend(print_lines(input_data, var_name(var.name), var.type,
+                                   1))
     else:
         out.extend([
             INDENTATION + i
@@ -221,8 +221,8 @@ def gen_javascript(input_data: Input, reprint: bool = False) -> str:
     placeholder = "\n".join(call(input_data, reprint))
     parser = "\n".join(ParserJS(input_data).read_vars())
     args = (var_name(i.name) for i in input_data.input)
-    placeholder_call = "{}({});".format(
-        var_name(input_data.name), ", ".join(args))
+    placeholder_call = "{}({});".format(var_name(input_data.name),
+                                        ", ".join(args))
 
     return '''"use strict";
 

@@ -73,12 +73,11 @@ def test_samples() -> None:
         pass
     languages = {i.extension: i for i in ALL_LANGUAGES}
     parser = argparse.ArgumentParser(description="Tests for Iorgen")
-    parser.add_argument(
-        '--languages',
-        '-l',
-        action='append',
-        help='languages to check',
-        choices=list(languages.keys()))
+    parser.add_argument('--languages',
+                        '-l',
+                        action='append',
+                        help='languages to check',
+                        choices=list(languages.keys()))
     args = parser.parse_args()
     selected_languages = args.languages or list(languages.keys())
     for name in os.listdir("samples"):

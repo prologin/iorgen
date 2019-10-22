@@ -23,7 +23,6 @@ def generate_char(constraints: Constraints, whitespace: bool) -> str:
 
 class Generator():
     """Generate some random valid raw_input"""
-
     def __init__(self, input_data: Input, specs: Dict[str, int],
                  perf_mode: bool) -> None:
         self.input = input_data
