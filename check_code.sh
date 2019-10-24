@@ -2,7 +2,7 @@
 
 yapf -p --recursive -d iorgen/ test/test.py test/regenerate.py
 r1=$?
-mypy --strict iorgen test/test.py test/regenerate.py
+mypy --strict iorgen # test/test.py test/regenerate.py
 r2=$?
 pylint -j 0 -d R0801 iorgen test/test.py test/regenerate.py
 r3=$?
