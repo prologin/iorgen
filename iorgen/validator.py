@@ -54,15 +54,13 @@ class Validator():
                 raise ValidatorException(
                     "Line {}: {} < {} (the min value)".format(
                         self.current_line, value, constraints.min))
-            else:
-                self.valid_for_perf_only = True
+            self.valid_for_perf_only = True
         if value > self.eval_var(constraints.max):
             if value > self.eval_var(constraints.max_perf):
                 raise ValidatorException(
                     "Line {}: {} > {} (the max value)".format(
                         self.current_line, value, constraints.max))
-            else:
-                self.valid_for_perf_only = True
+            self.valid_for_perf_only = True
         if constraints.choices and value not in constraints.choices:
             raise ValidatorException("Line {}: {} not in {{{}}}".format(
                 self.current_line, value,
@@ -84,7 +82,7 @@ class Validator():
                 raise ValidatorException(
                     "Line {}: '{}' is a whitespace character".format(
                         self.current_line, string))
-            elif string != " ":
+            if string != " ":
                 raise ValidatorException(
                     "Line {}: '{}' is a whitespace character, but not space".
                     format(self.current_line, string))

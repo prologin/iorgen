@@ -115,6 +115,7 @@ def get_min_value(var: Union[int, VAR]) -> int:
     if isinstance(var, Variable):
         assert var.constraints is not None
         return var.constraints.min_possible()
+    assert isinstance(var, int)
     return var
 
 
@@ -123,6 +124,7 @@ def get_max_value(var: Union[int, VAR]) -> int:
     if isinstance(var, Variable):
         assert var.constraints is not None
         return var.constraints.max_possible()
+    assert isinstance(var, int)
     return var
 
 
