@@ -51,7 +51,7 @@ class Language:
             name = filename[:-len(self.extension) - 1]
             command = [i.format(name=name) for i in self.compile_command]
             stderr = subprocess.DEVNULL if self.no_stderr else None
-            subprocess.run(command + [filename], stderr=stderr)
+            subprocess.run(command + [filename], stderr=stderr, check=True)
             os.chdir(cwd)
             return name
         return filename
@@ -65,7 +65,8 @@ class Language:
             os.chdir(os.path.dirname(filename))
             res = subprocess.run(self.exec_command + [exe],
                                  stdin=sample_input,
-                                 stdout=subprocess.PIPE)
+                                 stdout=subprocess.PIPE,
+                                 check=True)
             os.chdir(cwd)
             out = res.stdout.decode()
         return out

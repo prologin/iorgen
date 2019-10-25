@@ -5,6 +5,7 @@
 
 import argparse
 import os
+import sys
 from pathlib import Path
 
 from iorgen.generator import ALL_LANGUAGES
@@ -75,23 +76,23 @@ def main() -> None:
         input_data = parse_input(args.yaml)
     except ValueError as error:
         print("Could not parse input data: {}".format(error))
-        exit(1)
+        sys.exit(1)
 
     if args.validate:
         if args.generate_random:
             print("Can not use both validate and generate_random modes")
-            exit(2)
+            sys.exit(2)
         status = input_errors(input_data, args.validate, args.perf_mode)
         if status:
             print("Input is invalid: {}".format(status))
-            exit(3)
+            sys.exit(3)
         print("Input is valid")
-        exit(0)
+        sys.exit(0)
 
     if args.generate_random:
         print(generate_random_input(input_data, args.specify, args.perf_mode),
               end='')
-        exit(0)
+        sys.exit(0)
 
     Path(args.output_dir).mkdir(exist_ok=True)
     prefix = os.path.split(os.path.splitext(args.yaml.name)[0])[1] + "."

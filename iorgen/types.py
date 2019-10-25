@@ -384,7 +384,7 @@ class Input():
         """Parse the input yaml"""
         try:
             variables_lookup = {}
-            variables_dicts = []
+            variables_dicts = []  # type: List[Dict[str, Any]]
             structs = []  # type: List[Struct]
             if "structs" in dic:
                 for node in dic["structs"]:
@@ -394,7 +394,7 @@ class Input():
                     structs.append(struct)
                     for var in struct.fields:
                         variables_lookup[var.name] = var
-                    variables_dicts.extend([i for i in node["fields"]])
+                    variables_dicts.extend(node["fields"])
             variables = []  # type: List[Variable]
             for node in dic["input"]:
                 variable = Variable.from_dict(node)
