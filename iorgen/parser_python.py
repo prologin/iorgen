@@ -176,7 +176,9 @@ class ParserPython():
         self.main.append("{}({})".format(
             name, ", ".join([var_name(i.name) for i in self.input.input])))
 
-    def print_lines(self, name: str, type_: Type,
+    def print_lines(self,
+                    name: str,
+                    type_: Type,
                     indent_lvl: int = 0) -> List[str]:
         """Print the content of a var that holds in one or more lines"""
         indent = INDENTATION * indent_lvl

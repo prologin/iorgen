@@ -189,7 +189,8 @@ class Validator():
         return ""
 
 
-def input_errors(input_data: Input, filename: str,
+def input_errors(input_data: Input,
+                 filename: str,
                  perf_mode: bool = False) -> str:
     """Return the first error found in a raw input, if any"""
     validator = Validator(input_data,

@@ -54,7 +54,8 @@ class IteratorName:
 
 class WordsName:
     """Give valid variable names starting with 'words'"""
-    def __init__(self, existing_names: List[str],
+    def __init__(self,
+                 existing_names: List[str],
                  cs_mode: bool = False) -> None:
         # In C# you can not name a variable if it was already declared in a
         # nested scode, it would cause error CS0136

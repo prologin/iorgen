@@ -169,7 +169,9 @@ def print_line(name: str, type_: Type, input_data: Input) -> str:
     return ""
 
 
-def print_lines(input_data: Input, name: str, type_: Type,
+def print_lines(input_data: Input,
+                name: str,
+                type_: Type,
                 indent_lvl: int = 0) -> List[str]:
     """Print the content of a var that holds in one or more lines"""
     indent = "    " * indent_lvl

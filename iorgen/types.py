@@ -294,9 +294,9 @@ class Struct:
         self.fields = fields
 
     @classmethod
-    def from_dict(cls: T[STRUCT],
-                  dic: Dict[str, Union[str, List[Dict[str, str]]]]
-                  ) -> Optional[STRUCT]:
+    def from_dict(
+        cls: T[STRUCT], dic: Dict[str, Union[str, List[Dict[str, str]]]]
+    ) -> Optional[STRUCT]:
         """Create a Struct from its YAML (dictionary) representation"""
         try:
             name = dic["name"]
@@ -322,9 +322,9 @@ class Struct:
                 TypeEnum.STR, TypeEnum.LIST
             ) and self.fields[0].name == self.fields[1].type.size
 
-    def fields_name_type_size(self, format_spec: str,
-                              var_name: Callable[[str], str]
-                              ) -> Iterator[Tuple[str, Type, str]]:
+    def fields_name_type_size(
+            self, format_spec: str,
+            var_name: Callable[[str], str]) -> Iterator[Tuple[str, Type, str]]:
         """Return name, type and size for each field"""
         types = [var_name(field.type.size) for field in self.fields]
         if self.is_sized_struct():

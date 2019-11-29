@@ -32,7 +32,8 @@ def print_color(lines: Iterator[str]) -> None:
             print(line, end='')
 
 
-def check_diff(generated: List[str], filename: str,
+def check_diff(generated: List[str],
+               filename: str,
                tofile: str = 'generated') -> bool:
     """Check if a generated result is the same as a reference file"""
     ref = Path(filename).read_text("utf8").splitlines(True)
