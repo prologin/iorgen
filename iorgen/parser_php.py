@@ -12,7 +12,7 @@ KEYWORDS = [
     'abstract', 'and', 'array', 'as', 'break', 'callable', 'case', 'catch',
     'class', 'clone', 'const', 'continue', 'declare', 'default', 'die', 'do',
     'echo', 'else', 'elseif', 'empty', 'enddeclare', 'endfor', 'endforeach',
-    'endif', 'endswitch', 'endwhile', 'eval', 'exit', 'extends', 'final',
+    'endif', 'endswitch', 'endwhile', 'eval', 'exit', 'extends', 'final', 'fn',
     'for', 'foreach', 'function', 'global', 'goto', 'if', 'implements',
     'include', 'include_once', 'instanceof', 'insteadof', 'interface', 'isset',
     'list', 'namespace', 'new', 'or', 'print', 'private', 'protected',
