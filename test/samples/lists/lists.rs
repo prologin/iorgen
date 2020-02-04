@@ -1,5 +1,3 @@
-use std::io;
-
 /// * `n` - the first list's size
 /// * `list_int` - a list containing ints
 /// * `size` - an other size
@@ -12,36 +10,47 @@ fn lists(n: i32, list_int: Vec<i32>, size: i32, list_char: Vec<char>, string: St
 }
 
 fn main() {
-    let n: i32 = read_line().parse().unwrap();
-    let list_int: Vec<i32> = read_vec_int();
-    let size: i32 = read_line().parse().unwrap();
-    let list_char: Vec<char> = read_line().chars().collect();
-    let string: String = read_line();
-    let mut list_string4: Vec<String> = Vec::with_capacity(size as usize);
-    for _ in 0..size {
-        list_string4.push(read_line());
-    }
-    let mut matrix: Vec<Vec<i32>> = Vec::with_capacity(size as usize);
-    for _ in 0..size {
-        matrix.push(read_vec_int());
-    }
+    let mut buffer = String::new();
+
+    let n = read_line(&mut buffer)
+        .parse()
+        .expect("invalid `N` parameter");
+
+    let list_int = read_line(&mut buffer)
+        .split_whitespace()
+        .map(str::parse)
+        .collect::<Result<_, _>>()
+        .expect("invalid `list int` parameter");
+
+    let size = read_line(&mut buffer)
+        .parse()
+        .expect("invalid `size` parameter");
+
+    let list_char = read_line(&mut buffer).chars().collect();
+
+    let string = read_line(&mut buffer).to_string();
+
+    let list_string4 = (0..size)
+        .map(|_| read_line(&mut buffer).to_string())
+        .collect();
+
+    let matrix = (0..size)
+        .map(|_| {
+            read_line(&mut buffer)
+                .split_whitespace()
+                .map(str::parse)
+                .collect::<Result<_, _>>()
+        })
+        .collect::<Result<_, _>>()
+        .expect("invalid `matrix` parameter");
 
     lists(n, list_int, size, list_char, string, list_string4, matrix);
 }
 
-fn read_line() -> String {
-    let mut line = String::new();
-    io::stdin()
-        .read_line(&mut line)
-        .expect("Failed to read line");
-    line.trim().to_string()
-}
-
-fn read_vec_int() -> Vec<i32> {
-    read_line()
-        .split_whitespace()
-        .collect::<Vec<&str>>()
-        .iter()
-        .map(|x| x.parse().unwrap())
-        .collect()
+fn read_line(mut buffer: &mut String) -> &str {
+    buffer.clear();
+    std::io::stdin()
+        .read_line(&mut buffer)
+        .expect("impossible to read a new line");
+    buffer.trim_end()
 }

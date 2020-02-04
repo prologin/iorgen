@@ -80,8 +80,7 @@ class Type:
             return "List[{}]({})".format(self.encapsulated, self.size)
         if self.main == TypeEnum.STRUCT:
             return "@{}".format(self.struct_name)
-        assert False
-        return "UNKNOWN_TYPE"
+        raise Exception
 
     def can_be_inlined(self: TYPE) -> bool:
         """Can we parse several of this type on a single line"""
@@ -97,8 +96,7 @@ class Type:
         if self.main == TypeEnum.STRUCT:
             struct = next(x for x in structs if x.name == self.struct_name)
             return all(i.type.can_be_inlined() for i in struct.fields)
-        assert False
-        return True
+        raise Exception
 
     def list_contained(self: TYPE) -> TYPE:
         """Return non-list type contained is list (or list of list, etc)"""
@@ -280,8 +278,7 @@ class Variable:
                 return "{} ϵ {{{}}}".format(name, (", ".join(
                     str(i) for i in sorted(self.constraints.choices))))
             return ""
-        assert False
-        return ""
+        raise Exception
 
 
 class Struct:

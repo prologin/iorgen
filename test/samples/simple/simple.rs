@@ -1,5 +1,3 @@
-use std::io;
-
 /// * `n` - the first number
 /// * `other_number` - the second number
 fn simple(n: i32, other_number: i32) {
@@ -7,16 +5,23 @@ fn simple(n: i32, other_number: i32) {
 }
 
 fn main() {
-    let n: i32 = read_line().parse().unwrap();
-    let other_number: i32 = read_line().parse().unwrap();
+    let mut buffer = String::new();
+
+    let n = read_line(&mut buffer)
+        .parse()
+        .expect("invalid `N` parameter");
+
+    let other_number = read_line(&mut buffer)
+        .parse()
+        .expect("invalid `other number` parameter");
 
     simple(n, other_number);
 }
 
-fn read_line() -> String {
-    let mut line = String::new();
-    io::stdin()
-        .read_line(&mut line)
-        .expect("Failed to read line");
-    line.trim().to_string()
+fn read_line(mut buffer: &mut String) -> &str {
+    buffer.clear();
+    std::io::stdin()
+        .read_line(&mut buffer)
+        .expect("impossible to read a new line");
+    buffer.trim_end()
 }

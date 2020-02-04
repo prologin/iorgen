@@ -1,6 +1,5 @@
-use std::io;
-
 /// may conflict in c#
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 struct Console {
     /// the first letter of the alphabet
     a: i32,
@@ -9,6 +8,7 @@ struct Console {
 }
 
 /// may conflict in c#
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 struct System {
     /// not the end of the function
     return_: i32,
@@ -17,6 +17,7 @@ struct System {
 }
 
 /// not the main function
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 struct Main {
     /// not an integer
     int: System,
@@ -35,54 +36,67 @@ fn keywords(if_: i32, class: char, i: String, in_: Console, for_: Vec<i32>, word
 }
 
 fn main() {
-    let if_: i32 = read_line().parse().unwrap();
-    let class: char = read_line().parse().unwrap();
-    let i: String = read_line();
-    let in_: Console = read_struct_console();
-    let for_: Vec<i32> = read_vec_int();
-    let mut words: Vec<Main> = Vec::with_capacity(2 as usize);
-    for _ in 0..2 {
-        let words_elem: Main = read_struct_main();
-        words.push(words_elem);
-    }
+    let mut buffer = String::new();
+
+    let if_ = read_line(&mut buffer)
+        .parse()
+        .expect("invalid `if` parameter");
+
+    let class = read_line(&mut buffer)
+        .parse()
+        .expect("invalid `class` parameter");
+
+    let i = read_line(&mut buffer).to_string();
+
+    let in_ = read_line(&mut buffer)
+        .parse()
+        .expect("invalid `in` parameter");
+
+    let for_ = read_line(&mut buffer)
+        .split_whitespace()
+        .map(str::parse)
+        .collect::<Result<_, _>>()
+        .expect("invalid `for` parameter");
+
+    let words = (0..2)
+        .map(|_| read_struct_main(&mut buffer))
+        .collect::<Result<_, _>>()
+        .expect("invalid `words` parameter");
 
     keywords(if_, class, i, in_, for_, words);
 }
 
-fn read_line() -> String {
-    let mut line = String::new();
-    io::stdin()
-        .read_line(&mut line)
-        .expect("Failed to read line");
-    line.trim().to_string()
+fn read_line(mut buffer: &mut String) -> &str {
+    buffer.clear();
+    std::io::stdin()
+        .read_line(&mut buffer)
+        .expect("impossible to read a new line");
+    buffer.trim_end()
 }
 
-fn read_vec_int() -> Vec<i32> {
-    read_line()
-        .split_whitespace()
-        .collect::<Vec<&str>>()
-        .iter()
-        .map(|x| x.parse().unwrap())
-        .collect()
-}
+impl std::str::FromStr for Console {
+    type Err = Box<dyn std::error::Error>;
 
-fn read_struct_console() -> Console {
-    let line = read_line();
-    let words: Vec<&str> = line.split_whitespace().collect();
-    Console {
-        a: words[0].parse().unwrap(),
-        static_: words[1].parse().unwrap(),
+    fn from_str(line: &str) -> Result<Self, Self::Err> {
+        let mut line = line.split_whitespace();
+        Ok(Self {
+            a: line.next().ok_or("missing `a`")?.parse()?,
+            static_: line.next().ok_or("missing `static_`")?.parse()?,
+        })
     }
 }
 
-fn read_struct_system() -> System {
-    let return_: i32 = read_line().parse().unwrap();
-    let void: Vec<i32> = read_vec_int();
-    System { return_, void }
+fn read_struct_system(mut buffer: &mut String) -> Result<System, Box<dyn std::error::Error>> {
+    let return_ = read_line(&mut buffer).parse()?;
+    let void = read_line(&mut buffer)
+        .split_whitespace()
+        .map(str::parse)
+        .collect::<Result<_, _>>()?;
+    Ok(System { return_, void })
 }
 
-fn read_struct_main() -> Main {
-    let int: System = read_struct_system();
-    let if_true: i32 = read_line().parse().unwrap();
-    Main { int, if_true }
+fn read_struct_main(mut buffer: &mut String) -> Result<Main, Box<dyn std::error::Error>> {
+    let int = read_struct_system(&mut buffer)?;
+    let if_true = read_line(&mut buffer).parse()?;
+    Ok(Main { int, if_true })
 }

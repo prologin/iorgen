@@ -1,6 +1,5 @@
-use std::io;
-
 /// A simple struct
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 struct Struct1 {
     /// a field
     foo: i32,
@@ -9,6 +8,7 @@ struct Struct1 {
 }
 
 /// Represents a position
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 struct Position {
     /// X
     x: i32,
@@ -19,6 +19,7 @@ struct Position {
 }
 
 /// A point's name and position
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 struct Point {
     /// the point's name (single character)
     name: char,
@@ -29,6 +30,7 @@ struct Point {
 }
 
 /// a struct of chars
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 struct Chars {
     /// a first char
     first_char: char,
@@ -48,62 +50,82 @@ fn structs(struct_: Struct1, n: i32, struct_list: Vec<Struct1>, triangle: Vec<Po
 }
 
 fn main() {
-    let struct_: Struct1 = read_struct_struct_1();
-    let n: i32 = read_line().parse().unwrap();
-    let mut struct_list: Vec<Struct1> = Vec::with_capacity(n as usize);
-    for _ in 0..n {
-        struct_list.push(read_struct_struct_1());
-    }
-    let mut triangle: Vec<Point> = Vec::with_capacity(3 as usize);
-    for _ in 0..3 {
-        let triangle_elem: Point = read_struct_point();
-        triangle.push(triangle_elem);
-    }
-    let struct_chars: Chars = read_struct_chars();
+    let mut buffer = String::new();
+
+    let struct_ = read_line(&mut buffer)
+        .parse()
+        .expect("invalid `struct` parameter");
+
+    let n = read_line(&mut buffer)
+        .parse()
+        .expect("invalid `n` parameter");
+
+    let struct_list = (0..n)
+        .map(|_| read_line(&mut buffer).parse())
+        .collect::<Result<_, _>>()
+        .expect("invalid `struct_list` parameter");
+
+    let triangle = (0..3)
+        .map(|_| read_struct_point(&mut buffer))
+        .collect::<Result<_, _>>()
+        .expect("invalid `triangle` parameter");
+
+    let struct_chars = read_line(&mut buffer)
+        .parse()
+        .expect("invalid `struct chars` parameter");
 
     structs(struct_, n, struct_list, triangle, struct_chars);
 }
 
-fn read_line() -> String {
-    let mut line = String::new();
-    io::stdin()
-        .read_line(&mut line)
-        .expect("Failed to read line");
-    line.trim().to_string()
+fn read_line(mut buffer: &mut String) -> &str {
+    buffer.clear();
+    std::io::stdin()
+        .read_line(&mut buffer)
+        .expect("impossible to read a new line");
+    buffer.trim_end()
 }
 
-fn read_struct_struct_1() -> Struct1 {
-    let line = read_line();
-    let words: Vec<&str> = line.split_whitespace().collect();
-    Struct1 {
-        foo: words[0].parse().unwrap(),
-        bar: words[1].parse().unwrap(),
+impl std::str::FromStr for Struct1 {
+    type Err = Box<dyn std::error::Error>;
+
+    fn from_str(line: &str) -> Result<Self, Self::Err> {
+        let mut line = line.split_whitespace();
+        Ok(Self {
+            foo: line.next().ok_or("missing `foo`")?.parse()?,
+            bar: line.next().ok_or("missing `bar`")?.parse()?,
+        })
     }
 }
 
-fn read_struct_position() -> Position {
-    let line = read_line();
-    let words: Vec<&str> = line.split_whitespace().collect();
-    Position {
-        x: words[0].parse().unwrap(),
-        y: words[1].parse().unwrap(),
-        z: words[2].parse().unwrap(),
+impl std::str::FromStr for Position {
+    type Err = Box<dyn std::error::Error>;
+
+    fn from_str(line: &str) -> Result<Self, Self::Err> {
+        let mut line = line.split_whitespace();
+        Ok(Self {
+            x: line.next().ok_or("missing `x`")?.parse()?,
+            y: line.next().ok_or("missing `y`")?.parse()?,
+            z: line.next().ok_or("missing `z`")?.parse()?,
+        })
     }
 }
 
-fn read_struct_point() -> Point {
-    let name: char = read_line().parse().unwrap();
-    let description: String = read_line();
-    let pos: Position = read_struct_position();
-    Point { name, description, pos }
+fn read_struct_point(mut buffer: &mut String) -> Result<Point, Box<dyn std::error::Error>> {
+    let name = read_line(&mut buffer).parse()?;
+    let description = read_line(&mut buffer).to_string();
+    let pos = read_line(&mut buffer).parse()?;
+    Ok(Point { name, description, pos })
 }
 
-fn read_struct_chars() -> Chars {
-    let line = read_line();
-    let words: Vec<&str> = line.split_whitespace().collect();
-    Chars {
-        first_char: words[0].parse().unwrap(),
-        second_char: words[1].parse().unwrap(),
-        third_char: words[2].parse().unwrap(),
+impl std::str::FromStr for Chars {
+    type Err = Box<dyn std::error::Error>;
+
+    fn from_str(line: &str) -> Result<Self, Self::Err> {
+        let mut line = line.split_whitespace();
+        Ok(Self {
+            first_char: line.next().ok_or("missing `first_char`")?.parse()?,
+            second_char: line.next().ok_or("missing `second_char`")?.parse()?,
+            third_char: line.next().ok_or("missing `third_char`")?.parse()?,
+        })
     }
 }

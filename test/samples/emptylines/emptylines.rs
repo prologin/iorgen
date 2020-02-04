@@ -1,6 +1,5 @@
-use std::io;
-
 /// a char struct
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 struct StructWithAChar {
     /// a char
     char1: char,
@@ -9,6 +8,7 @@ struct StructWithAChar {
 }
 
 /// a struct
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 struct A {
     /// a list in a struct
     list_in_struct: Vec<i32>,
@@ -17,6 +17,7 @@ struct A {
 }
 
 /// a sized struct
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 struct SizedStruct {
     /// the size
     size: i32,
@@ -40,55 +41,74 @@ fn empty_lines(empty_list: Vec<i32>, buffer_string: String, n: i32, empty_in_sam
 }
 
 fn main() {
-    let empty_list: Vec<i32> = read_vec_int();
-    let buffer_string: String = read_line();
-    let n: i32 = read_line().parse().unwrap();
-    let empty_in_sample: Vec<i32> = read_vec_int();
-    let empty_string: String = read_line();
-    let main: String = read_line();
-    let empty_char_list: Vec<char> = read_line().chars().collect();
-    let non_empty_char_list: Vec<char> = read_line().chars().collect();
-    let struct_with_empty_line: A = read_struct_a();
-    let a_sized_struct: SizedStruct = read_struct_sized_struct();
-    let finish: String = read_line();
+    let mut buffer = String::new();
+
+    let empty_list = read_line(&mut buffer)
+        .split_whitespace()
+        .map(str::parse)
+        .collect::<Result<_, _>>()
+        .expect("invalid `empty list` parameter");
+
+    let buffer_string = read_line(&mut buffer).to_string();
+
+    let n = read_line(&mut buffer)
+        .parse()
+        .expect("invalid `N` parameter");
+
+    let empty_in_sample = read_line(&mut buffer)
+        .split_whitespace()
+        .map(str::parse)
+        .collect::<Result<_, _>>()
+        .expect("invalid `empty in sample` parameter");
+
+    let empty_string = read_line(&mut buffer).to_string();
+
+    let main = read_line(&mut buffer).to_string();
+
+    let empty_char_list = read_line(&mut buffer).chars().collect();
+
+    let non_empty_char_list = read_line(&mut buffer).chars().collect();
+
+    let struct_with_empty_line = read_struct_a(&mut buffer).expect("invalid `struct_with_empty_line` parameter");
+
+    let a_sized_struct = read_struct_sized_struct(&mut buffer).expect("invalid `a_sized_struct` parameter");
+
+    let finish = read_line(&mut buffer).to_string();
 
     empty_lines(empty_list, buffer_string, n, empty_in_sample, empty_string, main, empty_char_list, non_empty_char_list, struct_with_empty_line, a_sized_struct, finish);
 }
 
-fn read_line() -> String {
-    let mut line = String::new();
-    io::stdin()
-        .read_line(&mut line)
-        .expect("Failed to read line");
-    line.trim().to_string()
+fn read_line(mut buffer: &mut String) -> &str {
+    buffer.clear();
+    std::io::stdin()
+        .read_line(&mut buffer)
+        .expect("impossible to read a new line");
+    buffer.trim_end()
 }
 
-fn read_vec_int() -> Vec<i32> {
-    read_line()
-        .split_whitespace()
-        .collect::<Vec<&str>>()
-        .iter()
-        .map(|x| x.parse().unwrap())
-        .collect()
-}
+impl std::str::FromStr for StructWithAChar {
+    type Err = Box<dyn std::error::Error>;
 
-fn read_struct_struct_with_a_char() -> StructWithAChar {
-    let line = read_line();
-    let words: Vec<&str> = line.split_whitespace().collect();
-    StructWithAChar {
-        char1: words[0].parse().unwrap(),
-        int2: words[1].parse().unwrap(),
+    fn from_str(line: &str) -> Result<Self, Self::Err> {
+        let mut line = line.split_whitespace();
+        Ok(Self {
+            char1: line.next().ok_or("missing `char1`")?.parse()?,
+            int2: line.next().ok_or("missing `int2`")?.parse()?,
+        })
     }
 }
 
-fn read_struct_a() -> A {
-    let list_in_struct: Vec<i32> = read_vec_int();
-    let struct_in_struct: StructWithAChar = read_struct_struct_with_a_char();
-    A { list_in_struct, struct_in_struct }
+fn read_struct_a(mut buffer: &mut String) -> Result<A, Box<dyn std::error::Error>> {
+    let list_in_struct = read_line(&mut buffer)
+        .split_whitespace()
+        .map(str::parse)
+        .collect::<Result<_, _>>()?;
+    let struct_in_struct = read_line(&mut buffer).parse()?;
+    Ok(A { list_in_struct, struct_in_struct })
 }
 
-fn read_struct_sized_struct() -> SizedStruct {
-    let size: i32 = read_line().parse().unwrap();
-    let string_in_struct: String = read_line();
-    SizedStruct { size, string_in_struct }
+fn read_struct_sized_struct(mut buffer: &mut String) -> Result<SizedStruct, Box<dyn std::error::Error>> {
+    let size = read_line(&mut buffer).parse()?;
+    let string_in_struct = read_line(&mut buffer).to_string();
+    Ok(SizedStruct { size, string_in_struct })
 }

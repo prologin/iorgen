@@ -1,6 +1,5 @@
-use std::io;
-
 /// contains a list
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 struct List {
     /// the list's size
     size1: i32,
@@ -9,6 +8,7 @@ struct List {
 }
 
 /// contains a string
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 struct String_ {
     /// the list's size
     size2: i32,
@@ -17,6 +17,7 @@ struct String_ {
 }
 
 /// contains a matrix
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 struct Matrix {
     /// the list's size
     size3: i32,
@@ -25,6 +26,7 @@ struct Matrix {
 }
 
 /// this is not a 'sized struct', but a regular one!
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 struct NotASizedStruct {
     /// not the list's size
     size4: i32,
@@ -42,71 +44,76 @@ fn sized_struct(n: i32, lists: Vec<List>, strings: Vec<String_>, matrices: Vec<M
 }
 
 fn main() {
-    let n: i32 = read_line().parse().unwrap();
-    let mut lists: Vec<List> = Vec::with_capacity(n as usize);
-    for _ in 0..n {
-        let lists_elem: List = read_struct_list();
-        lists.push(lists_elem);
-    }
-    let mut strings: Vec<String_> = Vec::with_capacity(n as usize);
-    for _ in 0..n {
-        let strings_elem: String_ = read_struct_string();
-        strings.push(strings_elem);
-    }
-    let mut matrices: Vec<Matrix> = Vec::with_capacity(2 as usize);
-    for _ in 0..2 {
-        let matrices_elem: Matrix = read_struct_matrix();
-        matrices.push(matrices_elem);
-    }
-    let mut same: Vec<NotASizedStruct> = Vec::with_capacity(n as usize);
-    for _ in 0..n {
-        let same_elem: NotASizedStruct = read_struct_not_a_sized_struct();
-        same.push(same_elem);
-    }
+    let mut buffer = String::new();
+
+    let n = read_line(&mut buffer)
+        .parse()
+        .expect("invalid `n` parameter");
+
+    let lists = (0..n)
+        .map(|_| read_struct_list(&mut buffer))
+        .collect::<Result<_, _>>()
+        .expect("invalid `lists` parameter");
+
+    let strings = (0..n)
+        .map(|_| read_struct_string(&mut buffer))
+        .collect::<Result<_, _>>()
+        .expect("invalid `strings` parameter");
+
+    let matrices = (0..2)
+        .map(|_| read_struct_matrix(&mut buffer))
+        .collect::<Result<_, _>>()
+        .expect("invalid `matrices` parameter");
+
+    let same = (0..n)
+        .map(|_| read_struct_not_a_sized_struct(&mut buffer))
+        .collect::<Result<_, _>>()
+        .expect("invalid `same` parameter");
 
     sized_struct(n, lists, strings, matrices, same);
 }
 
-fn read_line() -> String {
-    let mut line = String::new();
-    io::stdin()
-        .read_line(&mut line)
-        .expect("Failed to read line");
-    line.trim().to_string()
+fn read_line(mut buffer: &mut String) -> &str {
+    buffer.clear();
+    std::io::stdin()
+        .read_line(&mut buffer)
+        .expect("impossible to read a new line");
+    buffer.trim_end()
 }
 
-fn read_vec_int() -> Vec<i32> {
-    read_line()
+fn read_struct_list(mut buffer: &mut String) -> Result<List, Box<dyn std::error::Error>> {
+    let size1 = read_line(&mut buffer).parse()?;
+    let int_list = read_line(&mut buffer)
         .split_whitespace()
-        .collect::<Vec<&str>>()
-        .iter()
-        .map(|x| x.parse().unwrap())
-        .collect()
+        .map(str::parse)
+        .collect::<Result<_, _>>()?;
+    Ok(List { size1, int_list })
 }
 
-fn read_struct_list() -> List {
-    let size1: i32 = read_line().parse().unwrap();
-    let int_list: Vec<i32> = read_vec_int();
-    List { size1, int_list }
+fn read_struct_string(mut buffer: &mut String) -> Result<String_, Box<dyn std::error::Error>> {
+    let size2 = read_line(&mut buffer).parse()?;
+    let string_list = read_line(&mut buffer).to_string();
+    Ok(String_ { size2, string_list })
 }
 
-fn read_struct_string() -> String_ {
-    let size2: i32 = read_line().parse().unwrap();
-    let string_list: String = read_line();
-    String_ { size2, string_list }
+fn read_struct_matrix(mut buffer: &mut String) -> Result<Matrix, Box<dyn std::error::Error>> {
+    let size3 = read_line(&mut buffer).parse()?;
+    let list_list = (0..size3)
+        .map(|_| {
+            read_line(&mut buffer)
+                .split_whitespace()
+                .map(str::parse)
+                .collect::<Result<_, _>>()
+        })
+        .collect::<Result<_, _>>()?;
+    Ok(Matrix { size3, list_list })
 }
 
-fn read_struct_matrix() -> Matrix {
-    let size3: i32 = read_line().parse().unwrap();
-    let mut list_list: Vec<Vec<i32>> = Vec::with_capacity(size3 as usize);
-    for _ in 0..size3 {
-        list_list.push(read_vec_int());
-    }
-    Matrix { size3, list_list }
-}
-
-fn read_struct_not_a_sized_struct() -> NotASizedStruct {
-    let size4: i32 = read_line().parse().unwrap();
-    let int_list_n: Vec<i32> = read_vec_int();
-    NotASizedStruct { size4, int_list_n }
+fn read_struct_not_a_sized_struct(mut buffer: &mut String) -> Result<NotASizedStruct, Box<dyn std::error::Error>> {
+    let size4 = read_line(&mut buffer).parse()?;
+    let int_list_n = read_line(&mut buffer)
+        .split_whitespace()
+        .map(str::parse)
+        .collect::<Result<_, _>>()?;
+    Ok(NotASizedStruct { size4, int_list_n })
 }
