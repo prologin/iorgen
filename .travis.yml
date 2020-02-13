@@ -1,0 +1,27 @@
+language: python
+
+dist: bionic
+
+notifications: {email: false}
+
+install:
+    - pip install -U pyyaml
+
+addons:
+    apt:
+        packages:
+            - mono-mcs
+            - gdc
+            - golang
+            - ghc
+            - lua5.3
+            - ocaml-nox
+            - fp-compiler
+            - swi-prolog-nox
+            - rustc
+            - gambc
+jdk:
+  - openjdk8
+
+script:
+    - cd test && ./test.py
