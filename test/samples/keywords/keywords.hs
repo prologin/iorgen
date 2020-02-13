@@ -1,4 +1,3 @@
-import Control.Applicative ((<$>), (<*>))
 import Control.Monad (replicateM)
 
 -- | may conflict in c#

@@ -257,16 +257,12 @@ class ParserHaskell():
             1].type.main == TypeEnum.LIST and not struct.fields[
                 1].type.fits_in_one_line(self.input.structs)
         if not need_size:
-            self.imports.add("Control.Applicative ((<$>), (<*>))")
-            self.imports.discard("Control.Applicative ((<$>))")
             args = " <*> ".join(
                 self.read_lines(i.type, var_name(i.type.size))
                 for i in struct.fields)
             return [
                 "read{0} = {0} <$> {1}".format(data_name(struct.name), args)
             ]
-        if "Control.Applicative ((<$>), (<*>))" not in self.imports:
-            self.imports.add("Control.Applicative ((<$>))")
         field = struct.fields[1]
         return [
             "read{0} = fmap read getLine >>= \\a -> {0} a <$> ({1})".format(

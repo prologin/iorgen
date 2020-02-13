@@ -1,5 +1,3 @@
-import Control.Applicative ((<$>), (<*>))
-
 -- | a char struct
 data StructWithAChar = StructWithAChar
   { char1 :: Char  -- ^ a char
