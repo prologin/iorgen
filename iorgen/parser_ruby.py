@@ -124,8 +124,8 @@ def print_line(name: str, type_: Type, input_data: Input) -> str:
             return 'puts {}.join(" ")'.format(name)
     if type_.main == TypeEnum.STRUCT:
         struct = input_data.get_struct(type_.struct_name)
-        return "print {}".format(", ".join('{}["{}"]'.format(name, i.name)
-                                           for i in struct.fields))
+        return "print {}".format(', " ", '.join(
+            '{}["{}"]'.format(name, i.name) for i in struct.fields))
     assert False
     return ""
 
@@ -163,7 +163,6 @@ def call(input_data: Input, reprint: bool) -> List[str]:
     lines.append("def {}({})".format(
         name, ", ".join(var_name(i.name) for i in input_data.input)))
     if reprint:
-        lines.append(INDENTATION + '$, = " "')
         lines.append(INDENTATION + '$\\ = "\\n"')
         for var in input_data.input:
             lines.extend(
