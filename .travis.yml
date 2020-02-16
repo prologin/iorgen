@@ -5,7 +5,7 @@ dist: bionic
 notifications: {email: false}
 
 install:
-    - pip install -U pyyaml
+    - pip install -U pyyaml 'mypy==0.761' 'pylint==2.4.4' 'yapf==0.29.0'
 
 addons:
     apt:
@@ -24,4 +24,5 @@ jdk:
   - openjdk8
 
 script:
+    - ./check_code.sh
     - cd test && ./test.py
