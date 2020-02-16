@@ -45,17 +45,6 @@ sudo apt install python3-yaml mono-mcs gdc golang ghc openjdk-8-jdk-headless \
     rustc gambc
 ```
 
-The only issue with Debian and Ubuntu is that their version of OCaml is too
-old. Soon *Iorgen* will generate code working on OCaml 4.02, but until then,
-you might want to install ocaml through opam for instance.
-
-```shell
-sudo apt install opam
-opam init -y
-eval `opam config env`
-opam switch 4.07.0
-```
-
 ## Usage
 
 Make sure python (version 3.5 and above) and python-yaml are installed on your
