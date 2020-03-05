@@ -20,7 +20,6 @@ def main() -> None:
     languages = {i.extension: i for i in ALL_LANGUAGES}
 
     parser = argparse.ArgumentParser(
-        prog="python3 -m iorgen",
         description="Multi-languages parser generator")
     parser.add_argument('--languages',
                         '-l',
