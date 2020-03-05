@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-yapf -p --recursive -d iorgen/ test/test.py test/regenerate.py
+yapf -p --recursive -d iorgen/ setup.py test/test.py test/regenerate.py
 r1=$?
 mypy --strict iorgen # test/test.py test/regenerate.py
 r2=$?
