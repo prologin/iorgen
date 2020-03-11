@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2019 Sacha Delanoue
+# Copyright 2019-2020 Sacha Delanoue
 """Generate a D parser"""
 
 import textwrap
@@ -61,11 +61,9 @@ def type_str(type_: Type) -> str:
         return "char"
     if type_.main == TypeEnum.STRUCT:
         return struct_name(type_.struct_name)
-    if type_.main == TypeEnum.LIST:
-        assert type_.encapsulated
-        return "{}[]".format(type_str(type_.encapsulated))
-    assert False
-    return ""
+    assert type_.main == TypeEnum.LIST
+    assert type_.encapsulated
+    return "{}[]".format(type_str(type_.encapsulated))
 
 
 class ParserD:
