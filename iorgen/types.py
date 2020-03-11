@@ -5,8 +5,7 @@
 
 import re
 from enum import Enum, unique
-from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple
-from typing import Set  # pylint: disable=unused-import
+from typing import Any, Callable, Dict, Iterator, List, Optional, Set, Tuple
 from typing import Type as T, TypeVar, Union
 
 # This stuff is no longer necessary with python 3.7 by including:

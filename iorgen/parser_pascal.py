@@ -3,7 +3,7 @@
 """Generate a Pascal parser"""
 
 import textwrap
-from typing import List, Set  # pylint: disable=unused-import
+from typing import List, Set
 from iorgen.types import Input, Type, TypeEnum, Variable
 from iorgen.utils import pascal_case, IteratorName
 

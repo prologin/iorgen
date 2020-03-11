@@ -4,7 +4,7 @@
 
 import textwrap
 from enum import Enum, unique
-from typing import List, Set, Tuple  # pylint: disable=unused-import
+from typing import List, Set, Tuple
 from iorgen.types import Input, Type, TypeEnum, Variable
 from iorgen.utils import snake_case, IteratorName
 

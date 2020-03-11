@@ -4,7 +4,7 @@
 
 import textwrap
 from collections import OrderedDict
-from typing import List, Set, Tuple  # pylint: disable=unused-import
+from typing import List, Set
 
 from iorgen.types import Input, Struct, Type, TypeEnum, Variable
 from iorgen.utils import camel_case, pascal_case

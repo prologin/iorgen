@@ -3,8 +3,7 @@
 # Copyright 2019 Matthieu Moatti
 """Generate a valid raw input"""
 
-from typing import Dict  # pylint: disable=unused-import
-from typing import List, Optional, Union
+from typing import Dict, List, Optional, Union
 import random
 import string
 

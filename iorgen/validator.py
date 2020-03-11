@@ -3,8 +3,7 @@
 """Check that a raw input is valid"""
 
 from string import printable, whitespace
-from typing import Dict  # pylint: disable=unused-import
-from typing import List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 import re
 
 from iorgen.types import Constraints, Input, Type, TypeEnum, Variable
