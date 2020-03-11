@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018 Sacha Delanoue
+# Copyright 2018-2020 Sacha Delanoue
 """Generate a C# parser"""
 
 import textwrap
@@ -51,11 +51,9 @@ def type_str(type_: Type) -> str:
         return "char"
     if type_.main == TypeEnum.STRUCT:
         return pascal_name(type_.struct_name)
-    if type_.main == TypeEnum.LIST:
-        assert type_.encapsulated
-        return type_str(type_.encapsulated) + "[]"
-    assert False
-    return ""
+    assert type_.main == TypeEnum.LIST
+    assert type_.encapsulated
+    return type_str(type_.encapsulated) + "[]"
 
 
 class ParserCS():
@@ -132,34 +130,31 @@ class ParserCS():
                 lines.extend(
                     self.read_lines(False, f_name, f_type, f_size, indent_lvl))
             return lines
-        if type_.main == TypeEnum.LIST:
-            assert type_.encapsulated is not None
-            far_inner_type = type_.encapsulated
-            list_suffix = ""
-            while far_inner_type.main == TypeEnum.LIST:
-                assert far_inner_type.encapsulated is not None
-                far_inner_type = far_inner_type.encapsulated
-                list_suffix += "[]"
-            lines = [
-                "{}{}{} = new {}[{}]{};".format(
-                    indent, (type_str(type_) + " ") if decl else "", name,
-                    type_str(far_inner_type), size, list_suffix)
-            ]
-            index = self.iterator.new_it()
-            self.words.push_scope()
-            lines.append("{0}for (int {1} = 0; {1} < {2}; ++{1})".format(
-                indent, index, size))
-            lines.append(indent + "{")
-            lines.extend(
-                self.read_lines(False, "{}[{}]".format(name, index),
-                                type_.encapsulated,
-                                var_name(type_.encapsulated.size),
-                                indent_lvl + 1))
-            self.words.pop_scope()
-            self.iterator.pop_it()
-            return lines + [indent + "}"]
-        assert False
-        return []
+        assert type_.main == TypeEnum.LIST
+        assert type_.encapsulated is not None
+        far_inner_type = type_.encapsulated
+        list_suffix = ""
+        while far_inner_type.main == TypeEnum.LIST:
+            assert far_inner_type.encapsulated is not None
+            far_inner_type = far_inner_type.encapsulated
+            list_suffix += "[]"
+        lines = [
+            "{}{}{} = new {}[{}]{};".format(
+                indent, (type_str(type_) + " ") if decl else "", name,
+                type_str(far_inner_type), size, list_suffix)
+        ]
+        index = self.iterator.new_it()
+        self.words.push_scope()
+        lines.append("{0}for (int {1} = 0; {1} < {2}; ++{1})".format(
+            indent, index, size))
+        lines.append(indent + "{")
+        lines.extend(
+            self.read_lines(False, "{}[{}]".format(name, index),
+                            type_.encapsulated,
+                            var_name(type_.encapsulated.size), indent_lvl + 1))
+        self.words.pop_scope()
+        self.iterator.pop_it()
+        return lines + [indent + "}"]
 
     def call(self, reprint: bool) -> List[str]:
         """Declare and call the function take all inputs in arguments"""
@@ -194,14 +189,11 @@ class ParserCS():
                 return 'Console.WriteLine(new string({}));'.format(name)
             assert type_.encapsulated.main == TypeEnum.INT
             return 'Console.WriteLine(String.Join(" ", {}));'.format(name)
-        if type_.main == TypeEnum.STRUCT:
-            fields = self.input.get_struct(type_.struct_name).fields
-            return 'Console.WriteLine("{}", {});'.format(
-                " ".join("{{{}}}".format(i) for i in range(len(fields))),
-                ", ".join("{}.{}".format(name, var_name(f.name))
-                          for f in fields))
-        assert False
-        return ""
+        assert type_.main == TypeEnum.STRUCT
+        fields = self.input.get_struct(type_.struct_name).fields
+        return 'Console.WriteLine("{}", {});'.format(
+            " ".join("{{{}}}".format(i) for i in range(len(fields))),
+            ", ".join("{}.{}".format(name, var_name(f.name)) for f in fields))
 
     def print_lines(self, name: str, type_: Type,
                     indent_lvl: int) -> List[str]:
@@ -217,24 +209,22 @@ class ParserCS():
                         "{}.{}".format(name, var_name(field.name)), field.type,
                         indent_lvl))
             return lines
-        if type_.main == TypeEnum.LIST:
-            assert type_.encapsulated is not None
-            index = self.iterator.new_it()
-            self.words.push_scope()
-            lines = [
-                "{}foreach ({} {} in {})".format(INDENTATION * indent_lvl,
-                                                 type_str(type_.encapsulated),
-                                                 index, name)
-            ]
-            lines.append(INDENTATION * indent_lvl + "{")
-            lines.extend(
-                self.print_lines(index, type_.encapsulated, indent_lvl + 1))
-            lines.append(INDENTATION * indent_lvl + "}")
-            self.words.pop_scope()
-            self.iterator.pop_it()
-            return lines
-        assert False
-        return []
+        assert type_.main == TypeEnum.LIST
+        assert type_.encapsulated is not None
+        index = self.iterator.new_it()
+        self.words.push_scope()
+        lines = [
+            "{}foreach ({} {} in {})".format(INDENTATION * indent_lvl,
+                                             type_str(type_.encapsulated),
+                                             index, name)
+        ]
+        lines.append(INDENTATION * indent_lvl + "{")
+        lines.extend(
+            self.print_lines(index, type_.encapsulated, indent_lvl + 1))
+        lines.append(INDENTATION * indent_lvl + "}")
+        self.words.pop_scope()
+        self.iterator.pop_it()
+        return lines
 
     def content(self, reprint: bool) -> str:
         """Return the parser content"""
