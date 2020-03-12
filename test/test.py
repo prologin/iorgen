@@ -52,13 +52,17 @@ def gen_is_same_as_sample(input_data: Input, prefix_path: str,
     return check_diff(generated, filename)
 
 
-def run_on_input(input_data: Input, name: str, language: Language) -> bool:
+def run_on_input(input_data: Input, name: str, language: Language,
+                 no_compile: bool) -> bool:
     """Check that the generated parser prints the input is it fed in"""
     filename = "/tmp/iorgen/tests/{0}/{1}.{0}".format(language.extension, name)
     generated = language.generator(input_data, True)
 
     Path(os.path.dirname(filename)).mkdir(parents=True, exist_ok=True)
     Path(filename).write_text(generated)
+
+    if no_compile:
+        return True
 
     reffile = "samples/{0}/{0}.sample_input".format(name)
     out = language.compile_and_run(filename, reffile)
@@ -79,6 +83,9 @@ def test_samples() -> None:
                         action='append',
                         help='languages to check',
                         choices=list(languages.keys()))
+    parser.add_argument('--no_compilation',
+                        action='store_true',
+                        help='skip the compilation (and run) part')
     args = parser.parse_args()
     selected_languages = args.languages or list(languages.keys())
     for name in os.listdir("samples"):
@@ -91,7 +98,8 @@ def test_samples() -> None:
         for language in ALL_LANGUAGES:
             assert gen_is_same_as_sample(input_data, prefix, language)
             if language.extension in selected_languages:
-                assert run_on_input(input_data, name, language)
+                assert run_on_input(input_data, name, language,
+                                    args.no_compilation)
 
         for language in ALL_MARKDOWN:
             assert gen_is_same_as_sample(input_data, prefix, language)
