@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018 Sacha Delanoue
+# Copyright 2018-2020 Sacha Delanoue
 """Generate a PHP parser"""
 
 import textwrap
@@ -49,9 +49,9 @@ def read_line(type_: Type, input_data: Input) -> str:
         if type_.encapsulated.main == TypeEnum.CHAR:
             return ("preg_split('//', trim(fgets(STDIN)), -1, "
                     "PREG_SPLIT_NO_EMPTY)")
-        if type_.encapsulated.main == TypeEnum.INT:
-            return ("array_map('intval', preg_split('/ /', "
-                    "trim(fgets(STDIN)), -1, PREG_SPLIT_NO_EMPTY))")
+        assert type_.encapsulated.main == TypeEnum.INT
+        return ("array_map('intval', preg_split('/ /', "
+                "trim(fgets(STDIN)), -1, PREG_SPLIT_NO_EMPTY))")
     if type_.main == TypeEnum.STRUCT:
         struct = input_data.get_struct(type_.struct_name)
         begin = "array_combine([{}], ".format(", ".join(
@@ -93,18 +93,16 @@ class ParserPHP:
                 "for ({0} = 0; {0} < {1}; {0}++) {{".format(iterator, size)
             ]
             return prefix + [INDENTATION + i for i in lines] + ["}"]
-        if type_.main == TypeEnum.STRUCT:
-            struct = self.input.get_struct(type_.struct_name)
-            lines = []
-            for f_name, f_type, f_size in struct.fields_name_type_size(
-                    '{}["{{}}"]'.format(name), lambda x: x):
-                read = self.read_lines(f_name, f_type, f_size)
-                if len(read) == 1:
-                    read[0] = '{} = {};'.format(f_name, read[0])
-                lines.extend(read)
-            return ["{} = [];".format(name)] + lines
-        assert False
-        return []
+        assert type_.main == TypeEnum.STRUCT
+        struct = self.input.get_struct(type_.struct_name)
+        lines = []
+        for f_name, f_type, f_size in struct.fields_name_type_size(
+                '{}["{{}}"]'.format(name), lambda x: x):
+            read = self.read_lines(f_name, f_type, f_size)
+            if len(read) == 1:
+                read[0] = '{} = {};'.format(f_name, read[0])
+            lines.extend(read)
+        return ["{} = [];".format(name)] + lines
 
     def read_vars(self) -> List[str]:
         """Generate the PHP code to read all input variables"""
@@ -127,14 +125,12 @@ def print_line(name: str, type_: Type, input_data: Input) -> str:
         assert type_.encapsulated is not None
         if type_.encapsulated.main == TypeEnum.CHAR:
             return 'echo join("", {}), "\\n";'.format(name)
-        if type_.encapsulated.main == TypeEnum.INT:
-            return 'echo join(" ", {}), "\\n";'.format(name)
-    if type_.main == TypeEnum.STRUCT:
-        struct = input_data.get_struct(type_.struct_name)
-        return 'echo {}, "\\n";'.format(", ' ', ".join(
-            '{}["{}"]'.format(name, i.name) for i in struct.fields))
-    assert False
-    return ""
+        assert type_.encapsulated.main == TypeEnum.INT
+        return 'echo join(" ", {}), "\\n";'.format(name)
+    assert type_.main == TypeEnum.STRUCT
+    struct = input_data.get_struct(type_.struct_name)
+    return 'echo {}, "\\n";'.format(", ' ', ".join(
+        '{}["{}"]'.format(name, i.name) for i in struct.fields))
 
 
 def print_lines(input_data: Input,
@@ -151,15 +147,13 @@ def print_lines(input_data: Input,
         return [indent + "foreach ({} as &{}) {{".format(name, inner)
                 ] + print_lines(input_data, inner, type_.encapsulated,
                                 indent_lvl + 1) + [indent + "}"]
-    if type_.main == TypeEnum.STRUCT:
-        lines = []
-        for i in input_data.get_struct(type_.struct_name).fields:
-            lines.extend(
-                print_lines(input_data, '{}["{}"]'.format(name, i.name),
-                            i.type, indent_lvl))
-        return lines
-    assert False
-    return []
+    assert type_.main == TypeEnum.STRUCT
+    lines = []
+    for i in input_data.get_struct(type_.struct_name).fields:
+        lines.extend(
+            print_lines(input_data, '{}["{}"]'.format(name, i.name), i.type,
+                        indent_lvl))
+    return lines
 
 
 def call(input_data: Input, reprint: bool) -> List[str]:

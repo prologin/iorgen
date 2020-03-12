@@ -43,8 +43,8 @@ def read_line(type_: Type, input_data: Input) -> str:
         assert type_.encapsulated is not None
         if type_.encapsulated.main == TypeEnum.CHAR:
             return "list(input())"
-        if type_.encapsulated.main == TypeEnum.INT:
-            return "list(map(int, input().split()))"
+        assert type_.encapsulated.main == TypeEnum.INT
+        return "list(map(int, input().split()))"
     if type_.main == TypeEnum.STRUCT:
         struct = input_data.get_struct(type_.struct_name)
         keys = ", ".join('"{}"'.format(i.name) for i in struct.fields)
@@ -115,8 +115,8 @@ def print_line(name: str, type_: Type, input_data: Input) -> str:
         assert type_.encapsulated is not None
         if type_.encapsulated.main == TypeEnum.CHAR:
             return "print(''.join({}))".format(name)
-        if type_.encapsulated.main == TypeEnum.INT:
-            return "print(' '.join(map(str, {})))".format(name)
+        assert type_.encapsulated.main == TypeEnum.INT
+        return "print(' '.join(map(str, {})))".format(name)
     assert type_.main == TypeEnum.STRUCT
     struct = input_data.get_struct(type_.struct_name)
     return "print({})".format(", ".join('{}["{}"]'.format(name, i.name)

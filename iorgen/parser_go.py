@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018 Sacha Delanoue
+# Copyright 2018-2020 Sacha Delanoue
 """Generate a Go parser"""
 
 import textwrap
@@ -47,10 +47,8 @@ def type_str(type_: Type) -> str:
     if type_.main == TypeEnum.STRUCT:
         return struct_name(type_.struct_name)
     assert type_.encapsulated
-    if type_.main == TypeEnum.LIST:
-        return "[]{}".format(type_str(type_.encapsulated))
-    assert False
-    return ""
+    assert type_.main == TypeEnum.LIST
+    return "[]{}".format(type_str(type_.encapsulated))
 
 
 def max_size(type_: Type, constraints: Optional[Constraints],
@@ -145,19 +143,17 @@ class ParserGo():
                              name, inner_name))
             self.iterator.pop_it()
             return lines + [indent + '}']
-        if type_.main == TypeEnum.STRUCT:
-            struct = self.input.get_struct(type_.struct_name)
-            self.imports.add("fmt")
-            return [
-                indent + "scanner.Scan()",
-                indent + 'fmt.Sscanf(scanner.Text(), "{}", {})'.format(
-                    " ".join("%d" if f.type.main == TypeEnum.INT else "%c"
-                             for f in struct.fields), ", ".join(
-                                 "&{}.{}".format(name, var_name(f.name))
-                                 for f in struct.fields))
-            ]
-        assert False
-        return []
+        assert type_.main == TypeEnum.STRUCT
+        struct = self.input.get_struct(type_.struct_name)
+        self.imports.add("fmt")
+        return [
+            indent + "scanner.Scan()",
+            indent + 'fmt.Sscanf(scanner.Text(), "{}", {})'.format(
+                " ".join("%d" if f.type.main == TypeEnum.INT else "%c"
+                         for f in struct.fields), ", ".join(
+                             "&{}.{}".format(name, var_name(f.name))
+                             for f in struct.fields))
+        ]
 
     def read_lines(self, name: str, type_: Type, size: str,
                    indent_lvl: int) -> List[str]:
@@ -176,20 +172,17 @@ class ParserGo():
                 lines.extend(
                     self.read_lines(f_name, f_type, f_size, indent_lvl))
             return lines
-        if type_.main == TypeEnum.LIST:
-            assert type_.encapsulated is not None
-            inner_name = self.iterator.new_it()
-            lines.append("{}for {} := range {} {{".format(
-                INDENTATION * indent_lvl, inner_name, name))
-            lines.extend(
-                self.read_lines("{}[{}]".format(name, inner_name),
-                                type_.encapsulated,
-                                var_name(type_.encapsulated.size),
-                                indent_lvl + 1))
-            lines.append(INDENTATION * indent_lvl + "}")
-            self.iterator.pop_it()
-            return lines
-        assert False
+        assert type_.main == TypeEnum.LIST
+        assert type_.encapsulated is not None
+        inner_name = self.iterator.new_it()
+        lines.append("{}for {} := range {} {{".format(INDENTATION * indent_lvl,
+                                                      inner_name, name))
+        lines.extend(
+            self.read_lines("{}[{}]".format(name, inner_name),
+                            type_.encapsulated,
+                            var_name(type_.encapsulated.size), indent_lvl + 1))
+        lines.append(INDENTATION * indent_lvl + "}")
+        self.iterator.pop_it()
         return lines
 
     def read_var(self, var: Variable) -> List[str]:
@@ -259,17 +252,15 @@ class ParserGo():
             ])
             self.iterator.pop_it()
             return lines + [indent + "}", indent + "fmt.Println()"]
-        if type_.main == TypeEnum.STRUCT:
-            struct = self.input.get_struct(type_.struct_name)
-            return [
-                indent + 'fmt.Printf("{}\\n", {})'.format(
-                    " ".join("%d" if x.type.main == TypeEnum.INT else "%c"
-                             for x in struct.fields), ", ".join(
-                                 "{}.{}".format(name, var_name(x.name))
-                                 for x in struct.fields))
-            ]
-        assert False
-        return []
+        assert type_.main == TypeEnum.STRUCT
+        struct = self.input.get_struct(type_.struct_name)
+        return [
+            indent + 'fmt.Printf("{}\\n", {})'.format(
+                " ".join("%d" if x.type.main == TypeEnum.INT else "%c"
+                         for x in struct.fields), ", ".join(
+                             "{}.{}".format(name, var_name(x.name))
+                             for x in struct.fields))
+        ]
 
     def print_lines(self, name: str, type_: Type,
                     indent_lvl: int) -> List[str]:
@@ -284,21 +275,18 @@ class ParserGo():
                         "{}.{}".format(name, var_name(field.name)), field.type,
                         indent_lvl))
             return lines
-        if type_.main == TypeEnum.LIST:
-            assert type_.encapsulated is not None
-            inner_name = self.iterator.new_it()
-            lines = [
-                "{}for _, {} := range {} {{".format(INDENTATION * indent_lvl,
-                                                    inner_name, name)
-            ]
-            lines.extend(
-                self.print_lines(inner_name, type_.encapsulated,
-                                 indent_lvl + 1))
-            lines.append(INDENTATION * indent_lvl + "}")
-            self.iterator.pop_it()
-            return lines
-        assert False
-        return []
+        assert type_.main == TypeEnum.LIST
+        assert type_.encapsulated is not None
+        inner_name = self.iterator.new_it()
+        lines = [
+            "{}for _, {} := range {} {{".format(INDENTATION * indent_lvl,
+                                                inner_name, name)
+        ]
+        lines.extend(
+            self.print_lines(inner_name, type_.encapsulated, indent_lvl + 1))
+        lines.append(INDENTATION * indent_lvl + "}")
+        self.iterator.pop_it()
+        return lines
 
     def content(self, reprint: bool) -> str:
         """Return the parser content"""

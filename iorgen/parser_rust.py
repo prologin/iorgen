@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018 Sacha Delanoue
+# Copyright 2018-2020 Sacha Delanoue
 """Generate a Rust parser"""
 
 import textwrap
@@ -52,11 +52,9 @@ def type_str(type_: Type) -> str:
         return "String"
     if type_.main == TypeEnum.STRUCT:
         return struct_name(type_.struct_name)
-    if type_.main == TypeEnum.LIST:
-        assert type_.encapsulated
-        return "Vec<{}>".format(type_str(type_.encapsulated))
-    assert False
-    return ""
+    assert type_.main == TypeEnum.LIST
+    assert type_.encapsulated
+    return "Vec<{}>".format(type_str(type_.encapsulated))
 
 
 def decl_struct(struct: Struct) -> List[str]:
@@ -201,19 +199,15 @@ class ParserRust():
             if type_.encapsulated.main == TypeEnum.INT:
                 to_string = 'iter().map(|x| x.to_string())' + \
                             '.collect::<Vec<String>>().join(" ")'
-            elif type_.encapsulated.main == TypeEnum.CHAR:
-                to_string = 'into_iter().collect::<String>()'
             else:
-                assert False
+                assert type_.encapsulated.main == TypeEnum.CHAR
+                to_string = 'into_iter().collect::<String>()'
             return 'print!("{{}}\\n", {}.{});'.format(name, to_string)
-        if type_.main == TypeEnum.STRUCT:
-            struct = self.input.get_struct(type_.struct_name)
-            return 'print!("{}\\n", {});'.format(
-                " ".join(["{}"] * len(struct.fields)),
-                ", ".join(name + "." + var_name(f.name)
-                          for f in struct.fields))
-        assert False
-        return ""
+        assert type_.main == TypeEnum.STRUCT
+        struct = self.input.get_struct(type_.struct_name)
+        return 'print!("{}\\n", {});'.format(
+            " ".join(["{}"] * len(struct.fields)),
+            ", ".join(name + "." + var_name(f.name) for f in struct.fields))
 
     def print_lines(self, name: str, type_: Type,
                     indent_lvl: int) -> List[str]:
@@ -228,16 +222,13 @@ class ParserRust():
                     self.print_lines(name + "." + var_name(field.name),
                                      field.type, indent_lvl))
             return lines
-        if type_.main == TypeEnum.LIST:
-            assert type_.encapsulated is not None
-            inner_name = "{}_elem".format(name.replace(".", "_"))
-            lines = ["{}for {} in &{} {{".format(indent, inner_name, name)]
-            lines.extend(
-                self.print_lines(inner_name, type_.encapsulated,
-                                 indent_lvl + 1))
-            return lines + [indent + "}"]
-        assert False
-        return []
+        assert type_.main == TypeEnum.LIST
+        assert type_.encapsulated is not None
+        inner_name = "{}_elem".format(name.replace(".", "_"))
+        lines = ["{}for {} in &{} {{".format(indent, inner_name, name)]
+        lines.extend(
+            self.print_lines(inner_name, type_.encapsulated, indent_lvl + 1))
+        return lines + [indent + "}"]
 
     def content(self, reprint: bool) -> str:
         """Return the parser content"""

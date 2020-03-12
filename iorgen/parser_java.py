@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018 Sacha Delanoue
+# Copyright 2018-2020 Sacha Delanoue
 """Generate a Java parser"""
 
 import textwrap
@@ -46,11 +46,9 @@ def type_str(type_: Type) -> str:
         return "char"
     if type_.main == TypeEnum.STRUCT:
         return class_name(type_.struct_name)
-    if type_.main == TypeEnum.LIST:
-        assert type_.encapsulated
-        return type_str(type_.encapsulated) + "[]"
-    assert False
-    return ""
+    assert type_.main == TypeEnum.LIST
+    assert type_.encapsulated
+    return type_str(type_.encapsulated) + "[]"
 
 
 class ParserJava():
@@ -93,11 +91,13 @@ class ParserJava():
             command = "scanner.nextLine().charAt(0)"
         elif type_.main == TypeEnum.STR:
             command = "scanner.nextLine()"
-        elif type_.main == TypeEnum.LIST:
+        else:
+            assert type_.main == TypeEnum.LIST
             assert type_.encapsulated is not None
             if type_.encapsulated.main == TypeEnum.CHAR:
                 command = "scanner.nextLine().toCharArray()"
-            elif type_.encapsulated.main == TypeEnum.INT:
+            else:
+                assert type_.encapsulated.main == TypeEnum.INT
                 self.imports.add("java.util.Arrays")
                 command = ('Arrays.stream(scanner.nextLine().split(" ")).{}'
                            'mapToInt(Integer::parseInt).toArray()'
@@ -126,33 +126,30 @@ class ParserJava():
                 lines.extend(
                     self.read_lines(False, f_name, f_type, f_size, indent_lvl))
             return lines
-        if type_.main == TypeEnum.LIST:
-            assert type_.encapsulated is not None
-            far_inner_type = type_.encapsulated
-            list_suffix = ""
-            while far_inner_type.main == TypeEnum.LIST:
-                assert far_inner_type.encapsulated is not None
-                far_inner_type = far_inner_type.encapsulated
-                list_suffix += "[]"
-            lines = [
-                "{}{}{} = new {}[{}]{};".format(
-                    indent, (type_str(type_) + " ") if decl else "", name,
-                    type_str(far_inner_type), size, list_suffix)
-            ]
-            index = self.iterator.new_it()
-            self.words.push_scope()
-            lines.append("{0}for (int {1} = 0; {1} < {2}; ++{1}) {{".format(
-                indent, index, size))
-            lines.extend(
-                self.read_lines(False, "{}[{}]".format(name, index),
-                                type_.encapsulated,
-                                var_name(type_.encapsulated.size),
-                                indent_lvl + 1))
-            self.words.pop_scope()
-            self.iterator.pop_it()
-            return lines + [indent + "}"]
-        assert False
-        return []
+        assert type_.main == TypeEnum.LIST
+        assert type_.encapsulated is not None
+        far_inner_type = type_.encapsulated
+        list_suffix = ""
+        while far_inner_type.main == TypeEnum.LIST:
+            assert far_inner_type.encapsulated is not None
+            far_inner_type = far_inner_type.encapsulated
+            list_suffix += "[]"
+        lines = [
+            "{}{}{} = new {}[{}]{};".format(
+                indent, (type_str(type_) + " ") if decl else "", name,
+                type_str(far_inner_type), size, list_suffix)
+        ]
+        index = self.iterator.new_it()
+        self.words.push_scope()
+        lines.append("{0}for (int {1} = 0; {1} < {2}; ++{1}) {{".format(
+            indent, index, size))
+        lines.extend(
+            self.read_lines(False, "{}[{}]".format(name, index),
+                            type_.encapsulated,
+                            var_name(type_.encapsulated.size), indent_lvl + 1))
+        self.words.pop_scope()
+        self.iterator.pop_it()
+        return lines + [indent + "}"]
 
     def call(self, reprint: bool) -> List[str]:
         """Declare and call the function take all inputs in arguments"""
@@ -193,15 +190,12 @@ class ParserJava():
             self.imports.add("java.util.stream.Collectors")
             return 'System.out.println(Arrays.stream({}).mapToObj({}'.format(
                 name, 'String::valueOf).collect(Collectors.joining(" ")));')
-        if type_.main == TypeEnum.STRUCT:
-            fields = self.input.get_struct(type_.struct_name).fields
-            return 'System.out.printf("{}\\n", {});'.format(
-                " ".join("%d" if f.type.main == TypeEnum.INT else "%c"
-                         for f in fields),
-                ", ".join("{}.{}".format(name, var_name(f.name))
-                          for f in fields))
-        assert False
-        return ""
+        assert type_.main == TypeEnum.STRUCT
+        fields = self.input.get_struct(type_.struct_name).fields
+        return 'System.out.printf("{}\\n", {});'.format(
+            " ".join("%d" if f.type.main == TypeEnum.INT else "%c"
+                     for f in fields),
+            ", ".join("{}.{}".format(name, var_name(f.name)) for f in fields))
 
     def print_lines(self, name: str, type_: Type, size: str,
                     indent_lvl: int) -> List[str]:
@@ -216,25 +210,22 @@ class ParserJava():
                 lines.extend(
                     self.print_lines(f_name, f_type, f_size, indent_lvl))
             return lines
-        if type_.main == TypeEnum.LIST:
-            assert type_.encapsulated is not None
-            index = self.iterator.new_it()
-            self.words.push_scope()
-            lines = [
-                "{0}for (int {1} = 0; {1} < {2}; ++{1}) {{".format(
-                    INDENTATION * indent_lvl, index, size)
-            ]
-            lines.extend(
-                self.print_lines("{}[{}]".format(name,
-                                                 index), type_.encapsulated,
-                                 var_name(type_.encapsulated.size),
-                                 indent_lvl + 1))
-            lines.append(INDENTATION * indent_lvl + "}")
-            self.words.pop_scope()
-            self.iterator.pop_it()
-            return lines
-        assert False
-        return []
+        assert type_.main == TypeEnum.LIST
+        assert type_.encapsulated is not None
+        index = self.iterator.new_it()
+        self.words.push_scope()
+        lines = [
+            "{0}for (int {1} = 0; {1} < {2}; ++{1}) {{".format(
+                INDENTATION * indent_lvl, index, size)
+        ]
+        lines.extend(
+            self.print_lines("{}[{}]".format(name, index), type_.encapsulated,
+                             var_name(type_.encapsulated.size),
+                             indent_lvl + 1))
+        lines.append(INDENTATION * indent_lvl + "}")
+        self.words.pop_scope()
+        self.iterator.pop_it()
+        return lines
 
     def content(self, reprint: bool) -> str:
         """Return the parser content"""

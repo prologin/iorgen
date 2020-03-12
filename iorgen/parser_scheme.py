@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018 Sacha Delanoue
+# Copyright 2018-2020 Sacha Delanoue
 """Generate a Scheme parser"""
 
 import textwrap
@@ -62,7 +62,6 @@ def var_name(name: str) -> str:
 
 def print_var_content(name: str, type_: Type, structs: List[Struct]) -> str:
     """Return Scheme function to print a variable of given type"""
-    # pylint: disable=too-many-return-statements
     if type_.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.STR):
         return '(display {}) (newline)'.format(name)
     if type_.main == TypeEnum.STRUCT:
@@ -76,21 +75,19 @@ def print_var_content(name: str, type_: Type, structs: List[Struct]) -> str:
             print_var_content(
                 "(cdr (assq '{} {}))".format(var_name(f.name), name), f.type,
                 structs) for f in struct.fields))
-    if type_.main == TypeEnum.LIST:
-        assert type_.encapsulated
-        if type_.fits_in_one_line(structs):
-            if type_.encapsulated.main == TypeEnum.INT:
-                return ("(let print_IntList ((x {})) (if (null? x) (newline) "
-                        "(begin (display (car x)) (if (not (null? (cdr x))) "
-                        "(display #\\space)) (print_IntList (cdr x)))))"
-                        ).format(name)
-            return '(display (list->string {})) (newline)'.format(name)
-        inner = name.replace("(", "p").replace(")", "P").replace(
-            " ", "_").replace("'", "Q") + "_L"
-        return '(for-each (lambda ({}) {}) {})'.format(
-            inner, print_var_content(inner, type_.encapsulated, structs), name)
-    assert False
-    return ''
+    assert type_.main == TypeEnum.LIST
+    assert type_.encapsulated
+    if type_.fits_in_one_line(structs):
+        if type_.encapsulated.main == TypeEnum.INT:
+            return (
+                "(let print_IntList ((x {})) (if (null? x) (newline) "
+                "(begin (display (car x)) (if (not (null? (cdr x))) "
+                "(display #\\space)) (print_IntList (cdr x)))))").format(name)
+        return '(display (list->string {})) (newline)'.format(name)
+    inner = name.replace("(", "p").replace(")", "P").replace(" ", "_").replace(
+        "'", "Q") + "_L"
+    return '(for-each (lambda ({}) {}) {})'.format(
+        inner, print_var_content(inner, type_.encapsulated, structs), name)
 
 
 def wrap_code(code: str, indentation: str, skip_indent: bool = False) -> str:
@@ -152,24 +149,22 @@ class ParserScheme():
                 return "parse-int-list (read-line)"
             assert type_.encapsulated.main == TypeEnum.CHAR
             return "string->list (read-line)"
-        if type_.main == TypeEnum.STRUCT:
-            struct = self.input.get_struct(type_.struct_name)
-            self.parse_int_list = True
-            if all(i.type.main == TypeEnum.INT for i in struct.fields):
-                return "map cons '({}) (parse-int-list (read-line))".format(
-                    " ".join(var_name(i.name) for i in struct.fields))
-            if all(i.type.main == TypeEnum.CHAR for i in struct.fields):
-                return ("map cons '({}) (let loop ((l (string->list (read-line"
-                        "))) (b #t)) (if (null? l) '() (if b (cons (car l) (lo"
-                        "op (cdr l) #f)) (loop (cdr l) #t))))").format(
-                            " ".join(var_name(i.name) for i in struct.fields))
-            self.make_assoc_list_oneline = True
-            return "make-assoc-list-oneline '({}) '({})".format(
-                " ".join(var_name(i.name) for i in struct.fields),
-                " ".join("#t" if i.type.main == TypeEnum.INT else "#f"
-                         for i in struct.fields))
-        assert False
-        return ""
+        assert type_.main == TypeEnum.STRUCT
+        struct = self.input.get_struct(type_.struct_name)
+        self.parse_int_list = True
+        if all(i.type.main == TypeEnum.INT for i in struct.fields):
+            return "map cons '({}) (parse-int-list (read-line))".format(
+                " ".join(var_name(i.name) for i in struct.fields))
+        if all(i.type.main == TypeEnum.CHAR for i in struct.fields):
+            return ("map cons '({}) (let loop ((l (string->list (read-line"
+                    "))) (b #t)) (if (null? l) '() (if b (cons (car l) (lo"
+                    "op (cdr l) #f)) (loop (cdr l) #t))))").format(" ".join(
+                        var_name(i.name) for i in struct.fields))
+        self.make_assoc_list_oneline = True
+        return "make-assoc-list-oneline '({}) '({})".format(
+            " ".join(var_name(i.name) for i in struct.fields),
+            " ".join("#t" if i.type.main == TypeEnum.INT else "#f"
+                     for i in struct.fields))
 
     def read_lines(self, type_: Type, size: str) -> str:
         """Read one or several lines and parse them"""
@@ -189,16 +184,14 @@ class ParserScheme():
                 " ".join("(lambda () ({}))".format(
                     self.read_lines(f.type, var_name(f.type.size)))
                          for f in struct.fields))
-        if type_.main == TypeEnum.LIST:
-            assert type_.encapsulated is not None
-            self.make_list = True
-            replicate = self.read_lines(type_.encapsulated,
-                                        var_name(type_.encapsulated.size))
-            if " " in replicate:
-                replicate = "(lambda () ({}))".format(replicate)
-            return "make-list {} {}".format(size, replicate)
-        assert False
-        return ""
+        assert type_.main == TypeEnum.LIST
+        assert type_.encapsulated is not None
+        self.make_list = True
+        replicate = self.read_lines(type_.encapsulated,
+                                    var_name(type_.encapsulated.size))
+        if " " in replicate:
+            replicate = "(lambda () ({}))".format(replicate)
+        return "make-list {} {}".format(size, replicate)
 
     def method(self, reprint: bool) -> List[str]:
         """Declare and call the function take all inputs in arguments"""

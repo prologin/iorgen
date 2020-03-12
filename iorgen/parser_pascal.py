@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018 Sacha Delanoue
+# Copyright 2018-2020 Sacha Delanoue
 """Generate a Pascal parser"""
 
 import textwrap
@@ -45,16 +45,14 @@ def type_str(var: Variable, decl: bool = False) -> str:
         return "string"
     if var.type.main == TypeEnum.STRUCT:
         return var_name(var.type.struct_name)
-    if var.type.main == TypeEnum.LIST:
-        assert var.type.encapsulated
-        if var.type.encapsulated.main == TypeEnum.CHAR:
-            return "string"
-        if decl:
-            return "array of " + type_str(
-                Variable("", "", var.type.encapsulated), True)
-        return "T_" + var_name(var.name)
-    assert False
-    return ""
+    assert var.type.main == TypeEnum.LIST
+    assert var.type.encapsulated
+    if var.type.encapsulated.main == TypeEnum.CHAR:
+        return "string"
+    if decl:
+        return "array of " + type_str(Variable("", "", var.type.encapsulated),
+                                      True)
+    return "T_" + var_name(var.name)
 
 
 def init_list(name: str, type_: Type, size: str = "") -> List[str]:
@@ -114,7 +112,8 @@ class ParserPascal():
             assert type_.encapsulated is not None
             if type_.encapsulated.main == TypeEnum.CHAR:
                 self.main.append(indent + "readln({});".format(name))
-            elif type_.encapsulated.main == TypeEnum.INT:
+            else:
+                assert type_.encapsulated.main == TypeEnum.INT
                 index = self.iterator.new_it()
                 self.local_integers.add(index)
                 self.main.append(
@@ -123,9 +122,8 @@ class ParserPascal():
                                  'read({}[{}]);'.format(name, index))
                 self.main.append(indent + "readln();")
                 self.iterator.pop_it()
-            else:
-                assert False
-        elif type_.main == TypeEnum.STRUCT:
+        else:
+            assert type_.main == TypeEnum.STRUCT
             struct = self.input.get_struct(type_.struct_name)
             args = []
             for i, field in enumerate(struct.fields):
@@ -134,8 +132,6 @@ class ParserPascal():
                     self.local_char = True
                 args.append(name + "." + var_name(field.name))
             self.main.append(indent + 'readln({});'.format(", ".join(args)))
-        else:
-            assert False
 
     def read_lines(self,
                    name: str,
@@ -155,7 +151,8 @@ class ParserPascal():
                         for i in init_list(f_name, f_type, f_size)
                     ])
                     self.read_lines(f_name, f_type, f_size, indent_lvl)
-            elif type_.main == TypeEnum.LIST:
+            else:
+                assert type_.main == TypeEnum.LIST
                 assert type_.encapsulated is not None
                 index = self.iterator.new_it()
                 self.local_integers.add(index)
@@ -168,8 +165,6 @@ class ParserPascal():
                                 indent_lvl + 1)
                 self.main.append(INDENTATION * indent_lvl + "end;")
                 self.iterator.pop_it()
-            else:
-                assert False
 
     def call(self, reprint: bool) -> None:
         """Declare and call the function take all inputs in arguments"""
@@ -231,13 +226,12 @@ class ParserPascal():
                                        .format(size, name))
                 self.method.append(indent + "writeln();")
                 self.iterator.pop_it()
-        elif type_.main == TypeEnum.STRUCT:
+        else:
+            assert type_.main == TypeEnum.STRUCT
             struct = self.input.get_struct(type_.struct_name)
             args = ["' '"] * (2 * len(struct.fields) - 1)
             args[::2] = [name + "." + var_name(i.name) for i in struct.fields]
             self.method.append(indent + 'writeln({});'.format(", ".join(args)))
-        else:
-            assert False
 
     def print_lines(self,
                     name: str,
@@ -254,7 +248,8 @@ class ParserPascal():
                 for f_name, f_type, f_size in struct.fields_name_type_size(
                         "{}.{{}}".format(name), var_name):
                     self.print_lines(f_name, f_type, f_size, indent_lvl)
-            elif type_.main == TypeEnum.LIST:
+            else:
+                assert type_.main == TypeEnum.LIST
                 assert type_.encapsulated is not None
                 index = self.iterator.new_it()
                 self.method.append("{}for {} := 0 to {} - 1 do".format(
@@ -266,8 +261,6 @@ class ParserPascal():
                                  indent_lvl + 1)
                 self.method.append(INDENTATION * indent_lvl + "end;")
                 self.iterator.pop_it()
-            else:
-                assert False
 
     def content(self, reprint: bool) -> str:
         """Return the parser content"""

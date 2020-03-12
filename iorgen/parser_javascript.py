@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2019 Sacha Delanoue
+# Copyright 2018-2020 Sacha Delanoue
 # Copyright 2019 Victor Collod
 """Generate a Javascript parser"""
 
@@ -46,11 +46,9 @@ def type_str(type_: Type, input_data: Input) -> str:
         return "{{{}}}".format(", ".join("{}: {}".format(
             v.name if " " not in v.name else "'{}'".format(v.name),
             type_str(v.type, input_data)) for v in struct.fields))
-    if type_.main == TypeEnum.LIST:
-        assert type_.encapsulated
-        return "Array.<{}>".format(type_str(type_.encapsulated, input_data))
-    assert False
-    return ""
+    assert type_.main == TypeEnum.LIST
+    assert type_.encapsulated
+    return "Array.<{}>".format(type_str(type_.encapsulated, input_data))
 
 
 class ParserJS:
@@ -73,11 +71,11 @@ class ParserJS:
             assert type_.encapsulated is not None
             if type_.encapsulated.main == TypeEnum.CHAR:
                 return [start + 'stdin[line++].split("");']
-            if type_.encapsulated.main == TypeEnum.INT:
-                return [
-                    start +
-                    'stdin[line++].split(" ", {}).map(Number);'.format(size)
-                ]
+            assert type_.encapsulated.main == TypeEnum.INT
+            return [
+                start +
+                'stdin[line++].split(" ", {}).map(Number);'.format(size)
+            ]
         if type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)
             words = self.words.next_name()
@@ -127,18 +125,16 @@ class ParserJS:
             self.iterator.pop_it()
             self.iterator.pop_it()
             return lines + [indent + "}"]
-        if type_.main == TypeEnum.STRUCT:
-            struct = self.input.get_struct(type_.struct_name)
-            lines = [
-                indent + "{}{} = {{}};".format("const " if decl else "", name)
-            ]
-            for f_name, f_type, f_size in struct.fields_name_type_size(
-                    "{}.{{}}".format(name), var_name):
-                lines.extend(
-                    self.read_lines(False, f_name, f_type, f_size, indent_lvl))
-            return lines
-        assert False
-        return []
+        assert type_.main == TypeEnum.STRUCT
+        struct = self.input.get_struct(type_.struct_name)
+        lines = [
+            indent + "{}{} = {{}};".format("const " if decl else "", name)
+        ]
+        for f_name, f_type, f_size in struct.fields_name_type_size(
+                "{}.{{}}".format(name), var_name):
+            lines.extend(
+                self.read_lines(False, f_name, f_type, f_size, indent_lvl))
+        return lines
 
     def read_vars(self) -> List[str]:
         """Generate the Javascript code to read all input variables"""
@@ -159,14 +155,12 @@ def print_line(name: str, type_: Type, input_data: Input) -> str:
         assert type_.encapsulated is not None
         if type_.encapsulated.main == TypeEnum.CHAR:
             return 'console.log({}.join(""));'.format(name)
-        if type_.encapsulated.main == TypeEnum.INT:
-            return 'console.log({}.join(" "));'.format(name)
-    if type_.main == TypeEnum.STRUCT:
-        struct = input_data.get_struct(type_.struct_name)
-        return 'console.log([{}].join(" "));'.format(", ".join(
-            '{}.{}'.format(name, var_name(i.name)) for i in struct.fields))
-    assert False
-    return ""
+        assert type_.encapsulated.main == TypeEnum.INT
+        return 'console.log({}.join(" "));'.format(name)
+    assert type_.main == TypeEnum.STRUCT
+    struct = input_data.get_struct(type_.struct_name)
+    return 'console.log([{}].join(" "));'.format(", ".join(
+        '{}.{}'.format(name, var_name(i.name)) for i in struct.fields))
 
 
 def print_lines(input_data: Input,
@@ -183,15 +177,13 @@ def print_lines(input_data: Input,
         return [indent + "{}.forEach(function({}) {{".format(name, inner)
                 ] + print_lines(input_data, inner, type_.encapsulated,
                                 indent_lvl + 1) + [indent + "});"]
-    if type_.main == TypeEnum.STRUCT:
-        lines = []
-        for i in input_data.get_struct(type_.struct_name).fields:
-            lines.extend(
-                print_lines(input_data, '{}.{}'.format(name, var_name(i.name)),
-                            i.type, indent_lvl))
-        return lines
-    assert False
-    return []
+    assert type_.main == TypeEnum.STRUCT
+    lines = []
+    for i in input_data.get_struct(type_.struct_name).fields:
+        lines.extend(
+            print_lines(input_data, '{}.{}'.format(name, var_name(i.name)),
+                        i.type, indent_lvl))
+    return lines
 
 
 def call(input_data: Input, reprint: bool) -> List[str]:

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018 Sacha Delanoue
+# Copyright 2018-2020 Sacha Delanoue
 """Generate the markdown describing the subject"""
 
 import textwrap
@@ -104,10 +104,12 @@ class Markdown:
             assert type_.encapsulated.main in (TypeEnum.INT, TypeEnum.CHAR)
             if type_.encapsulated.main == TypeEnum.INT:
                 type_str = self.lang['int list']
-            elif type_.encapsulated.main == TypeEnum.CHAR:
+            else:
+                assert type_.encapsulated.main == TypeEnum.CHAR
                 type_str = self.lang['char list']
             type_str = type_str.format(type_.size)
-        elif type_.main == TypeEnum.STRUCT:
+        else:
+            assert type_.main == TypeEnum.STRUCT
             struct = self.input.get_struct(type_.struct_name)
             type_str = "{}, {}".format(
                 self.lang['struct oneline'],
@@ -116,8 +118,6 @@ class Markdown:
                     self.lang['int' if field.type.main == TypeEnum.
                               INT else 'char'], field.name, field.comment)
                           for i, field in enumerate(struct.fields)))
-        else:
-            assert False
         content = ""
         if name is not None and comment is not None:
             content = "{} {}{} **{}**, {}.".format(self.line_description(),
@@ -146,21 +146,19 @@ class Markdown:
                 out.extend(
                     self.describe_multi(i.name, i.comment, i.type, indent + 1))
             return out
-        if type_.main == TypeEnum.LIST:
-            assert type_.encapsulated is not None
-            comment_and_name = ""
-            if comment is not None and name is not None:
-                comment_and_name = "{} **{}**, {}".format(
-                    self.lang[':'], name, comment)
-            out = wrap_item(
-                "{} {}{}.".format(self.line_description(True),
-                                  self.lang['list'].format(type_.size),
-                                  comment_and_name), indent)
-            self.start_list = True
-            return out + self.describe_multi(None, None, type_.encapsulated,
-                                             indent + 1)
-        assert False
-        return []
+        assert type_.main == TypeEnum.LIST
+        assert type_.encapsulated is not None
+        comment_and_name = ""
+        if comment is not None and name is not None:
+            comment_and_name = "{} **{}**, {}".format(self.lang[':'], name,
+                                                      comment)
+        out = wrap_item(
+            "{} {}{}.".format(self.line_description(True),
+                              self.lang['list'].format(type_.size),
+                              comment_and_name), indent)
+        self.start_list = True
+        return out + self.describe_multi(None, None, type_.encapsulated,
+                                         indent + 1)
 
     def content(self) -> str:
         """Return the generated content"""

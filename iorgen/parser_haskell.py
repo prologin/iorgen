@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018 Sacha Delanoue
+# Copyright 2018-2020 Sacha Delanoue
 """Generate a Haskll parser"""
 
 import textwrap
@@ -85,11 +85,9 @@ def type_str(type_: Type) -> str:
         return "String"
     if type_.main == TypeEnum.STRUCT:
         return data_name(type_.struct_name)
-    if type_.main == TypeEnum.LIST:
-        assert type_.encapsulated
-        return "[{}]".format(type_str(type_.encapsulated))
-    assert False
-    return ""
+    assert type_.main == TypeEnum.LIST
+    assert type_.encapsulated
+    return "[{}]".format(type_str(type_.encapsulated))
 
 
 def print_var_content(type_: Type, structs: List[Struct]) -> str:
@@ -115,16 +113,14 @@ def print_var_content(type_: Type, structs: List[Struct]) -> str:
         return "(\\r -> {})".format(" ++ ".join("({} $ {} r)".format(
             print_var_content(i.type, structs), var_name(i.name))
                                                 for i in struct.fields))
-    if type_.main == TypeEnum.LIST:
-        assert type_.encapsulated
-        if type_.encapsulated.main == TypeEnum.INT:
-            return '(++ "\\n") . unwords . (map show)'
-        if type_.encapsulated.main == TypeEnum.CHAR:
-            return '(++ "\\n")'
-        return 'foldr (++) "" . (map $ {})'.format(
-            print_var_content(type_.encapsulated, structs))
-    assert False
-    return ''
+    assert type_.main == TypeEnum.LIST
+    assert type_.encapsulated
+    if type_.encapsulated.main == TypeEnum.INT:
+        return '(++ "\\n") . unwords . (map show)'
+    if type_.encapsulated.main == TypeEnum.CHAR:
+        return '(++ "\\n")'
+    return 'foldr (++) "" . (map $ {})'.format(
+        print_var_content(type_.encapsulated, structs))
 
 
 class ParserHaskell():
@@ -157,7 +153,6 @@ class ParserHaskell():
 
     def read_line(self, type_: Type) -> str:
         """Read an entire line and parse it"""
-        # pylint: disable=too-many-return-statements
         assert type_.fits_in_one_line(self.input.structs)
         if type_.main == TypeEnum.INT:
             return "fmap read getLine"
@@ -169,14 +164,11 @@ class ParserHaskell():
             assert type_.encapsulated is not None
             if type_.encapsulated.main == TypeEnum.INT:
                 return "fmap (map read . words) getLine"
-            if type_.encapsulated.main == TypeEnum.CHAR:
-                return "getLine"
-            assert False
-        if type_.main == TypeEnum.STRUCT:
-            self.where[type_.struct_name] = True
-            return "read{}".format(data_name(type_.struct_name))
-        assert False
-        return ""
+            assert type_.encapsulated.main == TypeEnum.CHAR
+            return "getLine"
+        assert type_.main == TypeEnum.STRUCT
+        self.where[type_.struct_name] = True
+        return "read{}".format(data_name(type_.struct_name))
 
     def read_lines(self, type_: Type, size: str) -> str:
         """Read one or several lines and parse them"""
@@ -185,16 +177,14 @@ class ParserHaskell():
         if type_.main == TypeEnum.STRUCT:
             self.where[type_.struct_name] = False
             return "read{}".format(data_name(type_.struct_name))
-        if type_.main == TypeEnum.LIST:
-            assert type_.encapsulated is not None
-            self.imports.add("Control.Monad (replicateM)")
-            replicate = self.read_lines(type_.encapsulated,
-                                        var_name(type_.encapsulated.size))
-            if len(replicate.split()) != 1:
-                replicate = "$ " + replicate
-            return "replicateM {} {}".format(size, replicate)
-        assert False
-        return ""
+        assert type_.main == TypeEnum.LIST
+        assert type_.encapsulated is not None
+        self.imports.add("Control.Monad (replicateM)")
+        replicate = self.read_lines(type_.encapsulated,
+                                    var_name(type_.encapsulated.size))
+        if len(replicate.split()) != 1:
+            replicate = "$ " + replicate
+        return "replicateM {} {}".format(size, replicate)
 
     def read_var(self, var: Variable) -> None:
         """Read a variable"""
@@ -244,10 +234,9 @@ class ParserHaskell():
             for i, field in enumerate(struct.fields):
                 if field.type.main == TypeEnum.INT:
                     parse.append("(read {})".format(chr(97 + i)))
-                elif field.type.main == TypeEnum.CHAR:
-                    parse.append("(head {})".format(chr(97 + i)))
                 else:
-                    assert False
+                    assert field.type.main == TypeEnum.CHAR
+                    parse.append("(head {})".format(chr(97 + i)))
             func = "{} {}".format(data_name(struct.name), " ".join(parse))
             return [
                 "read{} = fmap ((\\[{}] -> {}) . words) getLine".format(

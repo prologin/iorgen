@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018 Sacha Delanoue
+# Copyright 2018-2020 Sacha Delanoue
 """Generate a C++ parser"""
 
 import textwrap
@@ -110,11 +110,9 @@ class ParserC():
             return "char"
         if type_.main == TypeEnum.STRUCT:
             return "struct " + struct_name(type_.struct_name)
-        if type_.main == TypeEnum.LIST:
-            assert type_.encapsulated
-            return self.type_str(type_.encapsulated) + "*"
-        assert False
-        return ""
+        assert type_.main == TypeEnum.LIST
+        assert type_.encapsulated
+        return self.type_str(type_.encapsulated) + "*"
 
     def read_line(self, name: str, type_: Type, size: str,
                   indent_lvl: int) -> None:
@@ -139,7 +137,8 @@ class ParserC():
                 self.main.append(
                     indent + "fgets({}, {} + 1, stdin);".format(name, size))
                 self.decl_new_read_line(IntegerOrString.STRING, indent)
-            elif type_.encapsulated.main == TypeEnum.INT:
+            else:
+                assert type_.encapsulated.main == TypeEnum.INT
                 index = self.iterator.new_it()
                 self.main.append(
                     indent +
@@ -150,9 +149,8 @@ class ParserC():
                     IntegerOrString.UNKNOWN
                     if type_.can_be_empty else IntegerOrString.INTEGER, indent)
                 self.iterator.pop_it()
-            else:
-                assert False
-        elif type_.main == TypeEnum.STRUCT:
+        else:
+            assert type_.main == TypeEnum.STRUCT
             struct = self.input.get_struct(type_.struct_name)
             self.main.append(indent + 'scanf("{}", {});'.format(
                 " ".join("%c" if i.type.main == TypeEnum.CHAR else "%d"
@@ -163,8 +161,6 @@ class ParserC():
                 IntegerOrString.STRING
                 if struct.fields[0].type.main == TypeEnum.CHAR else
                 IntegerOrString.INTEGER, indent)
-        else:
-            assert False
 
     def read_lines(self,
                    name: str,
@@ -191,7 +187,8 @@ class ParserC():
                 for f_name, f_type, f_size in struct.fields_name_type_size(
                         "{}.{{}}".format(name), var_name):
                     self.read_lines(f_name, f_type, f_size, indent_lvl)
-            elif type_.main == TypeEnum.LIST:
+            else:
+                assert type_.main == TypeEnum.LIST
                 assert type_.encapsulated is not None
                 index = self.iterator.new_it()
                 self.decl_new_scope(not type_.can_be_empty)
@@ -205,8 +202,6 @@ class ParserC():
                 self.main.append(" " * self.indentation * indent_lvl + "}")
                 self.iterator.pop_it()
                 self.decl_end_scope()
-            else:
-                assert False
 
     def read_var(self, var: Variable) -> None:
         """Read a variable"""
@@ -280,15 +275,14 @@ class ParserC():
                 self.method.append(indent +
                                    "if ({} == 0) putchar('\\n');".format(size))
                 self.iterator.pop_it()
-        elif type_.main == TypeEnum.STRUCT:
+        else:
+            assert type_.main == TypeEnum.STRUCT
             struct = self.input.get_struct(type_.struct_name)
             self.method.append(indent + 'printf("{}\\n", {});'.format(
                 " ".join("%c" if i.type.main == TypeEnum.CHAR else "%d"
                          for i in struct.fields), ", ".join(
                              name + "." + var_name(i.name)
                              for i in struct.fields)))
-        else:
-            assert False
 
     def print_lines(self,
                     name: str,
@@ -305,7 +299,8 @@ class ParserC():
                 for f_name, f_type, f_size in struct.fields_name_type_size(
                         "{}.{{}}".format(name), var_name):
                     self.print_lines(f_name, f_type, f_size, indent_lvl)
-            elif type_.main == TypeEnum.LIST:
+            else:
+                assert type_.main == TypeEnum.LIST
                 assert type_.encapsulated is not None
                 index = self.iterator.new_it()
                 self.method.append(
@@ -317,8 +312,6 @@ class ParserC():
                                  indent_lvl + 1)
                 self.method.append(" " * self.indentation * indent_lvl + "}")
                 self.iterator.pop_it()
-            else:
-                assert False
 
     def content(self) -> str:
         """Return the parser content"""

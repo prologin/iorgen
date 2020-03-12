@@ -77,9 +77,9 @@ def read_line(type_: Type, input_data: Input) -> str:
         if type_.encapsulated.main == TypeEnum.INT:
             return ('read_line () |> fun x -> if x = "" then [] else '
                     'String.split_on_char \' \' x |> List.map int_of_string')
-        if type_.encapsulated.main == TypeEnum.CHAR:
-            return 'List.init {} (String.get (read_line ()))'.format(
-                var_name(type_.size))
+        assert type_.encapsulated.main == TypeEnum.CHAR
+        return 'List.init {} (String.get (read_line ()))'.format(
+            var_name(type_.size))
     assert type_.main == TypeEnum.STRUCT
     struct = input_data.get_struct(type_.struct_name)
     args = [var_name(field.name) for field in struct.fields]
@@ -120,7 +120,8 @@ def print_line(name: str, type_: Type, input_data: Input) -> str:
         concat = ""
         if type_.encapsulated.main == TypeEnum.INT:
             concat = '" " (List.map string_of_int {})'.format(name)
-        elif type_.encapsulated.main == TypeEnum.CHAR:
+        else:
+            assert type_.encapsulated.main == TypeEnum.CHAR
             concat = '"" (List.map (String.make 1) {})'.format(name)
         return 'Printf.printf "%s\\n" (String.concat {})'.format(concat)
     assert type_.main == TypeEnum.STRUCT

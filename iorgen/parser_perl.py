@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018 Sacha Delanoue
+# Copyright 2018-2020 Sacha Delanoue
 """Generate a Perl parser"""
 
 import textwrap
@@ -96,7 +96,6 @@ def format_keep_braces(format_spec: str, arg: str) -> str:
 
 def read_line(name: str, decl: str, type_: Type, input_data: Input,
               words: WordsName) -> List[str]:
-    # pylint: disable=too-many-return-statements
     """Generate the Ruby code to read a line of given type"""
     assert type_.fits_in_one_line(input_data.structs)
     if type_.main == TypeEnum.INT:
@@ -115,22 +114,20 @@ def read_line(name: str, decl: str, type_: Type, input_data: Input,
             return [decl2.format('map { int } split(/[ \\n]/, <>)')]
         assert type_.encapsulated.main == TypeEnum.CHAR
         return [decl2.format("split /\\n?/, <>")]
-    if type_.main == TypeEnum.STRUCT:
-        struct = input_data.get_struct(type_.struct_name)
-        decl2 = decl
-        if not decl.startswith("my"):
-            decl2 = format_keep_braces(decl, "\\%{{{{{}}}}}")
-        split = words.next_name()
-        fields = ('"{}" => {}'.format(
-            f.name, ("int(${}[{}])" if f.type.main == TypeEnum.INT else
-                     "substr(${}[{}], 0, 1)").format(split, i))
-                  for i, f in enumerate(struct.fields))
-        return [
-            "my @{} = split /[ \\n]/, <>;".format(split),
-            decl2.format("({})".format(", ".join(fields)))
-        ]
-    assert False
-    return []
+    assert type_.main == TypeEnum.STRUCT
+    struct = input_data.get_struct(type_.struct_name)
+    decl2 = decl
+    if not decl.startswith("my"):
+        decl2 = format_keep_braces(decl, "\\%{{{{{}}}}}")
+    split = words.next_name()
+    fields = ('"{}" => {}'.format(
+        f.name, ("int(${}[{}])" if f.type.main == TypeEnum.INT else
+                 "substr(${}[{}], 0, 1)").format(split, i))
+              for i, f in enumerate(struct.fields))
+    return [
+        "my @{} = split /[ \\n]/, <>;".format(split),
+        decl2.format("({})".format(", ".join(fields)))
+    ]
 
 
 def read_lines(name: str, decl: str, type_: Type, size: str, input_data: Input,
@@ -154,22 +151,19 @@ def read_lines(name: str, decl: str, type_: Type, size: str, input_data: Input,
         ])
         words.pop_scope()
         return lines + ["}"]
-    if type_.main == TypeEnum.STRUCT:
-        struct = input_data.get_struct(type_.struct_name)
-        sizes = [size_name(field.type.size) for field in struct.fields]
-        if struct.is_sized_struct():
-            sizes = ["", "{}{{'{}'}}".format(name, struct.fields[0].name)]
-        lines = [decl.format("()" if name[0] == "%" else "{}")]
-        for (field, f_size) in zip(struct.fields, sizes):
-            f_name = "${}{{'{}'}}".format(name[1:], field.name)
-            lines.extend(
-                read_lines(
-                    f_name,
-                    f_name.replace("{", "{{").replace("}", "}}") + " = {};",
-                    field.type, f_size, input_data, words))
-        return lines
-    assert False
-    return ""
+    assert type_.main == TypeEnum.STRUCT
+    struct = input_data.get_struct(type_.struct_name)
+    sizes = [size_name(field.type.size) for field in struct.fields]
+    if struct.is_sized_struct():
+        sizes = ["", "{}{{'{}'}}".format(name, struct.fields[0].name)]
+    lines = [decl.format("()" if name[0] == "%" else "{}")]
+    for (field, f_size) in zip(struct.fields, sizes):
+        f_name = "${}{{'{}'}}".format(name[1:], field.name)
+        lines.extend(
+            read_lines(f_name,
+                       f_name.replace("{", "{{").replace("}", "}}") + " = {};",
+                       field.type, f_size, input_data, words))
+    return lines
 
 
 def read_var(var: Variable, input_data: Input, words: WordsName) -> List[str]:
@@ -188,14 +182,12 @@ def print_line(varname: str, type_: Type, input_data: Input) -> str:
         assert type_.encapsulated is not None
         if type_.encapsulated.main == TypeEnum.CHAR:
             return 'print join("", {}) . "\\n";'.format("@" + name)
-        if type_.encapsulated.main == TypeEnum.INT:
-            return 'print "{}\\n";'.format("@{" + name + "}")
-    if type_.main == TypeEnum.STRUCT:
-        struct = input_data.get_struct(type_.struct_name)
-        return 'print "{}\\n";'.format(" ".join(
-            "{}->{{'{}'}}".format(name, i.name) for i in struct.fields))
-    assert False
-    return ""
+        assert type_.encapsulated.main == TypeEnum.INT
+        return 'print "{}\\n";'.format("@{" + name + "}")
+    assert type_.main == TypeEnum.STRUCT
+    struct = input_data.get_struct(type_.struct_name)
+    return 'print "{}\\n";'.format(" ".join(
+        "{}->{{'{}'}}".format(name, i.name) for i in struct.fields))
 
 
 def print_lines(name: str, type_: Type, input_data: Input,
@@ -209,15 +201,13 @@ def print_lines(name: str, type_: Type, input_data: Input,
         return [indent + "map {"] + print_lines(
             "$_", type_.encapsulated, input_data,
             indent_lvl + 1) + [indent + "} @{$" + name[1:] + "};"]
-    if type_.main == TypeEnum.STRUCT:
-        lines = []
-        for i in input_data.get_struct(type_.struct_name).fields:
-            lines.extend(
-                print_lines("{}->{{'{}'}}".format(name, i.name), i.type,
-                            input_data, indent_lvl))
-        return lines
-    assert False
-    return []
+    assert type_.main == TypeEnum.STRUCT
+    lines = []
+    for i in input_data.get_struct(type_.struct_name).fields:
+        lines.extend(
+            print_lines("{}->{{'{}'}}".format(name, i.name), i.type,
+                        input_data, indent_lvl))
+    return lines
 
 
 def call(input_data: Input, reprint: bool) -> List[str]:

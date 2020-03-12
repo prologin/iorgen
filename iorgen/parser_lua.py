@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018 Sacha Delanoue
+# Copyright 2018-2020 Sacha Delanoue
 """Generate a Lua parser"""
 
 import textwrap
@@ -43,13 +43,13 @@ def read_line(name: str, type_: Type, input_data: Input,
                 'io.read():gsub(".",function({0}) table.insert({1}, {0}) end)'.
                 format(inner, name)
             ]
-        if type_.encapsulated.main == TypeEnum.INT:
-            return [
-                '{} = {{}}'.format(name),
-                'for {} in string.gmatch(io.read(), "-?%d+") do'.format(inner),
-                INDENTATION +
-                'table.insert({}, tonumber({}))'.format(name, inner), 'end'
-            ]
+        assert type_.encapsulated.main == TypeEnum.INT
+        return [
+            '{} = {{}}'.format(name),
+            'for {} in string.gmatch(io.read(), "-?%d+") do'.format(inner),
+            INDENTATION + 'table.insert({}, tonumber({}))'.format(name, inner),
+            'end'
+        ]
     if type_.main == TypeEnum.STRUCT:
         struct = input_data.get_struct(type_.struct_name)
         words = iterator.new_it()
@@ -92,19 +92,17 @@ def read_lines(name: str, type_: Type, size: str, input_data: Input,
         return [
             '{} = {{}}'.format(name), 'for {} = 1, {} do'.format(inner, size)
         ] + [INDENTATION + i for i in lines] + ['end']
-    if type_.main == TypeEnum.STRUCT:
-        struct = input_data.get_struct(type_.struct_name)
-        lines = [name + " = {}"]
-        for i, field in enumerate(struct.fields):
-            f_size = var_name(field.type.size)
-            if i == 1 and struct.is_sized_struct():
-                f_size = '{}["{}"]'.format(name, struct.fields[0].name)
-            lines.extend(
-                read_lines('{}["{}"]'.format(name, field.name), field.type,
-                           f_size, input_data, iterator))
-        return lines
-    assert False
-    return ""
+    assert type_.main == TypeEnum.STRUCT
+    struct = input_data.get_struct(type_.struct_name)
+    lines = [name + " = {}"]
+    for i, field in enumerate(struct.fields):
+        f_size = var_name(field.type.size)
+        if i == 1 and struct.is_sized_struct():
+            f_size = '{}["{}"]'.format(name, struct.fields[0].name)
+        lines.extend(
+            read_lines('{}["{}"]'.format(name, field.name), field.type, f_size,
+                       input_data, iterator))
+    return lines
 
 
 def read_var(var: Variable, input_data: Input,
@@ -128,15 +126,13 @@ def print_line(name: str, type_: Type, input_data: Input) -> str:
         assert type_.encapsulated is not None
         if type_.encapsulated.main == TypeEnum.CHAR:
             return 'print(table.concat({}, ""))'.format(name)
-        if type_.encapsulated.main == TypeEnum.INT:
-            return 'print(table.concat({}, " "))'.format(name)
-    if type_.main == TypeEnum.STRUCT:
-        struct = input_data.get_struct(type_.struct_name)
-        return 'print(string.format("{}", {}))'.format(
-            " ".join("%s" for _ in struct.fields),
-            ", ".join('{}["{}"]'.format(name, i.name) for i in struct.fields))
-    assert False
-    return ""
+        assert type_.encapsulated.main == TypeEnum.INT
+        return 'print(table.concat({}, " "))'.format(name)
+    assert type_.main == TypeEnum.STRUCT
+    struct = input_data.get_struct(type_.struct_name)
+    return 'print(string.format("{}", {}))'.format(
+        " ".join("%s" for _ in struct.fields),
+        ", ".join('{}["{}"]'.format(name, i.name) for i in struct.fields))
 
 
 def print_lines(name: str, type_: Type, input_data: Input,
@@ -151,15 +147,13 @@ def print_lines(name: str, type_: Type, input_data: Input,
         return [indent + "for _, {} in ipairs({}) do".format(inner, name)
                 ] + print_lines(inner, type_.encapsulated, input_data,
                                 indent_lvl + 1) + [indent + "end"]
-    if type_.main == TypeEnum.STRUCT:
-        lines = []
-        for i in input_data.get_struct(type_.struct_name).fields:
-            lines.extend(
-                print_lines('{}["{}"]'.format(name, i.name), i.type,
-                            input_data, indent_lvl))
-        return lines
-    assert False
-    return []
+    assert type_.main == TypeEnum.STRUCT
+    lines = []
+    for i in input_data.get_struct(type_.struct_name).fields:
+        lines.extend(
+            print_lines('{}["{}"]'.format(name, i.name), i.type, input_data,
+                        indent_lvl))
+    return lines
 
 
 def call(input_data: Input, reprint: bool) -> List[str]:

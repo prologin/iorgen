@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018 Sacha Delanoue
+# Copyright 2018-2020 Sacha Delanoue
 """Generate a Prolog parser"""
 
 import textwrap
@@ -61,7 +61,6 @@ def call_goal(goal: str, var: str) -> str:
 
 
 def print_line(name: str, type_: Type, input_data: Input) -> str:
-    # pylint: disable=too-many-return-statements
     """Print a variable that fits in one line"""
     assert type_.fits_in_one_line(input_data.structs)
     if type_.main == TypeEnum.INT:
@@ -78,19 +77,17 @@ def print_line(name: str, type_: Type, input_data: Input) -> str:
         assert type_.encapsulated.main == TypeEnum.CHAR
         return ("is_list({0}), maplist(atom, {0}), string_chars({0}_S, {0}),"
                 "writeln({0}_S)").format(name)
-    if type_.main == TypeEnum.STRUCT:
-        struct = input_data.get_struct(type_.struct_name)
-        fields = []
-        for i, field in enumerate(struct.fields):
-            f_name = name + "_" + var_name(field.name)
-            fields.append(
-                'get_assoc("{0}", {1}, {2}), {3}({2}), write({2}), {4}'.format(
-                    field.name, name, name + "_" + f_name,
-                    "integer" if field.type.main == TypeEnum.INT else "atom",
-                    'write(" ")' if i < len(struct.fields) - 1 else "nl"))
-        return "is_assoc({}), {}".format(name, ", ".join(fields))
-    assert False
-    return ""
+    assert type_.main == TypeEnum.STRUCT
+    struct = input_data.get_struct(type_.struct_name)
+    fields = []
+    for i, field in enumerate(struct.fields):
+        f_name = name + "_" + var_name(field.name)
+        fields.append(
+            'get_assoc("{0}", {1}, {2}), {3}({2}), write({2}), {4}'.format(
+                field.name, name, name + "_" + f_name,
+                "integer" if field.type.main == TypeEnum.INT else "atom",
+                'write(" ")' if i < len(struct.fields) - 1 else "nl"))
+    return "is_assoc({}), {}".format(name, ", ".join(fields))
 
 
 # I'd love to use lambda, but they come with swig 7.4, not in debian 9
@@ -110,19 +107,17 @@ def print_lines(name: str, type_: Type,
         return (decl + ["{}({}) :- {}.".format(function, arg, code)
                         ]), "is_list({1}), maplist({0}, {1})".format(
                             function, name)
-    if type_.main == TypeEnum.STRUCT:
-        struct = input_data.get_struct(type_.struct_name)
-        fields = []
-        decls = []
-        for field in struct.fields:
-            f_name = name + "_" + var_name(field.name)
-            decl, print_inner = print_lines(f_name, field.type, input_data)
-            fields.append('get_assoc("{}", {}, {}), {}'.format(
-                field.name, name, f_name, print_inner))
-            decls.extend(decl)
-        return decls, "is_assoc({}), {}".format(name, ", ".join(fields))
-    assert False
-    return [], ""
+    assert type_.main == TypeEnum.STRUCT
+    struct = input_data.get_struct(type_.struct_name)
+    fields = []
+    decls = []
+    for field in struct.fields:
+        f_name = name + "_" + var_name(field.name)
+        decl, print_inner = print_lines(f_name, field.type, input_data)
+        fields.append('get_assoc("{}", {}, {}), {}'.format(
+            field.name, name, f_name, print_inner))
+        decls.extend(decl)
+    return decls, "is_assoc({}), {}".format(name, ", ".join(fields))
 
 
 class ParserProlog():
@@ -184,7 +179,6 @@ class ParserProlog():
         return output
 
     def read_line(self, type_: Type) -> str:
-        # pylint: disable=too-many-return-statements
         """Read an entire line and parse it"""
         assert type_.fits_in_one_line(self.input.structs)
         if type_.main == TypeEnum.INT:
@@ -204,10 +198,8 @@ class ParserProlog():
             assert type_.encapsulated.main == TypeEnum.CHAR
             self.read.add("List[char]")
             return "read_char_list"
-        if type_.main == TypeEnum.STRUCT:
-            return "read_assoc_{}".format(snake_case(type_.struct_name))
-        assert False
-        return ""
+        assert type_.main == TypeEnum.STRUCT
+        return "read_assoc_{}".format(snake_case(type_.struct_name))
 
     def read_lines(self, type_: Type) -> str:
         """Read one or several lines and parse them"""
@@ -215,13 +207,11 @@ class ParserProlog():
             return self.read_line(type_)
         if type_.main == TypeEnum.STRUCT:
             return "read_assoc_{}".format(snake_case(type_.struct_name))
-        if type_.main == TypeEnum.LIST:
-            assert type_.encapsulated is not None
-            self.read.add("List")
-            replicate = self.read_lines(type_.encapsulated)
-            return "read_list({}, {})".format(replicate, var_name(type_.size))
-        assert False
-        return ""
+        assert type_.main == TypeEnum.LIST
+        assert type_.encapsulated is not None
+        self.read.add("List")
+        replicate = self.read_lines(type_.encapsulated)
+        return "read_list({}, {})".format(replicate, var_name(type_.size))
 
     def read_var(self, var: Variable) -> str:
         """Read a variable"""

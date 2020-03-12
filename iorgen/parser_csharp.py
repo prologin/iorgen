@@ -95,11 +95,13 @@ class ParserCS():
             command = "Console.ReadLine()[0]"
         elif type_.main == TypeEnum.STR:
             command = "Console.ReadLine()"
-        elif type_.main == TypeEnum.LIST:
+        else:
+            assert type_.main == TypeEnum.LIST
             assert type_.encapsulated is not None
             if type_.encapsulated.main == TypeEnum.CHAR:
                 command = "Console.ReadLine().ToCharArray()"
-            elif type_.encapsulated.main == TypeEnum.INT:
+            else:
+                assert type_.encapsulated.main == TypeEnum.INT
                 command = (
                     "Array.ConvertAll(Console.ReadLine().Split({}), "
                     "int.Parse)"
