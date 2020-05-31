@@ -158,9 +158,8 @@ class ParserC():
                              "&" + name + "." + var_name(i.name)
                              for i in struct.fields)))
             self.decl_new_read_line(
-                IntegerOrString.STRING
-                if struct.fields[0].type.main == TypeEnum.CHAR else
-                IntegerOrString.INTEGER, indent)
+                IntegerOrString.STRING if struct.fields[0].type.main
+                == TypeEnum.CHAR else IntegerOrString.INTEGER, indent)
 
     def read_lines(self,
                    name: str,

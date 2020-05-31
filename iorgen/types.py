@@ -294,8 +294,9 @@ class Struct:
 
     @classmethod
     def from_dict(
-        cls: T[STRUCT], dic: Dict[str, Union[str, List[Dict[str, str]]]]
-    ) -> Optional[STRUCT]:
+            cls: T[STRUCT],
+            dic: Dict[str, Union[str, List[Dict[str,
+                                                str]]]]) -> Optional[STRUCT]:
         """Create a Struct from its YAML (dictionary) representation"""
         try:
             name = dic["name"]

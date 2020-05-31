@@ -58,9 +58,8 @@ def read_line(name: str, type_: Type, input_data: Input,
                            for i in struct.fields)
         keys = ('["{}"]'.format(i.name) if " " in i.name else i.name
                 for i in struct.fields)
-        values = ("tonumber({}[{}])".format(words, i +
-                                            1) if f.type.main == TypeEnum.INT
-                  else "{}[{}]".format(words, i + 1)
+        values = ("tonumber({}[{}])".format(words, i + 1) if f.type.main
+                  == TypeEnum.INT else "{}[{}]".format(words, i + 1)
                   for (i, f) in enumerate(struct.fields))
         return [
             'local {} = {{string.match(io.read(), "{}")}}'.format(
