@@ -30,22 +30,22 @@ void keywords(int if_, char class, char* i, struct console in, int* for_, struct
 }
 
 int main() {
-    int if_; ///< not a condition
+    int if_;
     scanf("%d", &if_);
     getchar(); // \n
-    char class = getchar(); ///< not a class
+    char class = getchar();
     getchar(); // \n
-    char* i = calloc(8 + 1, sizeof(char)); ///< just a string
+    char* i = (char*)malloc((8 + 1) * sizeof(char));
     fgets(i, 8 + 1, stdin);
-    struct console in; ///< not in
+    struct console in;
     scanf("%d %d", &in.a, &in.static_);
-    int* for_ = calloc(if_, sizeof(int)); ///< not a loop
+    int* for_ = (int*)malloc(if_ * sizeof(int));
     for (int j = 0; j < if_; ++j)
         scanf("%d", &for_[j]);
-    struct main* words = calloc(2, sizeof(struct main)); ///< contains lots of things
+    struct main* words = (struct main*)malloc(2 * sizeof(struct main));
     for (int j = 0; j < 2; ++j) {
         scanf("%d", &words[j].int_.return_);
-        words[j].int_.void_ = calloc(3, sizeof(int*));
+        words[j].int_.void_ = (int*)malloc(3 * sizeof(int));
         for (int k = 0; k < 3; ++k)
             scanf("%d", &words[j].int_.void_[k]);
         scanf("%d", &words[j].if_true);

@@ -169,15 +169,19 @@ class ParserC():
         """Read one or several lines and store them into the right place(s)"""
         not_initialized = "." in name or "[" in name
         if type_.main == TypeEnum.LIST and not_initialized:
+            assert type_.encapsulated is not None
             self.includes.add("stdlib.h")
-            self.main.append("{}{} = calloc({}{}, sizeof({}));".format(
-                " " * self.indentation * indent_lvl, name, size,
-                " + 1" if type_.main == TypeEnum.CHAR else "",
-                self.type_str(type_)))
+            array_size = "({} + 1)".format(
+                size) if type_.main == TypeEnum.CHAR else size
+            self.main.append(
+                "{0}{1} = ({3}*)malloc({2} * sizeof({3}));".format(
+                    " " * self.indentation * indent_lvl, name, array_size,
+                    self.type_str(type_.encapsulated)))
         elif type_.main == TypeEnum.STR and not_initialized:
             self.includes.add("stdlib.h")
-            self.main.append("{}{} = calloc({} + 1, sizeof(char));".format(
-                " " * self.indentation * indent_lvl, name, size))
+            self.main.append(
+                "{}{} = (char*)malloc(({} + 1) * sizeof(char));".format(
+                    " " * self.indentation * indent_lvl, name, size))
         if type_.fits_in_one_line(self.input.structs):
             self.read_line(name, type_, size, indent_lvl)
         else:
@@ -210,18 +214,22 @@ class ParserC():
             init = " = getchar()"
         elif var.type.main == TypeEnum.STR:
             self.includes.add("stdlib.h")
-            init = " = calloc({} + 1, sizeof(char))".format(
+            init = " = (char*)malloc(({} + 1) * sizeof(char))".format(
                 var_name(var.type.size))
         elif var.type.main == TypeEnum.LIST:
             assert var.type.encapsulated is not None
             self.includes.add("stdlib.h")
-            init = " = calloc({}{}, sizeof({}))".format(
-                var_name(var.type.size),
-                " + 1" if var.type.encapsulated.main == TypeEnum.CHAR else "",
-                self.type_str(var.type.encapsulated))
-        self.main.append("{} {}{}; ///< {}".format(self.type_str(var.type),
-                                                   var_name(var.name), init,
-                                                   var.comment))
+            array_size = "({} + 1)".format(
+                var_name(var.type.size)
+            ) if var.type.encapsulated.main == TypeEnum.CHAR else var_name(
+                var.type.size)
+            init = " = ({1}*)malloc({0} * sizeof({1}))".format(
+                array_size, self.type_str(var.type.encapsulated))
+        self.main.append("{} {}{};".format(
+            self.type_str(var.type),
+            var_name(var.name),
+            init,
+        ))
         self.read_lines(var_name(var.name), var.type, var_name(var.type.size))
 
     def call(self, reprint: bool) -> None:

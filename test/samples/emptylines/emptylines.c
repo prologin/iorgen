@@ -35,44 +35,44 @@ void empty_lines(int* empty_list, char* buffer_string, int n, int* empty_in_samp
 }
 
 int main() {
-    int* empty_list = calloc(0, sizeof(int)); ///< an empty list
+    int* empty_list = (int*)malloc(0 * sizeof(int));
     for (int i = 0; i < 0; ++i)
         scanf("%d", &empty_list[i]);
     getchar(); // \n
-    char* buffer_string = calloc(3 + 1, sizeof(char)); ///< here to check correct parsing of empty line above
+    char* buffer_string = (char*)malloc((3 + 1) * sizeof(char));
     fgets(buffer_string, 3 + 1, stdin);
-    int n; ///< an integer, will be 0 in the sample input
+    int n;
     scanf("%d", &n);
     getchar(); // \n
-    int* empty_in_sample = calloc(n, sizeof(int)); ///< an empty list (only in the sample)
+    int* empty_in_sample = (int*)malloc(n * sizeof(int));
     for (int i = 0; i < n; ++i)
         scanf("%d", &empty_in_sample[i]);
     getchar(); // \n
-    char* empty_string = calloc(0 + 1, sizeof(char)); ///< an empty string
+    char* empty_string = (char*)malloc((0 + 1) * sizeof(char));
     fgets(empty_string, 0 + 1, stdin);
     getchar(); // \n
-    char* main_ = calloc(4 + 1, sizeof(char)); ///< an other buffer string
+    char* main_ = (char*)malloc((4 + 1) * sizeof(char));
     fgets(main_, 4 + 1, stdin);
     getchar(); // \n
-    char* empty_char_list = calloc(0 + 1, sizeof(char)); ///< an empty char list
+    char* empty_char_list = (char*)malloc((0 + 1) * sizeof(char));
     fgets(empty_char_list, 0 + 1, stdin);
     getchar(); // \n
-    char* non_empty_char_list = calloc(5 + 1, sizeof(char)); ///< an char list, non empty
+    char* non_empty_char_list = (char*)malloc((5 + 1) * sizeof(char));
     fgets(non_empty_char_list, 5 + 1, stdin);
     getchar(); // \n
-    struct a struct_with_empty_line; ///< a struct containing an empty line, then a struct
-    struct_with_empty_line.list_in_struct = calloc(n, sizeof(int*));
+    struct a struct_with_empty_line;
+    struct_with_empty_line.list_in_struct = (int*)malloc(n * sizeof(int));
     for (int i = 0; i < n; ++i)
         scanf("%d", &struct_with_empty_line.list_in_struct[i]);
     getchar(); // \n
     scanf("%c %d", &struct_with_empty_line.struct_in_struct.char1, &struct_with_empty_line.struct_in_struct.int2);
-    struct sized_struct a_sized_struct; ///< a sized struct containing an empty line
+    struct sized_struct a_sized_struct;
     scanf("%d", &a_sized_struct.size);
     getchar(); // \n
-    a_sized_struct.string_in_struct = calloc(a_sized_struct.size + 1, sizeof(char));
+    a_sized_struct.string_in_struct = (char*)malloc((a_sized_struct.size + 1) * sizeof(char));
     fgets(a_sized_struct.string_in_struct, a_sized_struct.size + 1, stdin);
     getchar(); // \n
-    char* finish = calloc(6 + 1, sizeof(char)); ///< a string to finish
+    char* finish = (char*)malloc((6 + 1) * sizeof(char));
     fgets(finish, 6 + 1, stdin);
     empty_lines(empty_list, buffer_string, n, empty_in_sample, empty_string, main_, empty_char_list, non_empty_char_list, struct_with_empty_line, a_sized_struct, finish);
 

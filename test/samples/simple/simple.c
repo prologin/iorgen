@@ -7,9 +7,9 @@ void simple(int n, int other_number) {
 }
 
 int main() {
-    int n; ///< the first number
+    int n;
     scanf("%d", &n);
-    int other_number; ///< the second number
+    int other_number;
     scanf("%d", &other_number);
     simple(n, other_number);
 

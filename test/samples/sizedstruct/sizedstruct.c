@@ -35,39 +35,39 @@ void sized_struct(int n, struct list* lists, struct string* strings, struct matr
 }
 
 int main() {
-    int n; ///< the size of the lists
+    int n;
     scanf("%d", &n);
     getchar(); // \n
-    struct list* lists = calloc(n, sizeof(struct list)); ///< a list of list of different sizes
+    struct list* lists = (struct list*)malloc(n * sizeof(struct list));
     for (int i = 0; i < n; ++i) {
         scanf("%d", &lists[i].size1);
         getchar(); // \n
-        lists[i].int_list = calloc(lists[i].size1, sizeof(int*));
+        lists[i].int_list = (int*)malloc(lists[i].size1 * sizeof(int));
         for (int j = 0; j < lists[i].size1; ++j)
             scanf("%d", &lists[i].int_list[j]);
         getchar(); // \n
     }
-    struct string* strings = calloc(n, sizeof(struct string)); ///< a list of strings of different sizes
+    struct string* strings = (struct string*)malloc(n * sizeof(struct string));
     for (int i = 0; i < n; ++i) {
         scanf("%d", &strings[i].size2);
         getchar(); // \n
-        strings[i].string_list = calloc(strings[i].size2 + 1, sizeof(char));
+        strings[i].string_list = (char*)malloc((strings[i].size2 + 1) * sizeof(char));
         fgets(strings[i].string_list, strings[i].size2 + 1, stdin);
     }
-    struct matrix* matrices = calloc(2, sizeof(struct matrix)); ///< a list of matrices of different sizes
+    struct matrix* matrices = (struct matrix*)malloc(2 * sizeof(struct matrix));
     for (int i = 0; i < 2; ++i) {
         scanf("%d", &matrices[i].size3);
-        matrices[i].list_list = calloc(matrices[i].size3, sizeof(int**));
+        matrices[i].list_list = (int**)malloc(matrices[i].size3 * sizeof(int*));
         for (int j = 0; j < matrices[i].size3; ++j) {
-            matrices[i].list_list[j] = calloc(2, sizeof(int*));
+            matrices[i].list_list[j] = (int*)malloc(2 * sizeof(int));
             for (int k = 0; k < 2; ++k)
                 scanf("%d", &matrices[i].list_list[j][k]);
         }
     }
-    struct not_a_sized_struct* same = calloc(n, sizeof(struct not_a_sized_struct)); ///< a list of list of same sizes
+    struct not_a_sized_struct* same = (struct not_a_sized_struct*)malloc(n * sizeof(struct not_a_sized_struct));
     for (int i = 0; i < n; ++i) {
         scanf("%d", &same[i].size4);
-        same[i].int_list_n = calloc(n, sizeof(int*));
+        same[i].int_list_n = (int*)malloc(n * sizeof(int));
         for (int j = 0; j < n; ++j)
             scanf("%d", &same[i].int_list_n[j]);
     }

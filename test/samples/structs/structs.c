@@ -37,23 +37,23 @@ void structs(struct struct_1 struct_, int n, struct struct_1* struct_list, struc
 }
 
 int main() {
-    struct struct_1 struct_; ///< a struct 1 instance
+    struct struct_1 struct_;
     scanf("%d %d", &struct_.foo, &struct_.bar);
-    int n; ///< a number
+    int n;
     scanf("%d", &n);
     getchar(); // \n
-    struct struct_1* struct_list = calloc(n, sizeof(struct struct_1)); ///< a list a struct 1
+    struct struct_1* struct_list = (struct struct_1*)malloc(n * sizeof(struct struct_1));
     for (int i = 0; i < n; ++i) {
         scanf("%d %d", &struct_list[i].foo, &struct_list[i].bar);
         getchar(); // \n
     }
-    struct point* triangle = calloc(3, sizeof(struct point)); ///< a triangle
+    struct point* triangle = (struct point*)malloc(3 * sizeof(struct point));
     for (int i = 0; i < 3; ++i) {
         triangle[i].name = getchar();
         scanf("%d %d %d", &triangle[i].pos.x, &triangle[i].pos.y, &triangle[i].pos.z);
         getchar(); // \n
     }
-    struct chars struct_chars; ///< a struct of chars
+    struct chars struct_chars;
     scanf("%c %c %c", &struct_chars.first_char, &struct_chars.second_char, &struct_chars.third_char);
     structs(struct_, n, struct_list, triangle, struct_chars);
 

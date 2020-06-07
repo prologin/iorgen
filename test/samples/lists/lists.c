@@ -12,26 +12,26 @@ void lists(int n, int* list_int, int size, char* list_char, char** list_string4,
 }
 
 int main() {
-    int n; ///< the first list's size
+    int n;
     scanf("%d", &n);
-    int* list_int = calloc(n, sizeof(int)); ///< a list containing ints
+    int* list_int = (int*)malloc(n * sizeof(int));
     for (int i = 0; i < n; ++i)
         scanf("%d", &list_int[i]);
-    int size; ///< an other size
+    int size;
     scanf("%d", &size);
     getchar(); // \n
-    char* list_char = calloc(size + 1, sizeof(char)); ///< a list of char
+    char* list_char = (char*)malloc((size + 1) * sizeof(char));
     fgets(list_char, size + 1, stdin);
     getchar(); // \n
-    char** list_string4 = calloc(size, sizeof(char*)); ///< a list of strings of size 4
+    char** list_string4 = (char**)malloc(size * sizeof(char*));
     for (int i = 0; i < size; ++i) {
-        list_string4[i] = calloc(4 + 1, sizeof(char));
+        list_string4[i] = (char*)malloc((4 + 1) * sizeof(char));
         fgets(list_string4[i], 4 + 1, stdin);
         getchar(); // \n
     }
-    int** matrix = calloc(size, sizeof(int*)); ///< a matrix of int
+    int** matrix = (int**)malloc(size * sizeof(int*));
     for (int i = 0; i < size; ++i) {
-        matrix[i] = calloc(size, sizeof(int*));
+        matrix[i] = (int*)malloc(size * sizeof(int));
         for (int j = 0; j < size; ++j)
             scanf("%d", &matrix[i][j]);
     }
