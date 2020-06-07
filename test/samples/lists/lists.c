@@ -5,9 +5,10 @@
 /// \param list_int a list containing ints
 /// \param size an other size
 /// \param list_char a list of char
+/// \param string a string
 /// \param list_string4 a list of strings of size 4
 /// \param matrix a matrix of int
-void lists(int n, int* list_int, int size, char* list_char, char** list_string4, int** matrix) {
+void lists(int n, int* list_int, int size, char* list_char, char* string, char** list_string4, int** matrix) {
     /* TODO Aren't these lists beautifull? */
 }
 
@@ -23,6 +24,9 @@ int main() {
     char* list_char = (char*)malloc((size + 1) * sizeof(char));
     fgets(list_char, size + 1, stdin);
     getchar(); // \n
+    char* string = (char*)malloc((20 + 1) * sizeof(char));
+    scanf("%[^\n]", string);
+    getchar(); // \n
     char** list_string4 = (char**)malloc(size * sizeof(char*));
     for (int i = 0; i < size; ++i) {
         list_string4[i] = (char*)malloc((4 + 1) * sizeof(char));
@@ -35,7 +39,7 @@ int main() {
         for (int j = 0; j < size; ++j)
             scanf("%d", &matrix[i][j]);
     }
-    lists(n, list_int, size, list_char, list_string4, matrix);
+    lists(n, list_int, size, list_char, string, list_string4, matrix);
 
     return 0;
 }

@@ -4,9 +4,10 @@ use std::io;
 /// * `list_int` - a list containing ints
 /// * `size` - an other size
 /// * `list_char` - a list of char
+/// * `string` - a string
 /// * `list_string4` - a list of strings of size 4
 /// * `matrix` - a matrix of int
-fn lists(n: i32, list_int: Vec<i32>, size: i32, list_char: Vec<char>, list_string4: Vec<String>, matrix: Vec<Vec<i32>>) {
+fn lists(n: i32, list_int: Vec<i32>, size: i32, list_char: Vec<char>, string: String, list_string4: Vec<String>, matrix: Vec<Vec<i32>>) {
     /* TODO Aren't these lists beautifull? */
 }
 
@@ -15,6 +16,7 @@ fn main() {
     let list_int: Vec<i32> = read_vec_int();
     let size: i32 = read_line().parse().unwrap();
     let list_char: Vec<char> = read_line().chars().collect();
+    let string: String = read_line();
     let mut list_string4: Vec<String> = Vec::with_capacity(size as usize);
     for _ in 0..size {
         list_string4.push(read_line());
@@ -24,7 +26,7 @@ fn main() {
         matrix.push(read_vec_int());
     }
 
-    lists(n, list_int, size, list_char, list_string4, matrix);
+    lists(n, list_int, size, list_char, string, list_string4, matrix);
 }
 
 fn read_line() -> String {

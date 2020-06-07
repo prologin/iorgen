@@ -6,9 +6,10 @@ class Program
     /// \param listInt a list containing ints
     /// \param size an other size
     /// \param listChar a list of char
+    /// \param @string a string
     /// \param listString4 a list of strings of size 4
     /// \param matrix a matrix of int
-    static void Lists(int n, int[] listInt, int size, char[] listChar, string[] listString4, int[][] matrix)
+    static void Lists(int n, int[] listInt, int size, char[] listChar, string @string, string[] listString4, int[][] matrix)
     {
         /* TODO Aren't these lists beautifull? */
     }
@@ -19,6 +20,7 @@ class Program
         int[] listInt = Array.ConvertAll(Console.ReadLine().Split(' '), int.Parse);
         int size = int.Parse(Console.ReadLine());
         char[] listChar = Console.ReadLine().ToCharArray();
+        string @string = Console.ReadLine();
         string[] listString4 = new string[size];
         for (int i = 0; i < size; ++i)
         {
@@ -30,6 +32,6 @@ class Program
             matrix[i] = Array.ConvertAll(Console.ReadLine().Split(new char[] {' '}, StringSplitOptions.RemoveEmptyEntries), int.Parse);
         }
 
-        Lists(n, listInt, size, listChar, listString4, matrix);
+        Lists(n, listInt, size, listChar, @string, listString4, matrix);
     }
 }

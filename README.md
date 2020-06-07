@@ -96,7 +96,7 @@ Several options are available:
 
 - **Integer**: the default integer type for the language
 - **Char**: can be either a byte, or a string depending of the language
-- **String**: a string of a given size
+- **String**: a string with a given maximum size
 - **List**: an array, list, vector… of a given size, containing one of the
   *Iorgen* supported types
 - **Struct**: a C like struct, or a map which have strings as keys; each field
@@ -157,9 +157,11 @@ A `"type"` field must have one of the following format `int`, `char`,
 and `structname` following this guidelines:
 
 - `size` can be either a number, or a variable name. If it is a variable name,
-  it must be a toplevel one (i.e. if the `"input"` list), and must have been
+  it must be a toplevel one (i.e. in the `"input"` list), and must have been
   declared before use. One exception: you can use a struct with two fields:
-  one integer, and a other a type whose size is the first field.
+  one integer, and a other a type whose size is the first field. For strings,
+  the given size, in the maximum size the string will have, but it could be
+  less.
 - `type` can be any valid type, even an other list
 - `structname` is the name of a struct, as declared in the `"name"` field of
   `"structs"`

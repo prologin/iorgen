@@ -19,6 +19,9 @@ input:
       name: list char
       comment: a list of char
       choices: [f, o]
+    - type: str(20)
+      name: string
+      comment: a string
     - type: List[str(4)](size)
       name: list string4
       comment: a list of strings of size 4

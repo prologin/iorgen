@@ -10,10 +10,11 @@ Params:
     listInt = a list containing ints
     size = an other size
     listChar = a list of char
+    string_ = a string
     listString4 = a list of strings of size 4
     matrix = a matrix of int
 */
-void lists(int n, int[] listInt, int size, char[] listChar, string[] listString4, int[][] matrix)
+void lists(int n, int[] listInt, int size, char[] listChar, string string_, string[] listString4, int[][] matrix)
 {
     // TODO Aren't these lists beautifull?
 }
@@ -28,6 +29,8 @@ void main()
     stdin.readf("%d\n", &size);
     char[] listChar;
     listChar = stdin.readln.chop.to!(char[]);
+    string string_;
+    stdin.readf("%s\n", &string_);
     string[] listString4;
     listString4.length = size;
     for (size_t i = 0; i < listString4.length; i++)
@@ -41,5 +44,5 @@ void main()
         matrix[i] = stdin.readln.split.map!(to!int).array;
     }
 
-    lists(n, listInt, size, listChar, listString4, matrix);
+    lists(n, listInt, size, listChar, string_, listString4, matrix);
 }

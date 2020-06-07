@@ -111,9 +111,9 @@ class Validator():
             assert constraints is not None
             line = self.next_line()
             (size, size_desc) = self.get_size(type_.size)
-            if len(line) != size:
+            if len(line) > size:
                 raise ValidatorException(
-                    "Line {}: '{}' should be of size {}".format(
+                    "Line {}: '{}' should be of maximum size {}".format(
                         self.current_line, line, size_desc))
             if line.strip() != line:
                 raise ValidatorException(

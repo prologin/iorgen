@@ -9,9 +9,10 @@ import "strings"
 // listInt: a list containing ints
 // size: an other size
 // listChar: a list of char
+// string_: a string
 // listString4: a list of strings of size 4
 // matrix: a matrix of int
-func lists(n int, listInt []int, size int, listChar []byte, listString4 []string, matrix [][]int) {
+func lists(n int, listInt []int, size int, listChar []byte, string_ string, listString4 []string, matrix [][]int) {
     /* TODO Aren't these lists beautifull? */
 }
 
@@ -31,6 +32,9 @@ func main() {
     var listChar []byte
     scanner.Scan()
     listChar = scanner.Bytes()
+    var string_ string
+    scanner.Scan()
+    string_ = scanner.Text()
     listString4 := make([]string, size)
     for i := range listString4 {
         scanner.Scan()
@@ -44,5 +48,5 @@ func main() {
             matrix[i][j], _ = strconv.Atoi(jValue)
         }
     }
-    lists(n, listInt, size, listChar, listString4, matrix);
+    lists(n, listInt, size, listChar, string_, listString4, matrix);
 }

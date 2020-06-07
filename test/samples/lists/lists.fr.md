@@ -12,6 +12,8 @@ L’entrée contiendra :
 - Sur la ligne suivante, un entier : **size**, an other size.
 - Sur la ligne suivante, une liste de **size** caractères juxtaposés : **list
   char**, a list of char.
+- Sur la ligne suivante, une chaine de **20** caractères : **string**, a
+  string.
 - Sur les lignes suivantes, une liste de **size** éléments : **list string4**,
   a list of strings of size 4.
     - Une ligne par élément de la liste : une chaine de **4** caractères.

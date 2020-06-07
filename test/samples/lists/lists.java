@@ -7,10 +7,11 @@ class Main {
      * @param listInt a list containing ints
      * @param size an other size
      * @param listChar a list of char
+     * @param string a string
      * @param listString4 a list of strings of size 4
      * @param matrix a matrix of int
      */
-    static void lists(int n, int[] listInt, int size, char[] listChar, String[] listString4, int[][] matrix) {
+    static void lists(int n, int[] listInt, int size, char[] listChar, String string, String[] listString4, int[][] matrix) {
         /* TODO Aren't these lists beautifull? */
     }
 
@@ -20,6 +21,7 @@ class Main {
         int[] listInt = Arrays.stream(scanner.nextLine().split(" ")).mapToInt(Integer::parseInt).toArray();
         int size = Integer.parseInt(scanner.nextLine());
         char[] listChar = scanner.nextLine().toCharArray();
+        String string = scanner.nextLine();
         String[] listString4 = new String[size];
         for (int i = 0; i < size; ++i) {
             listString4[i] = scanner.nextLine();
@@ -29,6 +31,6 @@ class Main {
             matrix[i] = Arrays.stream(scanner.nextLine().split(" ")).filter(x -> !x.isEmpty()).mapToInt(Integer::parseInt).toArray();
         }
 
-        lists(n, listInt, size, listChar, listString4, matrix);
+        lists(n, listInt, size, listChar, string, listString4, matrix);
     }
 }

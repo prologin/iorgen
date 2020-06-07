@@ -2,9 +2,10 @@
 % ListInt: a list containing ints
 % Size: an other size
 % ListChar: a list of char
+% String: a string
 % ListString4: a list of strings of size 4
 % Matrix: a matrix of int
-lists(N, ListInt, Size, ListChar, ListString4, Matrix) :-
+lists(N, ListInt, Size, ListChar, String, ListString4, Matrix) :-
     % TODO Aren't these lists beautifull?
     nl.
 
@@ -22,6 +23,7 @@ read_list(Goal, N, [H|T]) :- call(Goal, H), M is N - 1, read_list(Goal, M, T).
     read_int_list(ListInt),
     read_int(Size),
     read_char_list(ListChar),
+    read_line(String),
     read_list(read_line, Size, ListString4),
     read_list(read_int_list, Size, Matrix),
-    lists(N, ListInt, Size, ListChar, ListString4, Matrix).
+    lists(N, ListInt, Size, ListChar, String, ListString4, Matrix).

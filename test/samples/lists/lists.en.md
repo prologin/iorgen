@@ -12,6 +12,7 @@ The input will contain:
 - On the next line, an integer: **size**, an other size.
 - On the next line, a list of **size** chars next to each other: **list char**,
   a list of char.
+- On the next line, a string of size **20**: **string**, a string.
 - On the next lines, a list of **size** elements: **list string4**, a list of
   strings of size 4.
     - One line per list element: a string of size **4**.
