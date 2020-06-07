@@ -39,8 +39,22 @@ def test_samples() -> None:
     parser.add_argument('--no_compilation',
                         action='store_true',
                         help='skip the compilation (and run) part')
+    parser.add_argument('--no_missing',
+                        action='store_true',
+                        help='fail if compiler/interpreter are missing')
     args = parser.parse_args()
     selected_languages = args.languages or list(languages.keys())
+    skipped_languages = []
+    for language in ALL_LANGUAGES:
+        if language.extension in selected_languages:
+            for command in (language.compile_command, language.exec_command):
+                if command and shutil.which(command[0]) is None:
+                    print(
+                        "WARNING: skip language {} because `{}` is not found!".
+                        format(language.extension, command[0]))
+                    skipped_languages.append(language.extension)
+    assert not skipped_languages or not args.no_missing
+
     for name in os.listdir("samples"):
         prefix = "samples/{0}/{0}.".format(name)
         with open(prefix + "yaml", 'r') as stream:
@@ -50,7 +64,8 @@ def test_samples() -> None:
 
         for language in ALL_LANGUAGES:
             assert gen_is_same_as_sample(input_data, prefix, language)
-            if language.extension in selected_languages:
+            if (language.extension in selected_languages
+                    and language.extension not in skipped_languages):
                 assert gen_compile_run_and_compare(input_data, name, language,
                                                    "tests",
                                                    [prefix + "sample_input"],

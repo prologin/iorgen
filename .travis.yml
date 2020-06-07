@@ -25,4 +25,4 @@ jdk:
 
 script:
     - ./check_code.sh
-    - cd test && ./test.py
+    - cd test && ./test.py --no_missing
