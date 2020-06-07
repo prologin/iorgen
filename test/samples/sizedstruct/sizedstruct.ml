@@ -63,8 +63,8 @@ let sizedStruct n lists strings matrices same =
 
 let () =
   let n = read_int () in
-  let lists = List.init n (fun _ -> let size1 = read_int () in let intList = read_line () |> fun x -> if x = "" then [] else String.split_on_char ' ' x |> List.map int_of_string in {size1; intList}) in
+  let lists = List.init n (fun _ -> let size1 = read_int () in let intList = read_line () |> fun x -> if x = "" then [] else String.split_on_char ' ' x |> List.rev_map int_of_string |> List.rev in {size1; intList}) in
   let strings = List.init n (fun _ -> let size2 = read_int () in let stringList = read_line () in {size2; stringList}) in
-  let matrices = List.init 2 (fun _ -> let size3 = read_int () in let listList = List.init size3 (fun _ -> read_line () |> fun x -> if x = "" then [] else String.split_on_char ' ' x |> List.map int_of_string) in {size3; listList}) in
-  let same = List.init n (fun _ -> let size4 = read_int () in let intListN = read_line () |> fun x -> if x = "" then [] else String.split_on_char ' ' x |> List.map int_of_string in {size4; intListN}) in
+  let matrices = List.init 2 (fun _ -> let size3 = read_int () in let listList = List.init size3 (fun _ -> read_line () |> fun x -> if x = "" then [] else String.split_on_char ' ' x |> List.rev_map int_of_string |> List.rev) in {size3; listList}) in
+  let same = List.init n (fun _ -> let size4 = read_int () in let intListN = read_line () |> fun x -> if x = "" then [] else String.split_on_char ' ' x |> List.rev_map int_of_string |> List.rev in {size4; intListN}) in
   sizedStruct n lists strings matrices same

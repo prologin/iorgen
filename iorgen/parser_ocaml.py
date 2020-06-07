@@ -75,8 +75,14 @@ def read_line(type_: Type, input_data: Input) -> str:
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
         if type_.encapsulated.main == TypeEnum.INT:
+            # Note: here we have to use List.rev_map |> List.rev, because
+            # List.map is not tail-recursive, and will trigger a stack overflow
+            # if the list is big (size bigger than 1024).
+            # We could check if the constraints specify a small list, and use
+            # only List.map for those cases.
             return ('read_line () |> fun x -> if x = "" then [] else '
-                    'String.split_on_char \' \' x |> List.map int_of_string')
+                    'String.split_on_char \' \' x |> '
+                    'List.rev_map int_of_string |> List.rev')
         assert type_.encapsulated.main == TypeEnum.CHAR
         return 'List.init {} (String.get (read_line ()))'.format(
             var_name(type_.size))
@@ -119,10 +125,12 @@ def print_line(name: str, type_: Type, input_data: Input) -> str:
         assert type_.encapsulated is not None
         concat = ""
         if type_.encapsulated.main == TypeEnum.INT:
-            concat = '" " (List.map string_of_int {})'.format(name)
+            concat = '" " (List.rev (List.rev_map string_of_int {}))'.format(
+                name)
         else:
             assert type_.encapsulated.main == TypeEnum.CHAR
-            concat = '"" (List.map (String.make 1) {})'.format(name)
+            concat = '"" (List.rev (List.rev_map (String.make 1) {}))'.format(
+                name)
         return 'Printf.printf "%s\\n" (String.concat {})'.format(concat)
     assert type_.main == TypeEnum.STRUCT
     struct = input_data.get_struct(type_.struct_name)

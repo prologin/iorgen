@@ -61,6 +61,6 @@ let () =
   let class_ = (read_line ()).[0] in
   let i = read_line () in
   let in_ = Scanf.sscanf (read_line ()) "%d %d" (fun a static -> {a; static}) in
-  let for_ = read_line () |> fun x -> if x = "" then [] else String.split_on_char ' ' x |> List.map int_of_string in
-  let words = List.init 2 (fun _ -> let int = let return = read_int () in let void = read_line () |> fun x -> if x = "" then [] else String.split_on_char ' ' x |> List.map int_of_string in {return; void} in let ifTrue = read_int () in {int; ifTrue}) in
+  let for_ = read_line () |> fun x -> if x = "" then [] else String.split_on_char ' ' x |> List.rev_map int_of_string |> List.rev in
+  let words = List.init 2 (fun _ -> let int = let return = read_int () in let void = read_line () |> fun x -> if x = "" then [] else String.split_on_char ' ' x |> List.rev_map int_of_string |> List.rev in {return; void} in let ifTrue = read_int () in {int; ifTrue}) in
   keywords if_ class_ i in_ for_ words
