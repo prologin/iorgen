@@ -149,7 +149,7 @@ def gen_compile_run_and_compare(input_data: Input,
     """Check that the generated parser prints the input it is fed in"""
     source = os.path.join(tempfile.gettempdir(), "iorgen",
                           folder_for_generated_source, language.extension,
-                          name + "." + language.extension)
+                          name, name + "." + language.extension)
 
     # Generate source
     generated = language.generator(input_data, True)
