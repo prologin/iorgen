@@ -20,7 +20,7 @@ type System struct {
 
 // not the main function
 type Main struct {
-    int System // not an integer
+    int_ System // not an integer
     ifTrue int // should not cause conflict
 }
 
@@ -57,11 +57,11 @@ func main() {
     words := make([]Main, 2)
     for j := range words {
         scanner.Scan()
-        words[j].int.return_, _ = strconv.Atoi(scanner.Text())
-        words[j].int.void = make([]int, 3)
+        words[j].int_.return_, _ = strconv.Atoi(scanner.Text())
+        words[j].int_.void = make([]int, 3)
         scanner.Scan()
         for k, kValue := range strings.SplitN(scanner.Text(), " ", 3) {
-            words[j].int.void[k], _ = strconv.Atoi(kValue)
+            words[j].int_.void[k], _ = strconv.Atoi(kValue)
         }
         scanner.Scan()
         words[j].ifTrue, _ = strconv.Atoi(scanner.Text())

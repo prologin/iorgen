@@ -23,7 +23,7 @@ def var_name(name: str) -> str:
     if candidate in KEYWORDS:
         return candidate + "_"
     if candidate in ("main", "bufio", "fmt", "os", "strconv", "make", "len",
-                     "scanner", "strings"):
+                     "scanner", "strings", "int", "string", "byte"):
         return candidate + "_"
     return candidate
 
