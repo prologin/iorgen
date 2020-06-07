@@ -46,13 +46,13 @@ class Language:
     def compile(self, filename: str) -> str:
         """Compile the file at location 'filename'"""
         if self.compile_command:
-            cwd = os.getcwd()
-            os.chdir(os.path.dirname(filename))
             name = filename[:-len(self.extension) - 1]
             command = [i.format(name=name) for i in self.compile_command]
             stderr = subprocess.DEVNULL if self.no_stderr else None
-            subprocess.run(command + [filename], stderr=stderr, check=True)
-            os.chdir(cwd)
+            subprocess.run(command + [filename],
+                           stderr=stderr,
+                           cwd=os.path.dirname(filename),
+                           check=True)
             return name
         return filename
 
@@ -61,13 +61,11 @@ class Language:
         exe = self.compile(filename)
         out = ""
         with open(input_file) as sample_input:
-            cwd = os.getcwd()
-            os.chdir(os.path.dirname(filename))
             res = subprocess.run(self.exec_command + [exe],
                                  stdin=sample_input,
                                  stdout=subprocess.PIPE,
+                                 cwd=os.path.dirname(filename),
                                  check=True)
-            os.chdir(cwd)
             out = res.stdout.decode()
         return out
 
