@@ -128,8 +128,7 @@ class ParserC():
                 self.main.append(indent + "{} = getchar();".format(name))
             self.decl_new_read_line(IntegerOrString.STRING, indent)
         elif type_.main == TypeEnum.STR:
-            self.main.append(indent +
-                             'scanf("%[^\\n]", {});'.format(name))
+            self.main.append(indent + 'scanf("%[^\\n]", {});'.format(name))
             self.decl_new_read_line(IntegerOrString.STRING, indent)
         elif type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
