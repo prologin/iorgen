@@ -40,7 +40,7 @@ int main() {
         scanf("%d", &empty_list[i]);
     getchar(); // \n
     char* buffer_string = (char*)malloc((3 + 1) * sizeof(char));
-    fgets(buffer_string, 3 + 1, stdin);
+    scanf("%[^\n]", buffer_string);
     int n;
     scanf("%d", &n);
     getchar(); // \n
@@ -49,10 +49,10 @@ int main() {
         scanf("%d", &empty_in_sample[i]);
     getchar(); // \n
     char* empty_string = (char*)malloc((0 + 1) * sizeof(char));
-    fgets(empty_string, 0 + 1, stdin);
+    scanf("%[^\n]", empty_string);
     getchar(); // \n
     char* main_ = (char*)malloc((4 + 1) * sizeof(char));
-    fgets(main_, 4 + 1, stdin);
+    scanf("%[^\n]", main_);
     getchar(); // \n
     char* empty_char_list = (char*)malloc((0 + 1) * sizeof(char));
     fgets(empty_char_list, 0 + 1, stdin);
@@ -70,10 +70,10 @@ int main() {
     scanf("%d", &a_sized_struct.size);
     getchar(); // \n
     a_sized_struct.string_in_struct = (char*)malloc((a_sized_struct.size + 1) * sizeof(char));
-    fgets(a_sized_struct.string_in_struct, a_sized_struct.size + 1, stdin);
+    scanf("%[^\n]", a_sized_struct.string_in_struct);
     getchar(); // \n
     char* finish = (char*)malloc((6 + 1) * sizeof(char));
-    fgets(finish, 6 + 1, stdin);
+    scanf("%[^\n]", finish);
     empty_lines(empty_list, buffer_string, n, empty_in_sample, empty_string, main_, empty_char_list, non_empty_char_list, struct_with_empty_line, a_sized_struct, finish);
 
     return 0;
