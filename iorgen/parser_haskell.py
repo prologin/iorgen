@@ -105,14 +105,14 @@ def print_var_content(type_: Type, structs: List[Struct]) -> str:
             fields = []
             for i in struct.fields:
                 if i.type.main == TypeEnum.INT:
-                    fields.append("(show $ {} r)".format(var_name(i.name)))
+                    fields.append("(show $ {} r')".format(var_name(i.name)))
                 else:
                     assert i.type.main == TypeEnum.CHAR
-                    fields.append('((: "") $ {} r)'.format(var_name(i.name)))
-            return '(\\r -> {} ++ "\\n")'.format(' ++ " " ++ '.join(fields))
-        return "(\\r -> {})".format(" ++ ".join("({} $ {} r)".format(
+                    fields.append('((: "") $ {} r\')'.format(var_name(i.name)))
+            return '(\\r\' -> {} ++ "\\n")'.format(' ++ " " ++ '.join(fields))
+        return "(\\r' -> {})".format(" ++ ".join("({} $ {} r')".format(
             print_var_content(i.type, structs), var_name(i.name))
-                                                for i in struct.fields))
+                                                 for i in struct.fields))
     assert type_.main == TypeEnum.LIST
     assert type_.encapsulated
     if type_.encapsulated.main == TypeEnum.INT:
