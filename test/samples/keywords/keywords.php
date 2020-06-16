@@ -1,11 +1,11 @@
 <?php
 /**
- * @param $if not a condition
- * @param $class not a class
- * @param $i just a string
- * @param $in not in
- * @param $for not a loop
- * @param $words contains lots of things
+ * @param int $if not a condition
+ * @param string $class not a class
+ * @param string $i just a string
+ * @param (array{"a": int, "static": int}) $in not in
+ * @param int[] $for not a loop
+ * @param (array{"int": (array{"return": int, "void": int[]}), "if true": int})[] $words contains lots of things
  */
 function keywords($if, $class, &$i, &$in, &$for, &$words) {
     /* TODO If this compiles, it is already a good step! */

@@ -41,6 +41,26 @@ def function_name(name: str) -> str:
     return candidate + "_" if candidate in KEYWORDS else candidate
 
 
+def type_str(type_: Type, input_data: Input) -> str:
+    """Transform a type into a string description for documentation"""
+    if type_.main == TypeEnum.INT:
+        return "int"
+    if type_.main == TypeEnum.CHAR:
+        return "string"
+    if type_.main == TypeEnum.STR:
+        return "string"
+    if type_.main == TypeEnum.LIST:
+        assert type_.encapsulated is not None
+        return "{}[]".format(type_str(type_.encapsulated, input_data))
+    assert type_.main == TypeEnum.STRUCT
+    struct = input_data.get_struct(type_.struct_name)
+    # the following is not PHPDoc, but it does not allow for anything more than
+    # 'array'
+    return "(array{{{}}})".format(", ".join(
+        '"{}": {}'.format(v.name, type_str(v.type, input_data))
+        for v in struct.fields))
+
+
 def read_line(type_: Type, input_data: Input) -> str:
     """Generate the PHP code to read a line of given type"""
     assert type_.fits_in_one_line(input_data.structs)
@@ -158,8 +178,10 @@ def print_lines(input_data: Input,
 
 def call(input_data: Input, reprint: bool) -> List[str]:
     """Declare the function that takes all inputs in arguments"""
+    # https://docs.phpdoc.org/
     out = ["/**"] + [
-        " * @param {} {}".format(var_name(arg.name), arg.comment)
+        " * @param {} {} {}".format(type_str(arg.type, input_data),
+                                    var_name(arg.name), arg.comment)
         for arg in input_data.input
     ] + [" */"]
     out.append("function {}({}) {{".format(

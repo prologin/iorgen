@@ -1,7 +1,7 @@
 <?php
 /**
- * @param $n a number, used as a size
- * @param $list a list of structs
+ * @param int $n a number, used as a size
+ * @param (array{"integer": int, "character": string})[] $list a list of structs
  */
 function example($n, &$list) {
     /* TODO In a real life scenario, you will describe here what you want the

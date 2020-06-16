@@ -1,16 +1,16 @@
 <?php
 /**
- * @param $empty_list an empty list
- * @param $buffer_string here to check correct parsing of empty line above
- * @param $n an integer, will be 0 in the sample input
- * @param $empty_in_sample an empty list (only in the sample)
- * @param $empty_string an empty string
- * @param $main an other buffer string
- * @param $empty_char_list an empty char list
- * @param $non_empty_char_list an char list, non empty
- * @param $struct_with_empty_line a struct containing an empty line, then a struct
- * @param $a_sized_struct a sized struct containing an empty line
- * @param $finish a string to finish
+ * @param int[] $empty_list an empty list
+ * @param string $buffer_string here to check correct parsing of empty line above
+ * @param int $n an integer, will be 0 in the sample input
+ * @param int[] $empty_in_sample an empty list (only in the sample)
+ * @param string $empty_string an empty string
+ * @param string $main an other buffer string
+ * @param string[] $empty_char_list an empty char list
+ * @param string[] $non_empty_char_list an char list, non empty
+ * @param (array{"list in struct": int[], "struct in struct": (array{"char1": string, "int2": int})}) $struct_with_empty_line a struct containing an empty line, then a struct
+ * @param (array{"size": int, "string in struct": string}) $a_sized_struct a sized struct containing an empty line
+ * @param string $finish a string to finish
  */
 function empty_lines(&$empty_list, &$buffer_string, $n, &$empty_in_sample, &$empty_string, &$main, &$empty_char_list, &$non_empty_char_list, &$struct_with_empty_line, &$a_sized_struct, &$finish) {
     /* TODO Wow, lots of empty lines! */

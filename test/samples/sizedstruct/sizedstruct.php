@@ -1,10 +1,10 @@
 <?php
 /**
- * @param $n the size of the lists
- * @param $lists a list of list of different sizes
- * @param $strings a list of strings of different sizes
- * @param $matrices a list of matrices of different sizes
- * @param $same a list of list of same sizes
+ * @param int $n the size of the lists
+ * @param (array{"size1": int, "int list": int[]})[] $lists a list of list of different sizes
+ * @param (array{"size2": int, "string list": string})[] $strings a list of strings of different sizes
+ * @param (array{"size3": int, "list list": int[][]})[] $matrices a list of matrices of different sizes
+ * @param (array{"size4": int, "int list n": int[]})[] $same a list of list of same sizes
  */
 function sized_struct($n, &$lists, &$strings, &$matrices, &$same) {
     /* TODO The is a special case. */

@@ -1,12 +1,12 @@
 <?php
 /**
- * @param $n the first list's size
- * @param $list_int a list containing ints
- * @param $size an other size
- * @param $list_char a list of char
- * @param $string a string
- * @param $list_string4 a list of strings of size 4
- * @param $matrix a matrix of int
+ * @param int $n the first list's size
+ * @param int[] $list_int a list containing ints
+ * @param int $size an other size
+ * @param string[] $list_char a list of char
+ * @param string $string a string
+ * @param string[] $list_string4 a list of strings of size 4
+ * @param int[][] $matrix a matrix of int
  */
 function lists($n, &$list_int, $size, &$list_char, &$string, &$list_string4, &$matrix) {
     /* TODO Aren't these lists beautifull? */
