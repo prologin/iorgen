@@ -1,9 +1,9 @@
--- if_: not a condition
--- class: not a class
--- i: just a string
--- in_: not in
--- for_: not a loop
--- words: contains lots of things
+-- if_ (number): not a condition
+-- class (string): not a class
+-- i (string): just a string
+-- in_ (table: {"a": number, "static": number}): not in
+-- for_ (table: array[number]): not a loop
+-- words (table: array[{"int": {"return": number, "void": array[number]}, "if true": number}]): contains lots of things
 function keywords(if_, class, i, in_, for_, words)
     -- TODO If this compiles, it is already a good step!
 end

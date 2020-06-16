@@ -16,17 +16,32 @@ KEYWORDS = [
 
 INDENTATION = "    "
 
-# INT: number
-# CHAR:
-# STR: string
-# LIST: table
-# STRUCT: table
-
 
 def var_name(name: str) -> str:
     """Transform a variable name into a valid one for Lua"""
     candidate = snake_case(name)
     return candidate + '_' if candidate in KEYWORDS else candidate
+
+
+def type_str(type_: Type, input_data: Input, show_table: bool = True) -> str:
+    """Transform a type into a string description for documentation"""
+    if type_.main == TypeEnum.INT:
+        return "number"
+    if type_.main == TypeEnum.CHAR:
+        return "string"
+    if type_.main == TypeEnum.STR:
+        return "string"
+    if type_.main == TypeEnum.LIST:
+        assert type_.encapsulated is not None
+        return "{}array[{}]".format(
+            "table: " if show_table else "",
+            type_str(type_.encapsulated, input_data, False))
+    assert type_.main == TypeEnum.STRUCT
+    struct = input_data.get_struct(type_.struct_name)
+    return "{}{{{}}}".format(
+        "table: " if show_table else "", ", ".join(
+            '"{}": {}'.format(v.name, type_str(v.type, input_data, False))
+            for v in struct.fields))
 
 
 def read_line(name: str, type_: Type, input_data: Input,
@@ -159,7 +174,8 @@ def call(input_data: Input, reprint: bool) -> List[str]:
     """Declare and call the function take all inputs in arguments"""
     name = var_name(input_data.name)
     lines = [
-        "-- {}: {}".format(var_name(arg.name), arg.comment)
+        "-- {} ({}): {}".format(var_name(arg.name),
+                                type_str(arg.type, input_data), arg.comment)
         for arg in input_data.input
     ]
     lines.append("function {}({})".format(

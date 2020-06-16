@@ -1,8 +1,8 @@
--- struct: a struct 1 instance
--- n: a number
--- struct_list: a list a struct 1
--- triangle: a triangle
--- struct_chars: a struct of chars
+-- struct (table: {"foo": number, "bar": number}): a struct 1 instance
+-- n (number): a number
+-- struct_list (table: array[{"foo": number, "bar": number}]): a list a struct 1
+-- triangle (table: array[{"name": string, "pos": {"x": number, "y": number, "z": number}}]): a triangle
+-- struct_chars (table: {"first char": string, "second char": string, "third char": string}): a struct of chars
 function structs(struct, n, struct_list, triangle, struct_chars)
     -- TODO Look at them structs.
 end

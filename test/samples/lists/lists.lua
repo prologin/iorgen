@@ -1,10 +1,10 @@
--- n: the first list's size
--- list_int: a list containing ints
--- size: an other size
--- list_char: a list of char
--- string_: a string
--- list_string4: a list of strings of size 4
--- matrix: a matrix of int
+-- n (number): the first list's size
+-- list_int (table: array[number]): a list containing ints
+-- size (number): an other size
+-- list_char (table: array[string]): a list of char
+-- string_ (string): a string
+-- list_string4 (table: array[string]): a list of strings of size 4
+-- matrix (table: array[array[number]]): a matrix of int
 function lists(n, list_int, size, list_char, string_, list_string4, matrix)
     -- TODO Aren't these lists beautifull?
 end

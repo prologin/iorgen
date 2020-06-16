@@ -1,8 +1,8 @@
--- n: the size of the lists
--- lists: a list of list of different sizes
--- strings: a list of strings of different sizes
--- matrices: a list of matrices of different sizes
--- same: a list of list of same sizes
+-- n (number): the size of the lists
+-- lists (table: array[{"size1": number, "int list": array[number]}]): a list of list of different sizes
+-- strings (table: array[{"size2": number, "string list": string}]): a list of strings of different sizes
+-- matrices (table: array[{"size3": number, "list list": array[array[number]]}]): a list of matrices of different sizes
+-- same (table: array[{"size4": number, "int list n": array[number]}]): a list of list of same sizes
 function sized_struct(n, lists, strings, matrices, same)
     -- TODO The is a special case.
 end

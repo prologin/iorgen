@@ -1,14 +1,14 @@
--- empty_list: an empty list
--- buffer_string: here to check correct parsing of empty line above
--- n: an integer, will be 0 in the sample input
--- empty_in_sample: an empty list (only in the sample)
--- empty_string: an empty string
--- main: an other buffer string
--- empty_char_list: an empty char list
--- non_empty_char_list: an char list, non empty
--- struct_with_empty_line: a struct containing an empty line, then a struct
--- a_sized_struct: a sized struct containing an empty line
--- finish: a string to finish
+-- empty_list (table: array[number]): an empty list
+-- buffer_string (string): here to check correct parsing of empty line above
+-- n (number): an integer, will be 0 in the sample input
+-- empty_in_sample (table: array[number]): an empty list (only in the sample)
+-- empty_string (string): an empty string
+-- main (string): an other buffer string
+-- empty_char_list (table: array[string]): an empty char list
+-- non_empty_char_list (table: array[string]): an char list, non empty
+-- struct_with_empty_line (table: {"list in struct": array[number], "struct in struct": {"char1": string, "int2": number}}): a struct containing an empty line, then a struct
+-- a_sized_struct (table: {"size": number, "string in struct": string}): a sized struct containing an empty line
+-- finish (string): a string to finish
 function empty_lines(empty_list, buffer_string, n, empty_in_sample, empty_string, main, empty_char_list, non_empty_char_list, struct_with_empty_line, a_sized_struct, finish)
     -- TODO Wow, lots of empty lines!
 end
