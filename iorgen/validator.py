@@ -12,7 +12,7 @@ from iorgen.types import Constraints, Input, Type, TypeEnum, Variable
 class ValidatorException(Exception):
     """A custom exception for the Validator class"""
     def __init__(self, message: str) -> None:
-        super(ValidatorException, self).__init__(message)
+        super().__init__(message)
         self.message = message
 
 
