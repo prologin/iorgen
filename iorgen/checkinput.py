@@ -77,14 +77,14 @@ def error_parse_struct(
             return "missing {} field for {}".format(field, dic["name"])
     if not isinstance(dic["comment"], str):
         return "{} field for {} is not a string".format(field, dic["name"])
-    if not isinstance(dic["fields"], str):
+    if not isinstance(dic["fields"], list):
         return "fields field for {} is not a list".format(dic["name"])
     for i in dic["fields"]:
         if not isinstance(i, dict):
             return "a field for {}.fields is not a map".format(dic["name"])
         if Variable.from_dict(i) is None:
             return "failed to parse field of {}: {}".format(
-                dic["name"], error_parse_struct(i))
+                dic["name"], error_parse_variable(i))
     return "unknown error"
 
 
