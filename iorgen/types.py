@@ -382,6 +382,9 @@ class Input():
     @classmethod
     def from_dict(cls: T[INPUT], dic: Dict[str, Any]) -> Optional[INPUT]:
         """Parse the input yaml"""
+        # pylint: disable=too-many-branches
+        # We'll be able to reactivate the too-many-branches check when we will
+        # remove the `return None` and use raise instead
         try:
             variables_lookup = {}
             variables_dicts = []  # type: List[Dict[str, Any]]
@@ -411,6 +414,11 @@ class Input():
                         format(variable.name))
                 variables_lookup[variable.name] = variable
                 variables_dicts.append(node)
+            for name in variables_lookup:
+                if not re.fullmatch('[a-zA-Z][a-zA-Z0-9 ]*', name):
+                    raise ValueError(
+                        'Variable name "{}" should match [a-zA-Z][a-z0-9A-Z ]*'
+                        .format(name))
             set_constraints(variables_lookup, variables_dicts)
             subject = dic["subject"] if "subject" in dic else ""
             if "function_name" not in dic and "name" in dic:
