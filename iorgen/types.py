@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018 Sacha Delanoue
+# Copyright 2018-2020 Sacha Delanoue
 # Copyright 2019 Matthieu Moatti
 """Generic types in a programming language"""
 
@@ -393,6 +393,10 @@ class Input():
                         return None
                     structs.append(struct)
                     for var in struct.fields:
+                        if var.name in variables_lookup:
+                            raise ValueError(
+                                'Several struct fields are called "{}"'.format(
+                                    var.name))
                         variables_lookup[var.name] = var
                     variables_dicts.extend(node["fields"])
             variables = []  # type: List[Variable]
@@ -401,6 +405,10 @@ class Input():
                 if variable is None:
                     return None
                 variables.append(variable)
+                if variable.name in variables_lookup:
+                    raise ValueError(
+                        'Several variables or struct fields are called "{}"'.
+                        format(variable.name))
                 variables_lookup[variable.name] = variable
                 variables_dicts.append(node)
             set_constraints(variables_lookup, variables_dicts)
