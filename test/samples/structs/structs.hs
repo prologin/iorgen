@@ -15,8 +15,9 @@ data Position = Position
 
 -- | A point's name and position
 data Point = Point
-  { name :: Char      -- ^ the point's name (single character)
-  , pos  :: Position  -- ^ the point's position
+  { name        :: Char      -- ^ the point's name (single character)
+  , description :: String    -- ^ the point's description
+  , pos         :: Position  -- ^ the point's position
   }
 
 -- | a struct of chars
@@ -45,6 +46,6 @@ main = do
   putStrLn $ structs struct n structList triangle structChars
   where
     readStruct1 = fmap ((\[a, b] -> Struct1 (read a) (read b)) . words) getLine
-    readPoint = Point <$> fmap head getLine <*> readPosition
+    readPoint = Point <$> fmap head getLine <*> getLine <*> readPosition
     readChars = fmap ((\[a, b, c] -> Chars (head a) (head b) (head c)) . words) getLine
     readPosition = fmap ((\[a, b, c] -> Position (read a) (read b) (read c)) . words) getLine

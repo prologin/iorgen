@@ -20,8 +20,9 @@ read_assoc_struct_1(X) :- read_int_list(L), pairs_keys_values(P, ["foo", "bar"],
 read_assoc_position(X) :- read_int_list(L), pairs_keys_values(P, ["x", "y", "z"], L), list_to_assoc(P, X).
 read_assoc_point(X) :-
     read_char(Name),
+    read_line(Description),
     read_assoc_position(Pos),
-    pairs_keys_values(P, ["name", "pos"], [Name, Pos]), list_to_assoc(P, X).
+    pairs_keys_values(P, ["name", "description", "pos"], [Name, Description, Pos]), list_to_assoc(P, X).
 read_assoc_chars(X) :- read_line(S), atomic_list_concat(L, ' ',S), pairs_keys_values(P, ["first char", "second char", "third char"], L), list_to_assoc(P, X).
 :-
     prompt(_, ''),

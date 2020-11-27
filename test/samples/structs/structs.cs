@@ -19,6 +19,7 @@ struct Position
 struct Point
 {
     public char name; //!< the point's name (single character)
+    public string description; //!< the point's description
     public Position pos; //!< the point's position
 }
 
@@ -57,6 +58,7 @@ class Program
         for (int i = 0; i < 3; ++i)
         {
             triangle[i].name = Console.ReadLine()[0];
+            triangle[i].description = Console.ReadLine();
             string[] words1 = Console.ReadLine().Split(' ');
             triangle[i].pos = new Position {x = int.Parse(words1[0]), y = int.Parse(words1[1]), z = int.Parse(words1[2])};
         }

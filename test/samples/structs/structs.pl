@@ -24,6 +24,8 @@ my @triangle = ();
 for (1..3) {
     push(@triangle, {});
     $triangle[-1]{'name'} = substr <>, 0, 1;
+    $triangle[-1]{'description'} = scalar(<>);
+    chomp $triangle[-1]{'description'};
     my @words1 = split /[ \n]/, <>;
     $triangle[-1]{'pos'} = \%{{("x" => int($words1[0]), "y" => int($words1[1]), "z" => int($words1[2]))}};
 }

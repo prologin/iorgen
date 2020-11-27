@@ -17,6 +17,8 @@ The input will contain:
     - Each list element is on several lines: a struct **point**.
         - On the first line, a char: **name**, the point's name (single
           character).
+        - On the next line, a string of size **12**: **description**, the
+          point's description.
         - On the next line, separated by spaces, an integer **x** (X), an
           integer **y** (Y), and an integer **z** (Z): **pos**, the point's
           position.

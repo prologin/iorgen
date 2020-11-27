@@ -34,9 +34,10 @@
            (lambda
              ()
              (make-assoc-list
-               '(name pos)
+               '(name description pos)
                (list
                  (lambda () (string-ref (read-line) 0))
+                 (lambda () (read-line))
                  (lambda
                    ()
                    (map cons '(x y z) (parse-int-list (read-line)))))))))

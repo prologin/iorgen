@@ -26,6 +26,7 @@ type position = {
 (** A point's name and position *)
 type point = {
   name : char; (** the point's name (single character) *)
+  description : string; (** the point's description *)
   pos : position; (** the point's position *)
 }
 
@@ -51,6 +52,6 @@ let () =
   let struct_ = Scanf.sscanf (read_line ()) "%d %d" (fun foo bar -> {foo; bar}) in
   let n = read_int () in
   let structList = List.init n (fun _ -> Scanf.sscanf (read_line ()) "%d %d" (fun foo bar -> {foo; bar})) in
-  let triangle = List.init 3 (fun _ -> let name = (read_line ()).[0] in let pos = Scanf.sscanf (read_line ()) "%d %d %d" (fun x y z -> {x; y; z}) in {name; pos}) in
+  let triangle = List.init 3 (fun _ -> let name = (read_line ()).[0] in let description = read_line () in let pos = Scanf.sscanf (read_line ()) "%d %d %d" (fun x y z -> {x; y; z}) in {name; description; pos}) in
   let structChars = Scanf.sscanf (read_line ()) "%c %c %c" (fun firstChar secondChar thirdChar -> {firstChar; secondChar; thirdChar}) in
   structs struct_ n structList triangle structChars

@@ -19,6 +19,7 @@ struct Position
 struct Point
 {
     char name; /// the point's name (single character)
+    string description; /// the point's description
     Position pos; /// the point's position
 }
 
@@ -60,6 +61,7 @@ void main()
     for (size_t i = 0; i < triangle.length; i++)
     {
         stdin.readf("%c\n", &triangle[i].name);
+        stdin.readf("%s\n", &triangle[i].description);
         stdin.readf("%d %d %d\n", &triangle[i].pos.x, &triangle[i].pos.y, &triangle[i].pos.z);
     }
     Chars structChars;

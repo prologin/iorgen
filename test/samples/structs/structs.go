@@ -21,6 +21,7 @@ type Position struct {
 // A point's name and position
 type Point struct {
     name byte // the point's name (single character)
+    description string // the point's description
     pos Position // the point's position
 }
 
@@ -57,6 +58,8 @@ func main() {
     for i := range triangle {
         scanner.Scan()
         triangle[i].name = scanner.Text()[0]
+        scanner.Scan()
+        triangle[i].description = scanner.Text()
         scanner.Scan()
         fmt.Sscanf(scanner.Text(), "%d %d %d", &triangle[i].pos.x, &triangle[i].pos.y, &triangle[i].pos.z)
     }

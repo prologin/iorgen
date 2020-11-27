@@ -32,6 +32,9 @@ structs:
             name: name
             choices: [O, A, B]
             comment: the point's name (single character)
+          - type: str(12)
+            name: description
+            comment: the point's description
           - type: "@position"
             name: pos
             comment: the point's position

@@ -19,6 +19,8 @@ L’entrée contiendra :
       **point**.
         - Sur la première ligne, un caractère : **name**, the point's name
           (single character).
+        - Sur la ligne suivante, une chaine de **12** caractères :
+          **description**, the point's description.
         - Sur la ligne suivante, séparés par des espaces, un entier **x** (X),
           un entier **y** (Y), et un entier **z** (Z) : **pos**, the point's
           position.

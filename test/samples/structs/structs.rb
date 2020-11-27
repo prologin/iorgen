@@ -12,6 +12,7 @@ n = STDIN.gets.to_i
 struct_list = Array.new(n) { Hash[["foo", "bar"].zip(STDIN.gets.split.map(&:to_i))] }
 triangle = Array.new(3) { {
     "name" => STDIN.gets[0],
+    "description" => STDIN.gets.chomp,
     "pos" => Hash[["x", "y", "z"].zip(STDIN.gets.split.map(&:to_i))]
 } }
 struct_chars = Hash[["first char", "second char", "third char"].zip(STDIN.gets.chomp.split(" "))]

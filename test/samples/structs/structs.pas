@@ -17,6 +17,7 @@ type
     { A point's name and position }
     Point = record
         Name_: char; { the point's name (single character) }
+        Description: string; { the point's description }
         Pos: Position; { the point's position }
     end;
 
@@ -60,6 +61,7 @@ begin
     for i := 0 to 3 - 1 do
     begin
         readln(Triangle[i].Name_);
+        readln(Triangle[i].Description);
         readln(Triangle[i].Pos.X, Triangle[i].Pos.Y, Triangle[i].Pos.Z);
     end;
     readln(StructChars.FirstChar, _, StructChars.SecondChar, _, StructChars.ThirdChar);

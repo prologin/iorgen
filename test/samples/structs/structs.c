@@ -17,6 +17,7 @@ struct position {
 /// A point's name and position
 struct point {
     char name; ///< the point's name (single character)
+    char* description; ///< the point's description
     struct position pos; ///< the point's position
 };
 
@@ -50,6 +51,9 @@ int main() {
     struct point* triangle = (struct point*)malloc(3 * sizeof(struct point));
     for (int i = 0; i < 3; ++i) {
         triangle[i].name = getchar();
+        getchar(); // \n
+        triangle[i].description = (char*)malloc((12 + 1) * sizeof(char));
+        scanf("%[^\n]", triangle[i].description);
         scanf("%d %d %d", &triangle[i].pos.x, &triangle[i].pos.y, &triangle[i].pos.z);
         getchar(); // \n
     }

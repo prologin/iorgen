@@ -1,4 +1,6 @@
 #include <iostream>
+#include <istream>
+#include <string>
 #include <vector>
 
 /// A simple struct
@@ -17,6 +19,7 @@ struct Position {
 /// A point's name and position
 struct Point {
     char name; ///< the point's name (single character)
+    std::string description; ///< the point's description
     Position pos; ///< the point's position
 };
 
@@ -48,6 +51,7 @@ int main() {
     std::vector<Point> triangle(3); ///< a triangle
     for (Point& i : triangle) {
         std::cin >> i.name;
+        std::getline(std::cin >> std::ws, i.description);
         std::cin >> i.pos.x >> i.pos.y >> i.pos.z;
     }
     Chars struct_chars; ///< a struct of chars

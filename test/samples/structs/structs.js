@@ -4,7 +4,7 @@
  * @param {{foo: number, bar: number}} struct a struct 1 instance
  * @param {number} n a number
  * @param {Array.<{foo: number, bar: number}>} structList a list a struct 1
- * @param {Array.<{name: string, pos: {x: number, y: number, z: number}}>} triangle a triangle
+ * @param {Array.<{name: string, description: string, pos: {x: number, y: number, z: number}}>} triangle a triangle
  * @param {{'first char': string, 'second char': string, 'third char': string}} structChars a struct of chars
  * @returns {void}
  */
@@ -34,6 +34,7 @@ function main(stdin) {
     for (let i = 0; i < 3; i++) {
         const j = {};
         j.name = stdin[line++];
+        j.description = stdin[line++];
         const words1 = stdin[line++].split(" ");
         j.pos = {
             x: Number(words1[0]),

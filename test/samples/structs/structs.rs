@@ -22,6 +22,8 @@ struct Position {
 struct Point {
     /// the point's name (single character)
     name: char,
+    /// the point's description
+    description: String,
     /// the point's position
     pos: Position,
 }
@@ -91,8 +93,9 @@ fn read_struct_position() -> Position {
 
 fn read_struct_point() -> Point {
     let name: char = read_line().parse().unwrap();
+    let description: String = read_line();
     let pos: Position = read_struct_position();
-    Point { name, pos }
+    Point { name, description, pos }
 }
 
 fn read_struct_chars() -> Chars {

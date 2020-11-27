@@ -44,6 +44,10 @@ class Point
      */
     public char name;
     /**
+     * the point's description
+     */
+    public String description;
+    /**
      * the point's position
      */
     public Position pos;
@@ -98,6 +102,7 @@ class Main {
         for (int i = 0; i < 3; ++i) {
             triangle[i] = new Point();
             triangle[i].name = scanner.nextLine().charAt(0);
+            triangle[i].description = scanner.nextLine();
             String[] words1 = scanner.nextLine().split(" ");
             triangle[i].pos = new Position();
             triangle[i].pos.x = Integer.parseInt(words1[0]);
