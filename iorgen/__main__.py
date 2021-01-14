@@ -29,7 +29,7 @@ def get_parser() -> argparse.ArgumentParser:
                         '-m',
                         default='fr',
                         help='language for the subject in markdown',
-                        choices=['en', 'fr'])
+                        choices=['None', 'en', 'fr'])
     parser.add_argument('--output_dir',
                         '-o',
                         default="skeleton",
@@ -133,7 +133,8 @@ def main() -> None:
                          prefix + "." + languages[language].extension))
         path.write_text(languages[language].generate(input_data))
     path = Path(os.path.join(args.output_dir, "..", "subject-io-stub.md"))
-    path.write_text(gen_markdown(input_data, args.markdown))
+    if args.markdown != "None":
+        path.write_text(gen_markdown(input_data, args.markdown))
 
 
 if __name__ == '__main__':
