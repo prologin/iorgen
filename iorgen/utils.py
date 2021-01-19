@@ -30,6 +30,11 @@ def int_to_iterator_name(value: int, times: int = 1) -> str:
     return int_to_iterator_name(value - 18, times + 1)
 
 
+def str_int(value: int) -> str:
+    """Return integer mathjax representation"""
+    return f"{value:,}".replace(',', r'\,')
+
+
 class IteratorName:
     """Give valid iterator names, like i, j, k, preventing scope conflicts"""
     def __init__(self, existing_names: List[str]) -> None:

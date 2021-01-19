@@ -40,7 +40,7 @@ The is a special case.
 
 ### Constraints
 
-- 0 ≤ n
-- 0 ≤ size1
-- 1 ≤ size2
-- 0 ≤ size3
+- $0 \le n$
+- $0 \le size1$
+- $1 \le size2$
+- $0 \le size3$

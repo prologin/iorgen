@@ -6,7 +6,10 @@
 import re
 from enum import Enum, unique
 from typing import Any, Callable, Dict, Iterator, List, Optional, Set, Tuple
-from typing import Type as T, TypeVar, Union
+from typing import Type as T
+from typing import TypeVar, Union
+
+from .utils import str_int
 
 # This stuff is no longer necessary with python 3.7 by including:
 # from __future__ import annotations
@@ -142,7 +145,7 @@ def integer_bounds(name: str, min_: Union[int, VAR], max_: Union[int, VAR],
     min_repr = ""
     if isinstance(min_, int):
         if min_ != Constraints.MIN_INT:
-            min_repr = str(max(0, min_) if is_size else min_)
+            min_repr = str_int(max(0, min_) if is_size else min_)
         elif is_size:
             min_repr = "0"
     elif isinstance(min_, Variable):
@@ -153,7 +156,7 @@ def integer_bounds(name: str, min_: Union[int, VAR], max_: Union[int, VAR],
             min_repr = "0, " + min_repr
     max_repr = ""
     if isinstance(max_, int) and max_ != Constraints.MAX_INT:
-        max_repr = str(max_)
+        max_repr = str_int(max_)
     elif isinstance(max_, Variable):
         max_repr = max_.name
 
@@ -161,9 +164,9 @@ def integer_bounds(name: str, min_: Union[int, VAR], max_: Union[int, VAR],
         return ""
     out = name
     if min_repr:
-        out = min_repr + " ≤ " + out
+        out = min_repr + r" \le " + out
     if max_repr:
-        out = out + " ≤ " + max_repr
+        out = out + r" \le " + max_repr
     return out
 
 
@@ -218,9 +221,9 @@ class Constraints:
         return value
 
     def simple_repr(self, name: str) -> str:
-        """Return text representation of integer bounds"""
+        """Return mathjax representation of integer bounds"""
         if self.choices:
-            return "{} ϵ {{{}}}".format(
+            return r"{} \in \{{{}\}}".format(
                 name, (", ".join(str(i) for i in sorted(self.choices))))
         return integer_bounds(name, self.min, self.max, self.is_size)
 
@@ -275,7 +278,7 @@ class Variable:
                 name) if perf else self.constraints.simple_repr(name)
         if type_ == TypeEnum.CHAR:
             if self.constraints.choices and not perf:
-                return "{} ϵ {{{}}}".format(name, (", ".join(
+                return r"{} \in \{{{}\}}".format(name, (", ".join(
                     str(i) for i in sorted(self.constraints.choices))))
             return ""
         raise Exception

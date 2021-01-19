@@ -19,10 +19,10 @@ do with this generated code
 
 ### Contraintes
 
-- 1 ≤ N ≤ 10
-- integer ϵ {-4, 42, 1337}
-- character ϵ {a, b, c}
+- $1 \le N \le 10$
+- $integer \in \{-4, 42, 1337\}$
+- $character \in \{a, b, c\}$
 
 ### Contraintes de performance
 
-- 1 ≤ N ≤ 10000
+- $1 \le N \le 10\,000$

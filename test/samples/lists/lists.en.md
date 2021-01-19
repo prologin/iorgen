@@ -26,12 +26,12 @@ Aren't these lists beautifull?
 
 ### Constraints
 
-- 1 ≤ N ≤ 10
-- 1 ≤ (list int)[ ] ≤ 2000
-- 0 ≤ size ≤ 5
-- (list char)[ ] ϵ {f, o}
-- 0 ≤ matrix[ ] ≤ 3456
+- $1 \le N \le 10$
+- $1 \le (list int)[ ] \le 2\,000$
+- $0 \le size \le 5$
+- $(list char)[ ] \in \{f, o\}$
+- $0 \le matrix[ ] \le 3\,456$
 
 ### Performance constraints
 
-- 0 ≤ matrix[ ] ≤ 10000
+- $0 \le matrix[ ] \le 10\,000$

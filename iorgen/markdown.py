@@ -182,10 +182,10 @@ def constraints(variables: List[Variable], lang: Dict[str, str]) -> str:
     output = []
     if l_simple:
         output.extend(["", "### {}".format(lang['constraints']), ""])
-        output.extend(["- " + i for i in l_simple])
+        output.extend([f"- ${i}$" for i in l_simple])
     if l_perf:
         output.extend(["", "### {}".format(lang['constraints perf']), ""])
-        output.extend(["- " + i for i in l_perf])
+        output.extend([f"- ${i}$" for i in l_perf])
     return "\n".join(output + [""])
 
 

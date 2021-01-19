@@ -34,11 +34,11 @@ Look at them structs.
 
 ### Contraintes
 
-- 0 ≤ n
-- foo ϵ {1, 3, 8, 28, 43}
-- 2 ≤ bar ≤ 99
-- name ϵ {A, B, O}
+- $0 \le n$
+- $foo \in \{1, 3, 8, 28, 43\}$
+- $2 \le bar \le 99$
+- $name \in \{A, B, O\}$
 
 ### Contraintes de performance
 
-- 2 ≤ n
+- $2 \le n$

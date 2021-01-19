@@ -39,5 +39,5 @@ Wow, lots of empty lines!
 
 ### Constraints
 
-- 0 ≤ N
-- 0 ≤ size
+- $0 \le N$
+- $0 \le size$
