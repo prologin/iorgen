@@ -68,7 +68,8 @@ def parse_without_error(type_: Type) -> bool:
 
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
-        return type_.encapsulated.main == TypeEnum.CHAR
+        return type_.encapsulated.main == TypeEnum.CHAR or parse_without_error(
+            type_.encapsulated)
 
     return False
 
