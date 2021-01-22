@@ -362,7 +362,7 @@ class ParserRust():
             assert type_.encapsulated is not None
             inner_name = name.replace(".", "_") + "_elem"
             return [
-                f"{idt}for {inner_name} in &{name} {{",
+                f"{idt}for {inner_name} in {name}.iter() {{",
                 *self.print_lines(inner_name, type_.encapsulated,
                                   indent_lvl + 1),
                 f"{idt}}}",
