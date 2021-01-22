@@ -16,6 +16,10 @@ The input will contain:
 - On the next lines, a list of **size** elements: **list string4**, a list of
   strings of size 4.
     - One line per list element: a string of size **4**.
+- On the next lines, a list of **2** elements: **list list string2**, a list of
+  list of strings of size 2 of size 2 of size 2.
+    - Each list element is on several lines: a list of **2** elements.
+        - One line per list element: a string of size **2**.
 - On the next lines, a list of **size** elements: **matrix**, a matrix of int.
     - One line per list element: a list of **size** integers separated by
       spaces.

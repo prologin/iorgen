@@ -4,8 +4,9 @@
 ;;; list-char: a list of char
 ;;; string: a string
 ;;; list-string4: a list of strings of size 4
+;;; list-list-string2: a list of list of strings of size 2 of size 2 of size 2
 ;;; matrix: a matrix of int
-(define (lists n list-int size list-char string list-string4 matrix)
+(define (lists n list-int size list-char string list-string4 list-list-string2 matrix)
   ;;; TODO Aren't these lists beautifull?
   (newline))
 
@@ -26,5 +27,6 @@
        (list-char (string->list (read-line)))
        (string (read-line))
        (list-string4 (make-list size read-line))
+       (list-list-string2 (make-list 2 (lambda () (make-list 2 read-line))))
        (matrix (make-list size (lambda () (parse-int-list (read-line))))))
-  (lists n list-int size list-char string list-string4 matrix))
+  (lists n list-int size list-char string list-string4 list-list-string2 matrix))

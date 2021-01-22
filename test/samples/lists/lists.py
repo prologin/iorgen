@@ -1,4 +1,4 @@
-def lists(n, list_int, size, list_char, string, list_string4, matrix):
+def lists(n, list_int, size, list_char, string, list_string4, list_list_string2, matrix):
     """
     :param n: the first list's size
     :type n: int
@@ -12,6 +12,8 @@ def lists(n, list_int, size, list_char, string, list_string4, matrix):
     :type string: str
     :param list_string4: a list of strings of size 4
     :type list_string4: list[str]
+    :param list_list_string2: a list of list of strings of size 2 of size 2 of size 2
+    :type list_list_string2: list[list[str]]
     :param matrix: a matrix of int
     :type matrix: list[list[int]]
     """
@@ -26,5 +28,6 @@ if __name__ == '__main__':
     list_char = list(input())
     string = input()
     list_string4 = [input() for _ in range(size)]
+    list_list_string2 = [[input() for _ in range(2)] for _ in range(2)]
     matrix = [list(map(int, input().split())) for _ in range(size)]
-    lists(n, list_int, size, list_char, string, list_string4, matrix)
+    lists(n, list_int, size, list_char, string, list_string4, list_list_string2, matrix)

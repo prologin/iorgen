@@ -17,6 +17,11 @@ L’entrée contiendra :
 - Sur les lignes suivantes, une liste de **size** éléments : **list string4**,
   a list of strings of size 4.
     - Une ligne par élément de la liste : une chaine de **4** caractères.
+- Sur les lignes suivantes, une liste de **2** éléments : **list list
+  string2**, a list of list of strings of size 2 of size 2 of size 2.
+    - Chaque élément de la liste est sur plusieurs lignes : une liste de **2**
+      éléments.
+        - Une ligne par élément de la liste : une chaine de **2** caractères.
 - Sur les lignes suivantes, une liste de **size** éléments : **matrix**, a
   matrix of int.
     - Une ligne par élément de la liste : une liste de **size** entiers séparés
