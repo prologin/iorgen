@@ -25,7 +25,7 @@ need to install:
 - The tools to check the code quality: yapf, mypy and pylint. Be sure to have
   the latest version of them. You can install them through you package manager
   **if you have an up-to-date** distribution (like Archlinux), or else install
-  them with `pip3 install -U mypy pylint pyyaml`. The travis build use fixed
+  them with `pip3 install -U mypy pylint pyyaml`. The CI build use fixed
   versions of these tools to prevent the build failing unexpectedly with new
   changing releasing of the tools, but these version are meant to be kept up to
   date.
