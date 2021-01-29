@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright 2018-2020 Sacha Delanoue
+# Copyright 2020 Rémi Dupré
+# Copyright 2021 Grégoire Geis
 """Generate a Rust parser"""
 
 import textwrap
