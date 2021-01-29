@@ -30,7 +30,7 @@ my @matrices = ();
 for (1..2) {
     push(@matrices, {});
     $matrices[-1]{'size3'} = int <>;
-    $matrices[-1]{'list list'} = ();
+    $matrices[-1]{'list list'} = [];
     for (1..$matrices[-1]{'size3'}) {
         push(@{$matrices[-1]{'list list'}}, \@{[map { int } split(/[ \n]/, <>)]});
     }

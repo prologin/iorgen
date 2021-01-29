@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2020 Sacha Delanoue
+# Copyright 2018-2021 Sacha Delanoue
 """Generate a Perl parser"""
 
 import textwrap
@@ -138,7 +138,10 @@ def read_lines(name: str, decl: str, type_: Type, size: str, input_data: Input,
         return read_line(name, decl, type_, input_data, words)
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
-        lines = [decl.format('()'), "for (1..{}) {{".format(size)]
+        lines = [
+            decl.format('()' if name[0] == "@" else "[]"),
+            "for (1..{}) {{".format(size)
+        ]
         words.push_scope()
         array_name = name.replace("{", "{{").replace("}", "}}")
         if array_name[0] != "@":
