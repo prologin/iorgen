@@ -47,7 +47,7 @@ sudo apt install python3-yaml mono-mcs gdc golang ghc openjdk-8-jdk-headless \
 
 ## Usage
 
-Make sure python (version 3.5 and above) and python-yaml are installed on your
+Make sure python (version 3.6 and above) and python-yaml are installed on your
 computer and run `python3 -m iorgen input.yaml`. This will generate all
 languages parsers in a `skeleton` folder, and a `subject-io-stub.md` describing
 the input (in French by default).
