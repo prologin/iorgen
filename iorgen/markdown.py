@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright 2018-2020 Sacha Delanoue
+# Copyright 2021 Kenji Gaillac
 """Generate the markdown describing the subject"""
 
 import textwrap

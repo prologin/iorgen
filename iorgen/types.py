@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright 2018-2020 Sacha Delanoue
 # Copyright 2019 Matthieu Moatti
+# Copyright 2021 Kenji Gaillac
 """Generic types in a programming language"""
 
 import re
