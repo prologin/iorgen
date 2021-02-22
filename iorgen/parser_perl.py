@@ -80,6 +80,8 @@ def size_name(name: str) -> str:
         int(snake)
         return snake
     except ValueError:
+        if snake in ("a", "b"):  # $a and $b are used by Perl
+            snake += "_"
         return "$" + snake
 
 
