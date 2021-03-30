@@ -33,11 +33,12 @@ def int_to_iterator_name(value: int, times: int = 1) -> str:
 
 def str_int(value: int) -> str:
     """Return integer mathjax representation"""
-    return f"{value:,}".replace(',', r'\,')
+    return f"{value:,}".replace(",", r"\,")
 
 
 class IteratorName:
     """Give valid iterator names, like i, j, k, preventing scope conflicts"""
+
     def __init__(self, existing_names: List[str]) -> None:
         self.existing_names = [i.strip().lower() for i in existing_names]
         self.current = 0
@@ -60,9 +61,8 @@ class IteratorName:
 
 class WordsName:
     """Give valid variable names starting with 'words'"""
-    def __init__(self,
-                 existing_names: List[str],
-                 cs_mode: bool = False) -> None:
+
+    def __init__(self, existing_names: List[str], cs_mode: bool = False) -> None:
         # In C# you can not name a variable if it was already declared in a
         # nested scode, it would cause error CS0136
         self.existing_names = [i.strip().lower() for i in existing_names]

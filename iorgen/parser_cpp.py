@@ -7,24 +7,6 @@ from typing import List, Set
 from iorgen.types import Input, Type, TypeEnum, Variable
 from iorgen.utils import pascal_case, snake_case, IteratorName
 
-# keywords taken from cppreference on 2018-10-25
-KEYWORDS = [
-    "alignas", "alignof", "and", "and_eq", "asm", "atomic_cancel",
-    "atomic_commit", "atomic_noexcept", "auto", "bitand", "bitor", "bool",
-    "break", "case", "catch", "char", "char16_t", "char32_t", "class", "compl",
-    "concept", "const", "constexpr", "const_cast", "continue", "co_await",
-    "co_return", "co_yield", "decltype", "default", "delete", "do", "double",
-    "dynamic_cast", "else", "enum", "explicit", "export", "extern", "false",
-    "float", "for", "friend", "goto", "if", "import", "inline", "int", "long",
-    "module", "mutable", "namespace", "new", "noexcept", "not", "not_eq",
-    "nullptr", "operator", "or", "or_eq", "private", "protected", "public",
-    "reflexpr", "register", "reinterpret_cast", "requires", "return", "short",
-    "signed", "sizeof", "static", "static_assert", "static_cast", "struct",
-    "switch", "synchronized", "template", "this", "thread_local", "throw",
-    "true", "try", "typedef", "typeid", "typename", "union", "unsigned",
-    "using", "virtual", "void", "volatile", "wchar_t", "while", "xor", "xor_eq"
-]
-
 
 def var_name(name: str) -> str:
     """Transform a variable name into a valid one for C++"""
@@ -39,8 +21,9 @@ def struct_name(name: str) -> str:
     return pascal_case(name)
 
 
-class ParserCpp():
+class ParserCpp:
     """Create the C++ code to parse an input"""
+
     def __init__(self, input_data: Input) -> None:
         self.input = input_data
 
@@ -67,11 +50,10 @@ class ParserCpp():
         self.includes.add("vector")
         return "std::vector<{}>".format(self.type_str(type_.encapsulated))
 
-    def read_line(self, name: str, type_: Type, size: str,
-                  indent_lvl: int) -> None:
+    def read_line(self, name: str, type_: Type, size: str, indent_lvl: int) -> None:
         """Read an entire line and store it into the right place(s)"""
         assert type_.fits_in_one_line(self.input.structs)
-        indent = ' ' * (self.indentation * indent_lvl)
+        indent = " " * (self.indentation * indent_lvl)
         self.includes.add("iostream")
         if type_.main in (TypeEnum.INT, TypeEnum.CHAR):
             self.main.append(indent + "std::cin >> {};".format(name))
@@ -81,51 +63,72 @@ class ParserCpp():
             if type_.can_be_empty:
                 self.main.append(indent + "if ({} > 0)".format(size))
             self.main.append(
-                indent + " " *
-                (self.indentation if type_.can_be_empty else 0) +
-                "std::getline(std::cin >> std::ws, {});".format(name))
+                indent
+                + " " * (self.indentation if type_.can_be_empty else 0)
+                + "std::getline(std::cin >> std::ws, {});".format(name)
+            )
         elif type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
             inner_name = self.iterator.new_it()
-            self.main.append(indent + "for ({}& {} : {})".format(
-                self.type_str(type_.encapsulated), inner_name, name))
-            self.main.append(' ' * self.indentation + indent +
-                             "std::cin >> {};".format(inner_name))
+            self.main.append(
+                indent
+                + "for ({}& {} : {})".format(
+                    self.type_str(type_.encapsulated), inner_name, name
+                )
+            )
+            self.main.append(
+                " " * self.indentation + indent + "std::cin >> {};".format(inner_name)
+            )
             self.iterator.pop_it()
         else:
             assert type_.main == TypeEnum.STRUCT
             struct = self.input.get_struct(type_.struct_name)
-            self.main.append(indent + "std::cin >> {};".format(" >> ".join(
-                "{}.{}".format(name, var_name(x.name))
-                for x in struct.fields)))
+            self.main.append(
+                indent
+                + "std::cin >> {};".format(
+                    " >> ".join(
+                        "{}.{}".format(name, var_name(x.name)) for x in struct.fields
+                    )
+                )
+            )
 
-    def read_lines(self,
-                   name: str,
-                   type_: Type,
-                   size: str,
-                   indent_lvl: int = 0) -> None:
+    def read_lines(
+        self, name: str, type_: Type, size: str, indent_lvl: int = 0
+    ) -> None:
         """Read one or several lines and store them into the right place(s)"""
         if type_.main == TypeEnum.LIST and indent_lvl != 0:
-            self.main.append("{}{}.resize({});".format(
-                " " * self.indentation * indent_lvl, name, size))
+            self.main.append(
+                "{}{}.resize({});".format(
+                    " " * self.indentation * indent_lvl, name, size
+                )
+            )
         if type_.fits_in_one_line(self.input.structs):
             self.read_line(name, type_, size, indent_lvl)
         else:
             if type_.main == TypeEnum.STRUCT:
                 struct = self.input.get_struct(type_.struct_name)
                 for f_name, f_type, f_size in struct.fields_name_type_size(
-                        "{}.{{}}".format(name), var_name):
+                    "{}.{{}}".format(name), var_name
+                ):
                     self.read_lines(f_name, f_type, f_size, indent_lvl)
             else:
                 assert type_.main == TypeEnum.LIST
                 assert type_.encapsulated is not None
                 inner_name = self.iterator.new_it()
-                self.main.append("{}for ({}& {} : {}) {{".format(
-                    " " * self.indentation * indent_lvl,
-                    self.type_str(type_.encapsulated), inner_name, name))
-                self.read_lines(inner_name, type_.encapsulated,
-                                var_name(type_.encapsulated.size),
-                                indent_lvl + 1)
+                self.main.append(
+                    "{}for ({}& {} : {}) {{".format(
+                        " " * self.indentation * indent_lvl,
+                        self.type_str(type_.encapsulated),
+                        inner_name,
+                        name,
+                    )
+                )
+                self.read_lines(
+                    inner_name,
+                    type_.encapsulated,
+                    var_name(type_.encapsulated.size),
+                    indent_lvl + 1,
+                )
                 self.main.append(" " * self.indentation * indent_lvl + "}")
                 self.iterator.pop_it()
 
@@ -137,9 +140,11 @@ class ParserCpp():
                 size = "({})".format(int(var.type.size))
             except ValueError:
                 size = "({})".format(var_name(var.type.size))
-        self.main.append("{} {}{}; ///< {}".format(self.type_str(var.type),
-                                                   var_name(var.name), size,
-                                                   var.comment))
+        self.main.append(
+            "{} {}{}; ///< {}".format(
+                self.type_str(var.type), var_name(var.name), size, var.comment
+            )
+        )
         self.read_lines(var_name(var.name), var.type, var_name(var.type.size))
 
     def call(self, reprint: bool) -> None:
@@ -148,54 +153,68 @@ class ParserCpp():
         arguments = []
         for arg in self.input.input:
             arg_name = var_name(arg.name)
-            self.method.append("/// \\param {} {}".format(
-                arg_name, arg.comment))
+            self.method.append("/// \\param {} {}".format(arg_name, arg.comment))
             if arg.type.main in (TypeEnum.STR, TypeEnum.LIST, TypeEnum.STRUCT):
-                arguments.append("const {}& {}".format(self.type_str(arg.type),
-                                                       arg_name))
+                arguments.append(
+                    "const {}& {}".format(self.type_str(arg.type), arg_name)
+                )
             else:
-                arguments.append("{} {}".format(self.type_str(arg.type),
-                                                arg_name))
+                arguments.append("{} {}".format(self.type_str(arg.type), arg_name))
         self.method.append("void {}({}) {{".format(name, ", ".join(arguments)))
         if reprint:
             for var in self.input.input:
                 self.print_lines(var_name(var.name), var.type, 1)
         else:
-            self.method.extend([
-                " " * self.indentation + i
-                for i in textwrap.wrap("/* TODO " + self.input.output +
-                                       " */", 79 - self.indentation)
-            ])
+            self.method.extend(
+                [
+                    " " * self.indentation + i
+                    for i in textwrap.wrap(
+                        "/* TODO " + self.input.output + " */", 79 - self.indentation
+                    )
+                ]
+            )
         self.method.append("}")
 
     def print_line(self, name: str, type_: Type, indent_lvl: int) -> None:
         """Print the content of a var that holds in one line"""
         assert type_.fits_in_one_line(self.input.structs)
-        indent = ' ' * (self.indentation * indent_lvl)
+        indent = " " * (self.indentation * indent_lvl)
         if type_.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.STR):
-            self.method.append(indent +
-                               "std::cout << {} << std::endl;".format(name))
+            self.method.append(indent + "std::cout << {} << std::endl;".format(name))
         elif type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
             inner_name = self.iterator.new_it()
-            self.method.append(indent +
-                               "for (size_t {0} = 0; {0} < {1}.size(); ++{0})".
-                               format(inner_name, name))
             self.method.append(
-                ' ' * self.indentation + indent + "std::cout << " +
-                '{0}[{1}] << ({1} < {0}.size() - 1 ? "{2}" : "\\n");'.format(
-                    name, inner_name, "" if type_.encapsulated.main ==
-                    TypeEnum.CHAR else " "))
+                indent
+                + "for (size_t {0} = 0; {0} < {1}.size(); ++{0})".format(
+                    inner_name, name
+                )
+            )
             self.method.append(
-                indent +
-                "if ({}.size() == 0) std::cout << std::endl;".format(name))
+                " " * self.indentation
+                + indent
+                + "std::cout << "
+                + '{0}[{1}] << ({1} < {0}.size() - 1 ? "{2}" : "\\n");'.format(
+                    name,
+                    inner_name,
+                    "" if type_.encapsulated.main == TypeEnum.CHAR else " ",
+                )
+            )
+            self.method.append(
+                indent + "if ({}.size() == 0) std::cout << std::endl;".format(name)
+            )
             self.iterator.pop_it()
         else:
             assert type_.main == TypeEnum.STRUCT
             struct = self.input.get_struct(type_.struct_name)
-            self.method.append(indent + "std::cout << {} << std::endl;".format(
-                " << ' ' << ".join("{}.{}".format(name, var_name(x.name))
-                                   for x in struct.fields)))
+            self.method.append(
+                indent
+                + "std::cout << {} << std::endl;".format(
+                    " << ' ' << ".join(
+                        "{}.{}".format(name, var_name(x.name)) for x in struct.fields
+                    )
+                )
+            )
 
     def print_lines(self, name: str, type_: Type, indent_lvl: int = 0) -> None:
         """Print the content of a var that holds in one or more lines"""
@@ -205,17 +224,23 @@ class ParserCpp():
             if type_.main == TypeEnum.STRUCT:
                 for field in self.input.get_struct(type_.struct_name).fields:
                     self.print_lines(
-                        "{}.{}".format(name, var_name(field.name)), field.type,
-                        indent_lvl)
+                        "{}.{}".format(name, var_name(field.name)),
+                        field.type,
+                        indent_lvl,
+                    )
             else:
                 assert type_.main == TypeEnum.LIST
                 assert type_.encapsulated is not None
                 inner_name = self.iterator.new_it()
-                self.method.append("{}for (const {}& {} : {}) {{".format(
-                    " " * self.indentation * indent_lvl,
-                    self.type_str(type_.encapsulated), inner_name, name))
-                self.print_lines(inner_name, type_.encapsulated,
-                                 indent_lvl + 1)
+                self.method.append(
+                    "{}for (const {}& {} : {}) {{".format(
+                        " " * self.indentation * indent_lvl,
+                        self.type_str(type_.encapsulated),
+                        inner_name,
+                        name,
+                    )
+                )
+                self.print_lines(inner_name, type_.encapsulated, indent_lvl + 1)
                 self.method.append(" " * self.indentation * indent_lvl + "}")
                 self.iterator.pop_it()
 
@@ -231,8 +256,8 @@ class ParserCpp():
             output += "struct {} {{\n".format(struct_name(struct.name))
             for field in struct.fields:
                 output += " " * self.indentation + "{} {}; ///< {}\n".format(
-                    self.type_str(field.type), var_name(field.name),
-                    field.comment)
+                    self.type_str(field.type), var_name(field.name), field.comment
+                )
             output += "};\n\n"
         for line in self.method:
             output += line + "\n"
@@ -240,10 +265,11 @@ class ParserCpp():
             output += "\n"
         output += "int main() {\n"
         for line in self.main:
-            output += ' ' * self.indentation + line + "\n"
-        output += ' ' * self.indentation + "{}({});\n".format(
-            var_name(self.input.name), ", ".join(
-                [var_name(i.name) for i in self.input.input]))
+            output += " " * self.indentation + line + "\n"
+        output += " " * self.indentation + "{}({});\n".format(
+            var_name(self.input.name),
+            ", ".join([var_name(i.name) for i in self.input.input]),
+        )
         output += "}\n"
         return output
 
@@ -255,3 +281,104 @@ def gen_cpp(input_data: Input, reprint: bool = False) -> str:
         parser.read_var(var)
     parser.call(reprint)
     return parser.content()
+
+
+# keywords taken from cppreference on 2018-10-25
+KEYWORDS = [
+    "alignas",
+    "alignof",
+    "and",
+    "and_eq",
+    "asm",
+    "atomic_cancel",
+    "atomic_commit",
+    "atomic_noexcept",
+    "auto",
+    "bitand",
+    "bitor",
+    "bool",
+    "break",
+    "case",
+    "catch",
+    "char",
+    "char16_t",
+    "char32_t",
+    "class",
+    "compl",
+    "concept",
+    "const",
+    "constexpr",
+    "const_cast",
+    "continue",
+    "co_await",
+    "co_return",
+    "co_yield",
+    "decltype",
+    "default",
+    "delete",
+    "do",
+    "double",
+    "dynamic_cast",
+    "else",
+    "enum",
+    "explicit",
+    "export",
+    "extern",
+    "false",
+    "float",
+    "for",
+    "friend",
+    "goto",
+    "if",
+    "import",
+    "inline",
+    "int",
+    "long",
+    "module",
+    "mutable",
+    "namespace",
+    "new",
+    "noexcept",
+    "not",
+    "not_eq",
+    "nullptr",
+    "operator",
+    "or",
+    "or_eq",
+    "private",
+    "protected",
+    "public",
+    "reflexpr",
+    "register",
+    "reinterpret_cast",
+    "requires",
+    "return",
+    "short",
+    "signed",
+    "sizeof",
+    "static",
+    "static_assert",
+    "static_cast",
+    "struct",
+    "switch",
+    "synchronized",
+    "template",
+    "this",
+    "thread_local",
+    "throw",
+    "true",
+    "try",
+    "typedef",
+    "typeid",
+    "typename",
+    "union",
+    "unsigned",
+    "using",
+    "virtual",
+    "void",
+    "volatile",
+    "wchar_t",
+    "while",
+    "xor",
+    "xor_eq",
+]

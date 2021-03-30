@@ -16,13 +16,12 @@ def regenerate_samples() -> None:
     """Regenerate all the samples"""
     for name in os.listdir("samples"):
         prefix = "samples/{0}/{0}.".format(name)
-        with open(prefix + "yaml", 'r') as stream:
+        with open(prefix + "yaml", "r") as stream:
             input_data = parse_input(stream)
         assert input_data is not None
 
         for language in ALL_LANGUAGES + ALL_MARKDOWN:
-            Path(prefix + language.extension).write_text(
-                language.generate(input_data))
+            Path(prefix + language.extension).write_text(language.generate(input_data))
 
 
 if __name__ == "__main__":

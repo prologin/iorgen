@@ -11,29 +11,6 @@ from iorgen.utils import camel_case, pascal_case, IteratorName
 
 INDENTATION = "    "  # https://dlang.org/dstyle.html#whitespace
 
-# https://dlang.org/spec/lex.html#keywords
-KEYWORDS = [
-    "abstract", "alias", "align", "asm", "assert", "auto", "body", "bool",
-    "break", "byte", "case", "cast", "catch", "cdouble", "cent", "cfloat",
-    "char", "class", "const", "continue", "creal", "dchar", "debug", "default",
-    "delegate", "delete", "deprecated", "do", "double", "else", "enum",
-    "export", "extern", "false", "final", "finally", "float", "for", "foreach",
-    "foreach_reverse", "function", "goto", "idouble", "if", "ifloat",
-    "immutable", "import", "in", "inout", "int", "interface", "invariant",
-    "ireal", "is", "lazy", "long", "macro", "mixin", "module", "new",
-    "nothrow", "null", "out", "override", "package", "pragma", "private",
-    "protected", "public", "pure", "real", "ref", "return", "scope", "shared",
-    "short", "static", "struct", "super", "switch", "synchronized", "template",
-    "this", "throw", "true", "try", "typedef", "typeid", "typeof", "ubyte",
-    "ucent", "uint", "ulong", "union", "unittest", "ushort", "version", "void",
-    "wchar", "while", "with"
-]
-
-USED_SYMBOLS = [
-    "array", "char", "chop", "int", "join", "main", "map", "split", "std",
-    "stdin", "string", "to", "writefln", "writeln"
-]
-
 
 def var_name(name: str) -> str:
     """Transform a variable name into a valid one for D"""
@@ -68,6 +45,7 @@ def type_str(type_: Type) -> str:
 
 class ParserD:
     """Create the D code to parse an input"""
+
     def __init__(self, input_data: Input) -> None:
         self.input = input_data
         self.imports = {"std.stdio": {"stdin"}}
@@ -99,14 +77,15 @@ class ParserD:
                 return name + " = stdin.readln.split.map!(to!int).array;"
             assert type_.encapsulated.main == TypeEnum.CHAR
             self.add_import("std.string", "chop")
-            return name + ' = stdin.readln.chop.to!(char[]);'
+            return name + " = stdin.readln.chop.to!(char[]);"
         assert type_.main == TypeEnum.STRUCT
         struct = self.input.get_struct(type_.struct_name)
         return 'stdin.readf("{}\\n", {});'.format(
-            " ".join("%c" if i.type.main == TypeEnum.CHAR else "%d"
-                     for i in struct.fields),
-            ", ".join("&" + name + "." + var_name(i.name)
-                      for i in struct.fields))
+            " ".join(
+                "%c" if i.type.main == TypeEnum.CHAR else "%d" for i in struct.fields
+            ),
+            ", ".join("&" + name + "." + var_name(i.name) for i in struct.fields),
+        )
 
     def read_lines(self, name: str, type_: Type, size: str) -> List[str]:
         """Read a variable in one line or several lines of stdin"""
@@ -117,29 +96,35 @@ class ParserD:
             index = self.iterator.new_it()
             lines = [
                 "{}.length = {};".format(name, size),
-                "for (size_t {0} = 0; {0} < {1}.length; {0}++)".format(
-                    index, name), "{"
+                "for (size_t {0} = 0; {0} < {1}.length; {0}++)".format(index, name),
+                "{",
             ]
-            lines.extend([
-                INDENTATION + i for i in self.read_lines(
-                    "{}[{}]".format(name, index), type_.encapsulated,
-                    var_name(type_.encapsulated.size))
-            ])
+            lines.extend(
+                [
+                    INDENTATION + i
+                    for i in self.read_lines(
+                        "{}[{}]".format(name, index),
+                        type_.encapsulated,
+                        var_name(type_.encapsulated.size),
+                    )
+                ]
+            )
             self.iterator.pop_it()
             return lines + ["}"]
         assert type_.main == TypeEnum.STRUCT
         struct = self.input.get_struct(type_.struct_name)
         lines = []
         for f_name, f_type, f_size in struct.fields_name_type_size(
-                "{}.{{}}".format(name), var_name):
+            "{}.{{}}".format(name), var_name
+        ):
             lines.extend(self.read_lines(f_name, f_type, f_size))
         return lines
 
     def read_var(self, var: Variable) -> List[str]:
         """Read a variable from stdin"""
-        return ["{} {};".format(type_str(var.type), var_name(var.name))
-                ] + self.read_lines(var_name(var.name), var.type,
-                                    var_name(var.type.size))
+        return [
+            "{} {};".format(type_str(var.type), var_name(var.name))
+        ] + self.read_lines(var_name(var.name), var.type, var_name(var.type.size))
 
     def print_lines(self, name: str, type_: Type) -> List[str]:
         """Print a D variable"""
@@ -155,13 +140,17 @@ class ParserD:
                 return ["writeln({});".format(name)]
             index = self.iterator.new_it()
             lines = [
-                "for (size_t {0} = 0; {0} < {1}.length; {0}++)".format(
-                    index, name), "{"
+                "for (size_t {0} = 0; {0} < {1}.length; {0}++)".format(index, name),
+                "{",
             ]
-            lines.extend([
-                INDENTATION + i for i in self.print_lines(
-                    "{}[{}]".format(name, index), type_.encapsulated)
-            ])
+            lines.extend(
+                [
+                    INDENTATION + i
+                    for i in self.print_lines(
+                        "{}[{}]".format(name, index), type_.encapsulated
+                    )
+                ]
+            )
             self.iterator.pop_it()
             return lines + ["}"]
         assert type_.main == TypeEnum.STRUCT
@@ -170,16 +159,18 @@ class ParserD:
             self.add_import("std.stdio", "writefln")
             return [
                 'writefln("{}", {});'.format(
-                    " ".join("%c" if i.type.main == TypeEnum.CHAR else "%d"
-                             for i in struct.fields),
-                    ", ".join(name + "." + var_name(i.name)
-                              for i in struct.fields))
+                    " ".join(
+                        "%c" if i.type.main == TypeEnum.CHAR else "%d"
+                        for i in struct.fields
+                    ),
+                    ", ".join(name + "." + var_name(i.name) for i in struct.fields),
+                )
             ]
         lines = []
         for field in struct.fields:
             lines.extend(
-                self.print_lines("{}.{}".format(name, var_name(field.name)),
-                                 field.type))
+                self.print_lines("{}.{}".format(name, var_name(field.name)), field.type)
+            )
         return lines
 
     def function(self, reprint: bool) -> List[str]:
@@ -187,25 +178,36 @@ class ParserD:
         lines = ["/**", "Params:"]
         lines.extend(
             "{}{} = {}".format(INDENTATION, var_name(i.name), i.comment)
-            for i in self.input.input)
+            for i in self.input.input
+        )
         lines.append("*/")
-        lines.extend([
-            "void {}({})".format(
-                var_name(self.input.name), ", ".join(
-                    type_str(i.type) + " " + var_name(i.name)
-                    for i in self.input.input)), "{"
-        ])
+        lines.extend(
+            [
+                "void {}({})".format(
+                    var_name(self.input.name),
+                    ", ".join(
+                        type_str(i.type) + " " + var_name(i.name)
+                        for i in self.input.input
+                    ),
+                ),
+                "{",
+            ]
+        )
         if reprint:
             for var in self.input.input:
                 lines.extend(
                     INDENTATION + i
-                    for i in self.print_lines(var_name(var.name), var.type))
+                    for i in self.print_lines(var_name(var.name), var.type)
+                )
         else:
             lines.extend(
-                textwrap.wrap(self.input.output,
-                              79,
-                              initial_indent=INDENTATION + "// TODO ",
-                              subsequent_indent=INDENTATION + "// "))
+                textwrap.wrap(
+                    self.input.output,
+                    79,
+                    initial_indent=INDENTATION + "// TODO ",
+                    subsequent_indent=INDENTATION + "// ",
+                )
+            )
         return lines + ["}"]
 
     def content(self, reprint: bool) -> str:
@@ -216,26 +218,150 @@ class ParserD:
             output += "struct {}\n{{\n".format(struct_name(struct.name))
             for field in struct.fields:
                 output += INDENTATION + "{} {}; /// {}\n".format(
-                    type_str(field.type), var_name(field.name), field.comment)
+                    type_str(field.type), var_name(field.name), field.comment
+                )
             output += "}\n\n"
         output += "\n".join(self.function(reprint)) + "\n\n"
         output += "void main()\n{\n"
         for var in self.input.input:
-            output += "\n".join(INDENTATION + i
-                                for i in self.read_var(var)) + "\n"
+            output += "\n".join(INDENTATION + i for i in self.read_var(var)) + "\n"
         args = (var_name(i.name) for i in self.input.input)
-        output += "\n{}{}({});\n".format(INDENTATION,
-                                         var_name(self.input.name),
-                                         ", ".join(args))
+        output += "\n{}{}({});\n".format(
+            INDENTATION, var_name(self.input.name), ", ".join(args)
+        )
         output += "}\n"
 
         imports = ""
         for module in sorted(self.imports.keys()):
             imports += "import {} : {};\n".format(
-                module, ", ".join(sorted(self.imports[module])))
+                module, ", ".join(sorted(self.imports[module]))
+            )
         return imports + "\n" + output
 
 
 def gen_d(input_data: Input, reprint: bool = False) -> str:
     """Generate a D code to parse input"""
     return ParserD(input_data).content(reprint)
+
+
+# https://dlang.org/spec/lex.html#keywords
+KEYWORDS = [
+    "abstract",
+    "alias",
+    "align",
+    "asm",
+    "assert",
+    "auto",
+    "body",
+    "bool",
+    "break",
+    "byte",
+    "case",
+    "cast",
+    "catch",
+    "cdouble",
+    "cent",
+    "cfloat",
+    "char",
+    "class",
+    "const",
+    "continue",
+    "creal",
+    "dchar",
+    "debug",
+    "default",
+    "delegate",
+    "delete",
+    "deprecated",
+    "do",
+    "double",
+    "else",
+    "enum",
+    "export",
+    "extern",
+    "false",
+    "final",
+    "finally",
+    "float",
+    "for",
+    "foreach",
+    "foreach_reverse",
+    "function",
+    "goto",
+    "idouble",
+    "if",
+    "ifloat",
+    "immutable",
+    "import",
+    "in",
+    "inout",
+    "int",
+    "interface",
+    "invariant",
+    "ireal",
+    "is",
+    "lazy",
+    "long",
+    "macro",
+    "mixin",
+    "module",
+    "new",
+    "nothrow",
+    "null",
+    "out",
+    "override",
+    "package",
+    "pragma",
+    "private",
+    "protected",
+    "public",
+    "pure",
+    "real",
+    "ref",
+    "return",
+    "scope",
+    "shared",
+    "short",
+    "static",
+    "struct",
+    "super",
+    "switch",
+    "synchronized",
+    "template",
+    "this",
+    "throw",
+    "true",
+    "try",
+    "typedef",
+    "typeid",
+    "typeof",
+    "ubyte",
+    "ucent",
+    "uint",
+    "ulong",
+    "union",
+    "unittest",
+    "ushort",
+    "version",
+    "void",
+    "wchar",
+    "while",
+    "with",
+]
+
+USED_SYMBOLS = [
+    "array",
+    "char",
+    "chop",
+    "int",
+    "join",
+    "main",
+    "map",
+    "split",
+    "std",
+    "stdin",
+    "string",
+    "to",
+    "writefln",
+    "writeln",
+]

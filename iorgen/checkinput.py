@@ -21,28 +21,31 @@ def error_parse_type(string: str) -> str:
         return "the integer type is 'int'"
     if lower.startswith("char"):
         return "the char type is 'char'"
-    if (lower.startswith("str")
-            or lower.startswith("string")) and not string.startswith("str"):
+    if (
+        lower.startswith("str") or lower.startswith("string")
+    ) and not string.startswith("str"):
         return "the string type is 'str(size)'"
     if string.startswith("str") and (string[:-1] != ")" or string[3] != "("):
         return "a string must specify its size with parenthesis 'str(size)'"
     if string.startswith("str"):
-        return "invalid string size, can only be alphanumeric characters " + \
-               "and spaces"
-    if lower[0] == '[' or (lower.startswith("list")
-                           and not string.startswith("List")):
+        return (
+            "invalid string size, can only be alphanumeric characters " + "and spaces"
+        )
+    if lower[0] == "[" or (lower.startswith("list") and not string.startswith("List")):
         return "the list type is 'List[type](size)'"
     if string.startswith("List"):
         match = re.match(r"List\[(.*)\]\((.*)\)", string)
         if not match:
             return "a list must specify a type and a size 'List[type](size)'"
-        if not re.match(r"[A-Za-z0-9 ]+",
-                        match.group(2)) or not match.group(2).strip():
-            return "invalid list size, can only be alphanumeric characters" + \
-                   " and spaces"
+        if not re.match(r"[A-Za-z0-9 ]+", match.group(2)) or not match.group(2).strip():
+            return (
+                "invalid list size, can only be alphanumeric characters" + " and spaces"
+            )
         return "can not parse type list: " + error_parse_type(match.group(1))
-    return "should be either 'int', 'char', 'str(size)', " + \
-           "'List[type](size)' or '@struct_name'"
+    return (
+        "should be either 'int', 'char', 'str(size)', "
+        + "'List[type](size)' or '@struct_name'"
+    )
 
 
 def error_parse_variable(dic: Dict[str, str]) -> str:
@@ -59,12 +62,12 @@ def error_parse_variable(dic: Dict[str, str]) -> str:
             return "{} field for {} is not a string".format(field, dic["name"])
     if Type.from_string(dic["type"]) is None:
         return "unable to parse type {} for {}: {}".format(
-            dic["type"], dic["name"], error_parse_type(dic["type"]))
+            dic["type"], dic["name"], error_parse_type(dic["type"])
+        )
     return "unknown error"
 
 
-def error_parse_struct(
-        dic: Dict[str, Union[str, List[Dict[str, str]]]]) -> str:
+def error_parse_struct(dic: Dict[str, Union[str, List[Dict[str, str]]]]) -> str:
     """Explain why we a struct fails to parse"""
     # pylint: disable=too-many-return-statements
     assert Struct.from_dict(dic) is None
@@ -84,7 +87,8 @@ def error_parse_struct(
             return "a field for {}.fields is not a map".format(dic["name"])
         if Variable.from_dict(i) is None:
             return "failed to parse field of {}: {}".format(
-                dic["name"], error_parse_variable(i))
+                dic["name"], error_parse_variable(i)
+            )
     return "unknown error"
 
 
@@ -124,7 +128,7 @@ def input_from_dict(dic: Dict[str, Any]) -> Input:
     """Parse a input from a dict, or return a ValueError"""
     value = Input.from_dict(dic)
     if value is None:
-        raise ValueError('Unable to parse input: ' + error_parse_input(dic))
+        raise ValueError("Unable to parse input: " + error_parse_input(dic))
     return value
 
 

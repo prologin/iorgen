@@ -9,21 +9,6 @@ from typing import List, Optional
 from iorgen.types import Input, Struct, Type, TypeEnum, Variable
 from iorgen.utils import pascal_case, snake_case
 
-# Language keywords
-KEYWORDS = [
-    "abstract", "alignof", "as", "become", "box", "break", "const", "continue",
-    "crate", "do", "else", "enum", "extern", "false", "final", "fn", "for",
-    "if", "impl", "in", "let", "loop", "macro", "match", "mod", "move", "mut",
-    "offsetof", "override", "priv", "proc", "pub", "pure", "ref", "return",
-    "Self", "self", "sizeof", "static", "struct", "super", "trait", "true",
-    "type", "typeof", "unsafe", "unsized", "use", "virtual", "where", "while",
-    "yield"
-]
-
-# KEYWORDS extended with the list of identifiers used by the generated code
-EXTENDED_KEYWORDS = KEYWORDS + [
-    "buffer", "read_line", "std", "Box", "String", "Vec", "Result"
-]
 
 # Conventional indentation token
 INDENTATION = "    "
@@ -71,13 +56,15 @@ def parse_without_error(type_: Type) -> bool:
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
         return type_.encapsulated.main == TypeEnum.CHAR or parse_without_error(
-            type_.encapsulated)
+            type_.encapsulated
+        )
 
     return False
 
 
-class ParserRust():
+class ParserRust:
     """Create the Rust code to parse an input"""
+
     def __init__(self, input_data: Input) -> None:
         self.input = input_data
 
@@ -101,8 +88,7 @@ class ParserRust():
             return False
 
         if type_ == TypeEnum.STRUCT:
-            return self.struct_is_copy(
-                self.input.get_struct(var.type.struct_name))
+            return self.struct_is_copy(self.input.get_struct(var.type.struct_name))
 
         raise Exception
 
@@ -113,13 +99,13 @@ class ParserRust():
         lines = [
             f"/// {struct.comment}",
             f"#[derive(Clone,{copy} Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]",
-            f"struct {struct_name(struct.name)} {{"
+            f"struct {struct_name(struct.name)} {{",
         ]
 
         for field in struct.fields:
             lines += [
                 f"    /// {field.comment}",
-                f"    {var_name(field.name)}: {type_str(field.type)},"
+                f"    {var_name(field.name)}: {type_str(field.type)},",
             ]
 
         return lines + ["}", ""]
@@ -128,21 +114,22 @@ class ParserRust():
         """Return a rust function reading a parsing a struct"""
         s_name = struct_name(struct.name)
 
-        if Type(TypeEnum.STRUCT,
-                struct_name=struct.name).fits_in_one_line(self.input.structs):
+        if Type(TypeEnum.STRUCT, struct_name=struct.name).fits_in_one_line(
+            self.input.structs
+        ):
             lines = [
                 f"impl std::str::FromStr for {s_name} {{",
-                u"    type Err = Box<dyn std::error::Error>;",
-                u"",
-                u"    fn from_str(line: &str) -> Result<Self, Self::Err> {",
-                u"        let mut line = line.split_whitespace();",
-                u"        Ok(Self {",
+                "    type Err = Box<dyn std::error::Error>;",
+                "",
+                "    fn from_str(line: &str) -> Result<Self, Self::Err> {",
+                "        let mut line = line.split_whitespace();",
+                "        Ok(Self {",
             ]
 
             for field in struct.fields:
                 name = var_name(field.name)
                 lines.append(
-                    u'            '
+                    "            "
                     f'{name}: line.next().ok_or("missing `{name}`")?.parse()?,',
                 )
 
@@ -156,14 +143,15 @@ class ParserRust():
         lines = []
         lines.append(
             f"fn read_struct_{snake_case(struct.name)}(mut buffer: &mut String)"
-            f" -> Result<{s_name}, Box<dyn std::error::Error>> {{")
+            f" -> Result<{s_name}, Box<dyn std::error::Error>> {{"
+        )
 
         for field in struct.fields:
             lines.append(self.read_var(field, in_error_context=True))
 
         return lines + [
             f"    Ok({s_name} {{ {fields} }})",
-            u"}",
+            "}",
         ]
 
     def read_line(
@@ -206,7 +194,7 @@ class ParserRust():
                 self.read_vec_int = True
                 idt = (indent_lvl + 1) * INDENTATION
                 lines = [
-                    u"read_line(&mut buffer)",
+                    "read_line(&mut buffer)",
                     f"{idt}.split_whitespace()",
                     f"{idt}.map(str::parse)",
                     f"{idt}.collect::<Result<_, _>>()",
@@ -224,11 +212,13 @@ class ParserRust():
 
         raise Exception
 
-    def read_lines(self,
-                   name: str,
-                   type_: Type,
-                   indent_lvl: int,
-                   unwrap_method: Optional[str] = None) -> List[str]:
+    def read_lines(
+        self,
+        name: str,
+        type_: Type,
+        indent_lvl: int,
+        unwrap_method: Optional[str] = None,
+    ) -> List[str]:
         """Return a Rust command for parsing some lines into a given type"""
         assert not type_.fits_in_one_line(self.input.structs)
 
@@ -252,10 +242,13 @@ class ParserRust():
                 )
             else:
                 line_read = "\n".join(
-                    self.read_lines(name.replace(".", "_") + "_elem",
-                                    type_.encapsulated,
-                                    indent_lvl + 2,
-                                    unwrap_method=""))
+                    self.read_lines(
+                        name.replace(".", "_") + "_elem",
+                        type_.encapsulated,
+                        indent_lvl + 2,
+                        unwrap_method="",
+                    )
+                )
 
             idt = (indent_lvl + 1) * INDENTATION
             lines = [f"(0..{var_name(type_.size)})"]
@@ -287,20 +280,21 @@ class ParserRust():
     def read_var(self, var: Variable, in_error_context: bool = False) -> str:
         """Return a Rust command for parsing a variable"""
         name = var_name(var.name)
-        unwrap_method = '?' if in_error_context else None
+        unwrap_method = "?" if in_error_context else None
 
         if var.type.fits_in_one_line(self.input.structs):
             read_method = self.read_line(var.type, 1, var.name, unwrap_method)
         else:
-            read_method = "\n".join(
-                self.read_lines(name, var.type, 1, unwrap_method))
+            read_method = "\n".join(self.read_lines(name, var.type, 1, unwrap_method))
 
         return f"    let {name} = {read_method};"
 
     def method(self, reprint: bool) -> List[str]:
         """Declare and call the function take all inputs in arguments"""
-        args = [(var_name(var.name), type_str(var.type), var.comment)
-                for var in self.input.input]
+        args = [
+            (var_name(var.name), type_str(var.type), var.comment)
+            for var in self.input.input
+        ]
         lines = [f"/// * `{arg}` - {comment}" for arg, _, comment in args]
 
         args_decl = ", ".join(f"{arg}: {atype}" for arg, atype, _ in args)
@@ -312,8 +306,10 @@ class ParserRust():
         else:
             lines.extend(
                 INDENTATION + i
-                for i in textwrap.wrap("/* TODO " + self.input.output +
-                                       " */", 79 - len(INDENTATION)))
+                for i in textwrap.wrap(
+                    "/* TODO " + self.input.output + " */", 79 - len(INDENTATION)
+                )
+            )
 
         return lines + ["}"]
 
@@ -329,9 +325,11 @@ class ParserRust():
             to_string = ""
 
             if type_.encapsulated.main == TypeEnum.INT:
-                to_string = 'iter().map(|x| x.to_string()).collect::<Vec<_>>().join(" ")'
+                to_string = (
+                    'iter().map(|x| x.to_string()).collect::<Vec<_>>().join(" ")'
+                )
             elif type_.encapsulated.main == TypeEnum.CHAR:
-                to_string = 'into_iter().collect::<String>()'
+                to_string = "into_iter().collect::<String>()"
             else:
                 raise Exception
 
@@ -340,14 +338,12 @@ class ParserRust():
         if type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)
             template = " ".join(["{}"] * len(struct.fields))
-            fields = ", ".join(f"{name}.{var_name(f.name)}"
-                               for f in struct.fields)
+            fields = ", ".join(f"{name}.{var_name(f.name)}" for f in struct.fields)
             return f'print!("{template}\\n", {fields});'
 
         raise Exception
 
-    def print_lines(self, name: str, type_: Type,
-                    indent_lvl: int) -> List[str]:
+    def print_lines(self, name: str, type_: Type, indent_lvl: int) -> List[str]:
         """Print the content of a var that holds in one or more lines"""
         idt = INDENTATION * indent_lvl
 
@@ -356,18 +352,21 @@ class ParserRust():
 
         if type_.main == TypeEnum.STRUCT:
             return sum(
-                (self.print_lines(f"{name}.{var_name(field.name)}", field.type,
-                                  indent_lvl)
-                 for field in self.input.get_struct(type_.struct_name).fields),
-                [])
+                (
+                    self.print_lines(
+                        f"{name}.{var_name(field.name)}", field.type, indent_lvl
+                    )
+                    for field in self.input.get_struct(type_.struct_name).fields
+                ),
+                [],
+            )
 
         if type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
             inner_name = name.replace(".", "_") + "_elem"
             return [
                 f"{idt}for {inner_name} in {name}.iter() {{",
-                *self.print_lines(inner_name, type_.encapsulated,
-                                  indent_lvl + 1),
+                *self.print_lines(inner_name, type_.encapsulated, indent_lvl + 1),
                 f"{idt}}}",
             ]
 
@@ -381,9 +380,7 @@ class ParserRust():
             read_vars.append(self.read_var(var))
             read_vars.append("")
 
-        structs = [
-            self.def_read_struct(struct) for struct in self.input.structs
-        ]
+        structs = [self.def_read_struct(struct) for struct in self.input.structs]
 
         output_lines: List[str] = []
 
@@ -434,3 +431,71 @@ class ParserRust():
 def gen_rust(input_data: Input, reprint: bool = False) -> str:
     """Generate a Rust code to parse input"""
     return ParserRust(input_data).content(reprint)
+
+
+# Language keywords
+KEYWORDS = [
+    "abstract",
+    "alignof",
+    "as",
+    "become",
+    "box",
+    "break",
+    "const",
+    "continue",
+    "crate",
+    "do",
+    "else",
+    "enum",
+    "extern",
+    "false",
+    "final",
+    "fn",
+    "for",
+    "if",
+    "impl",
+    "in",
+    "let",
+    "loop",
+    "macro",
+    "match",
+    "mod",
+    "move",
+    "mut",
+    "offsetof",
+    "override",
+    "priv",
+    "proc",
+    "pub",
+    "pure",
+    "ref",
+    "return",
+    "Self",
+    "self",
+    "sizeof",
+    "static",
+    "struct",
+    "super",
+    "trait",
+    "true",
+    "type",
+    "typeof",
+    "unsafe",
+    "unsized",
+    "use",
+    "virtual",
+    "where",
+    "while",
+    "yield",
+]
+
+# KEYWORDS extended with the list of identifiers used by the generated code
+EXTENDED_KEYWORDS = KEYWORDS + [
+    "buffer",
+    "read_line",
+    "std",
+    "Box",
+    "String",
+    "Vec",
+    "Result",
+]

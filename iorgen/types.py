@@ -14,15 +14,16 @@ from .utils import str_int
 
 # This stuff is no longer necessary with python 3.7 by including:
 # from __future__ import annotations
-TYPE = TypeVar('TYPE', bound='Type')
-STRUCT = TypeVar('STRUCT', bound='Struct')
-VAR = TypeVar('VAR', bound='Variable')
-INPUT = TypeVar('INPUT', bound='Input')
+TYPE = TypeVar("TYPE", bound="Type")
+STRUCT = TypeVar("STRUCT", bound="Struct")
+VAR = TypeVar("VAR", bound="Variable")
+INPUT = TypeVar("INPUT", bound="Input")
 
 
 @unique
 class TypeEnum(Enum):
     """All supported variable types"""
+
     INT = 1
     CHAR = 2
     STR = 3
@@ -32,11 +33,14 @@ class TypeEnum(Enum):
 
 class Type:
     """Represents the type of a variable"""
-    def __init__(self: TYPE,
-                 enum: TypeEnum,
-                 size: str = "",
-                 encapsulated: Optional[TYPE] = None,
-                 struct_name: str = "") -> None:
+
+    def __init__(
+        self: TYPE,
+        enum: TypeEnum,
+        size: str = "",
+        encapsulated: Optional[TYPE] = None,
+        struct_name: str = "",
+    ) -> None:
         self.main = enum
         self.size = size
         self.can_be_empty = True
@@ -50,12 +54,14 @@ class Type:
             return cls(TypeEnum.INT)
         if string == "char":
             return cls(TypeEnum.CHAR)
-        if string[0] == '@':
+        if string[0] == "@":
             return cls(TypeEnum.STRUCT, struct_name=string[1:])
         prog = re.compile(
             r"""^(str|List)
                 (\[([A-Za-z@][A-Za-z0-9\[\]\(\)@ ]*)\])?
-                (\(([A-Za-z0-9 ]+)\))$""", re.VERBOSE)
+                (\(([A-Za-z0-9 ]+)\))$""",
+            re.VERBOSE,
+        )
         result = prog.match(string)
         if result:
             type_ = {
@@ -129,8 +135,9 @@ def get_max_value(var: Union[int, VAR]) -> int:
     return var
 
 
-def get_int_or_var(var_name: Union[str, int],
-                   variables: Dict[str, VAR]) -> Union[int, VAR]:
+def get_int_or_var(
+    var_name: Union[str, int], variables: Dict[str, VAR]
+) -> Union[int, VAR]:
     """From a string, return either the corresponding var or int"""
     assert isinstance(var_name, (int, str))
     if var_name in variables:
@@ -140,8 +147,9 @@ def get_int_or_var(var_name: Union[str, int],
     return int(var_name)
 
 
-def integer_bounds(name: str, min_: Union[int, VAR], max_: Union[int, VAR],
-                   is_size: bool) -> str:
+def integer_bounds(
+    name: str, min_: Union[int, VAR], max_: Union[int, VAR], is_size: bool
+) -> str:
     """Create a string to display an integer's bounds"""
     min_repr = ""
     if isinstance(min_, int):
@@ -197,8 +205,7 @@ class Constraints:
         if "max_perf" in dic:
             self.max_perf = get_int_or_var(dic["max_perf"], variables)
         if "choices" in dic:
-            if variables[
-                    dic["name"]].type.list_contained().main == TypeEnum.INT:
+            if variables[dic["name"]].type.list_contained().main == TypeEnum.INT:
                 self.choices = set(int(i) for i in dic["choices"])
             else:
                 self.choices = set(i[0] for i in dic["choices"])
@@ -225,7 +232,8 @@ class Constraints:
         """Return mathjax representation of integer bounds"""
         if self.choices:
             return r"{} \in \{{{}\}}".format(
-                name, (", ".join(str(i) for i in sorted(self.choices))))
+                name, (", ".join(str(i) for i in sorted(self.choices)))
+            )
         return integer_bounds(name, self.min, self.max, self.is_size)
 
     def perf_repr(self, name: str) -> str:
@@ -239,6 +247,7 @@ class Constraints:
 
 class Variable:
     """Everything there is to know about a variable"""
+
     def __init__(self: VAR, name: str, comment: str, type_: Type) -> None:
         self.name = name
         self.comment = comment
@@ -275,36 +284,42 @@ class Variable:
                 loop = loop.list_contained()
 
         if type_ == TypeEnum.INT:
-            return self.constraints.perf_repr(
-                name) if perf else self.constraints.simple_repr(name)
+            return (
+                self.constraints.perf_repr(name)
+                if perf
+                else self.constraints.simple_repr(name)
+            )
         if type_ == TypeEnum.CHAR:
             if self.constraints.choices and not perf:
-                return r"{} \in \{{{}\}}".format(name, (", ".join(
-                    str(i) for i in sorted(self.constraints.choices))))
+                return r"{} \in \{{{}\}}".format(
+                    name, (", ".join(str(i) for i in sorted(self.constraints.choices)))
+                )
             return ""
         raise Exception
 
 
 class Struct:
     """Represent a struct (like in C)"""
-    def __init__(self: STRUCT, name: str, comment: str,
-                 fields: List[Variable]) -> None:
+
+    def __init__(self: STRUCT, name: str, comment: str, fields: List[Variable]) -> None:
         self.name = name
         self.comment = comment
         self.fields = fields
 
     @classmethod
     def from_dict(
-            cls: T[STRUCT],
-            dic: Dict[str, Union[str, List[Dict[str,
-                                                str]]]]) -> Optional[STRUCT]:
+        cls: T[STRUCT], dic: Dict[str, Union[str, List[Dict[str, str]]]]
+    ) -> Optional[STRUCT]:
         """Create a Struct from its YAML (dictionary) representation"""
         try:
             name = dic["name"]
             comment = dic["comment"]
             fields = dic["fields"]
-            if not isinstance(name, str) or not isinstance(
-                    comment, str) or not isinstance(fields, list):
+            if (
+                not isinstance(name, str)
+                or not isinstance(comment, str)
+                or not isinstance(fields, list)
+            ):
                 return None
             field_list = []  # type: List[Variable]
             for i in fields:
@@ -318,21 +333,22 @@ class Struct:
 
     def is_sized_struct(self) -> bool:
         """A special kind of struct: first field is the size of the second"""
-        return len(self.fields) == 2 and self.fields[
-            0].type.main == TypeEnum.INT and self.fields[1].type.main in (
-                TypeEnum.STR, TypeEnum.LIST
-            ) and self.fields[0].name == self.fields[1].type.size
+        return (
+            len(self.fields) == 2
+            and self.fields[0].type.main == TypeEnum.INT
+            and self.fields[1].type.main in (TypeEnum.STR, TypeEnum.LIST)
+            and self.fields[0].name == self.fields[1].type.size
+        )
 
     def fields_name_type_size(
-            self, format_spec: str,
-            var_name: Callable[[str], str]) -> Iterator[Tuple[str, Type, str]]:
+        self, format_spec: str, var_name: Callable[[str], str]
+    ) -> Iterator[Tuple[str, Type, str]]:
         """Return name, type and size for each field"""
         types = [var_name(field.type.size) for field in self.fields]
         if self.is_sized_struct():
             types = ["", format_spec.format(var_name(self.fields[0].name))]
         for field in zip(self.fields, types):
-            yield (format_spec.format(var_name(field[0].name)), field[0].type,
-                   field[1])
+            yield (format_spec.format(var_name(field[0].name)), field[0].type, field[1])
 
 
 def process_sized_type(type_: Type, variables: Dict[str, Variable]) -> None:
@@ -354,8 +370,9 @@ def process_sized_type(type_: Type, variables: Dict[str, Variable]) -> None:
         process_sized_type(type_.encapsulated, variables)
 
 
-def set_constraints(variables: Dict[str, Variable],
-                    dicts: List[Dict[str, Any]]) -> None:
+def set_constraints(
+    variables: Dict[str, Variable], dicts: List[Dict[str, Any]]
+) -> None:
     """Set constraints for all variables"""
     # First create the constraints for all variables
     for dic in dicts:
@@ -369,10 +386,17 @@ def set_constraints(variables: Dict[str, Variable],
         process_sized_type(var.type, variables)
 
 
-class Input():
+class Input:
     """Represents the user input, parsed"""
-    def __init__(self: INPUT, name: str, structs: List[Struct],
-                 inputs: List[Variable], subject: str, output: str) -> None:
+
+    def __init__(
+        self: INPUT,
+        name: str,
+        structs: List[Struct],
+        inputs: List[Variable],
+        subject: str,
+        output: str,
+    ) -> None:
         # pylint: disable=too-many-arguments
         self.name = name
         self.structs = structs
@@ -399,8 +423,8 @@ class Input():
                     for var in struct.fields:
                         if var.name in variables_lookup:
                             raise ValueError(
-                                'Several struct fields are called "{}"'.format(
-                                    var.name))
+                                'Several struct fields are called "{}"'.format(var.name)
+                            )
                         variables_lookup[var.name] = var
                     variables_dicts.extend(node["fields"])
             variables = []  # type: List[Variable]
@@ -411,25 +435,27 @@ class Input():
                 variables.append(variable)
                 if variable.name in variables_lookup:
                     raise ValueError(
-                        'Several variables or struct fields are called "{}"'.
-                        format(variable.name))
+                        'Several variables or struct fields are called "{}"'.format(
+                            variable.name
+                        )
+                    )
                 variables_lookup[variable.name] = variable
                 variables_dicts.append(node)
             for name in variables_lookup:
-                if not re.fullmatch('[a-zA-Z][a-zA-Z0-9 ]*', name):
+                if not re.fullmatch("[a-zA-Z][a-zA-Z0-9 ]*", name):
                     raise ValueError(
-                        'Variable name "{}" should match [a-zA-Z][a-z0-9A-Z ]*'
-                        .format(name))
+                        'Variable name "{}" should match [a-zA-Z][a-z0-9A-Z ]*'.format(
+                            name
+                        )
+                    )
             set_constraints(variables_lookup, variables_dicts)
             subject = dic["subject"] if "subject" in dic else ""
             if "function_name" not in dic and "name" in dic:
                 print('WARNING: "name" is deprecated, use "function_name"')
                 dic["function_name"] = dic["name"]
-            if not re.fullmatch('[a-z][a-z0-9 ]*', dic['function_name']):
-                raise ValueError(
-                    'Field `function_name` should match [a-z][a-z0-9 ]*')
-            return cls(dic["function_name"], structs, variables, subject,
-                       dic["output"])
+            if not re.fullmatch("[a-z][a-z0-9 ]*", dic["function_name"]):
+                raise ValueError("Field `function_name` should match [a-z][a-z0-9 ]*")
+            return cls(dic["function_name"], structs, variables, subject, dic["output"])
         except KeyError:
             return None
 

@@ -15,7 +15,7 @@ INDENTATION = "    "
 def var_name(name: str) -> str:
     """Transform a variable name into a valid one for Python"""
     candidate = snake_case(name)
-    return candidate + '_' if iskeyword(candidate) else candidate
+    return candidate + "_" if iskeyword(candidate) else candidate
 
 
 def type_str(type_: Type, input_data: Input) -> str:
@@ -28,9 +28,12 @@ def type_str(type_: Type, input_data: Input) -> str:
         return "str"
     if type_.main == TypeEnum.STRUCT:
         struct = input_data.get_struct(type_.struct_name)
-        return "dict[{}]".format(", ".join(
-            '"{}": {}'.format(v.name, type_str(v.type, input_data))
-            for v in struct.fields))
+        return "dict[{}]".format(
+            ", ".join(
+                '"{}": {}'.format(v.name, type_str(v.type, input_data))
+                for v in struct.fields
+            )
+        )
     assert type_.encapsulated
     assert type_.main == TypeEnum.LIST
     return "list[{}]".format(type_str(type_.encapsulated, input_data))
@@ -53,13 +56,16 @@ def read_line(type_: Type, input_data: Input) -> str:
         if all(i.type.main == TypeEnum.CHAR for i in struct.fields):
             return "dict(zip(({}), input().split()))".format(keys)
         return "dict(map({}, ({}), ({}), input().split()))".format(
-            "lambda x, y, z : (x, int(z) if y else z)", keys,
-            ", ".join("1" if i.type.main == TypeEnum.INT else "0"
-                      for i in struct.fields))
+            "lambda x, y, z : (x, int(z) if y else z)",
+            keys,
+            ", ".join(
+                "1" if i.type.main == TypeEnum.INT else "0" for i in struct.fields
+            ),
+        )
     return {
         TypeEnum.INT: "int(input())",
         TypeEnum.CHAR: "input()[0]",
-        TypeEnum.STR: "input()"
+        TypeEnum.STR: "input()",
     }[type_.main]
 
 
@@ -69,8 +75,9 @@ def read_lines(type_: Type, size: str, input_data: Input) -> List[str]:
         return [read_line(type_, input_data)]
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
-        lines = read_lines(type_.encapsulated,
-                           var_name(type_.encapsulated.size), input_data)
+        lines = read_lines(
+            type_.encapsulated, var_name(type_.encapsulated.size), input_data
+        )
         if len(lines) == 1:
             candidate = "[{} for _ in range({})]".format(lines[0], size)
             if len(candidate) <= 75:
@@ -91,10 +98,14 @@ def read_lines(type_: Type, size: str, input_data: Input) -> List[str]:
         inner = "i"
         lines = read_lines(struct.fields[1].type, inner, input_data)
         lines[0] = '"{}": {}'.format(struct.fields[1].name, lines[0])
-        return [
-            '(lambda {}: {{'.format(inner),
-            INDENTATION + '"{}": {},'.format(struct.fields[0].name, inner)
-        ] + [INDENTATION + i for i in lines] + ['})(int(input()))']
+        return (
+            [
+                "(lambda {}: {{".format(inner),
+                INDENTATION + '"{}": {},'.format(struct.fields[0].name, inner),
+            ]
+            + [INDENTATION + i for i in lines]
+            + ["})(int(input()))"]
+        )
     fields = []
     for i, field in enumerate(struct.fields):
         lines = read_lines(field.type, var_name(field.type.size), input_data)
@@ -119,12 +130,14 @@ def print_line(name: str, type_: Type, input_data: Input) -> str:
         return "print(' '.join(map(str, {})))".format(name)
     assert type_.main == TypeEnum.STRUCT
     struct = input_data.get_struct(type_.struct_name)
-    return "print({})".format(", ".join('{}["{}"]'.format(name, i.name)
-                                        for i in struct.fields))
+    return "print({})".format(
+        ", ".join('{}["{}"]'.format(name, i.name) for i in struct.fields)
+    )
 
 
-class ParserPython():
+class ParserPython:
     """Create the Python code to parse an input"""
+
     def __init__(self, input_data: Input) -> None:
         self.input = input_data
         self.main = []  # type: List[str]
@@ -139,34 +152,42 @@ class ParserPython():
     def call(self, reprint: bool) -> None:
         """Declare and call the function take all inputs in arguments"""
         name = var_name(self.input.name)
-        self.method.append("def {}({}):".format(
-            name, ", ".join(var_name(i.name) for i in self.input.input)))
+        self.method.append(
+            "def {}({}):".format(
+                name, ", ".join(var_name(i.name) for i in self.input.input)
+            )
+        )
         self.method.append(INDENTATION + '"""')
         for arg in self.input.input:
-            self.method.append("{}:param {}: {}".format(
-                INDENTATION, var_name(arg.name), arg.comment))
-            self.method.append("{}:type {}: {}".format(
-                INDENTATION, var_name(arg.name),
-                type_str(arg.type, self.input)))
+            self.method.append(
+                "{}:param {}: {}".format(INDENTATION, var_name(arg.name), arg.comment)
+            )
+            self.method.append(
+                "{}:type {}: {}".format(
+                    INDENTATION, var_name(arg.name), type_str(arg.type, self.input)
+                )
+            )
         self.method.append(INDENTATION + '"""')
         if reprint:
             for var in self.input.input:
-                self.method.extend(
-                    self.print_lines(var_name(var.name), var.type, 1))
+                self.method.extend(self.print_lines(var_name(var.name), var.type, 1))
         else:
             self.method.extend(
-                textwrap.wrap(self.input.output,
-                              79,
-                              initial_indent=INDENTATION + "# " + "TODO ",
-                              subsequent_indent=INDENTATION + "# "))
+                textwrap.wrap(
+                    self.input.output,
+                    79,
+                    initial_indent=INDENTATION + "# " + "TODO ",
+                    subsequent_indent=INDENTATION + "# ",
+                )
+            )
             self.method.append(INDENTATION + "pass")
-        self.main.append("{}({})".format(
-            name, ", ".join([var_name(i.name) for i in self.input.input])))
+        self.main.append(
+            "{}({})".format(
+                name, ", ".join([var_name(i.name) for i in self.input.input])
+            )
+        )
 
-    def print_lines(self,
-                    name: str,
-                    type_: Type,
-                    indent_lvl: int = 0) -> List[str]:
+    def print_lines(self, name: str, type_: Type, indent_lvl: int = 0) -> List[str]:
         """Print the content of a var that holds in one or more lines"""
         indent = INDENTATION * indent_lvl
         if type_.fits_in_one_line(self.input.structs):
@@ -174,15 +195,15 @@ class ParserPython():
         if type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
             inner = "iT" + str(abs(hash(name)))  # unique name
-            return [
-                indent + "for {} in {}:".format(inner, name)
-            ] + self.print_lines(inner, type_.encapsulated, indent_lvl + 1)
+            return [indent + "for {} in {}:".format(inner, name)] + self.print_lines(
+                inner, type_.encapsulated, indent_lvl + 1
+            )
         assert type_.main == TypeEnum.STRUCT
         lines = []
         for i in self.input.get_struct(type_.struct_name).fields:
             lines.extend(
-                self.print_lines('{}["{}"]'.format(name, i.name), i.type,
-                                 indent_lvl))
+                self.print_lines('{}["{}"]'.format(name, i.name), i.type, indent_lvl)
+            )
         return lines
 
     def content(self) -> str:

@@ -20,10 +20,12 @@ def generate_char(constraints: Constraints, whitespace: bool) -> str:
     return random.choice(possible)
 
 
-class Generator():
+class Generator:
     """Generate some random valid raw_input"""
-    def __init__(self, input_data: Input, specs: Dict[str, int],
-                 perf_mode: bool) -> None:
+
+    def __init__(
+        self, input_data: Input, specs: Dict[str, int], perf_mode: bool
+    ) -> None:
         self.input = input_data
         self.integers = {}  # type: Dict[str, int]
         self.perf_mode = perf_mode
@@ -47,18 +49,21 @@ class Generator():
 
         min_ = constraints.min_perf if self.perf_mode else constraints.min
         max_ = constraints.max_perf if self.perf_mode else constraints.max
-        if name + '_min' in self.specs:
-            assert self.eval_var(min_) < self.specs[name + '_min']
-            min_ = self.specs[name + '_min']
-        if name + '_max' in self.specs:
-            assert self.eval_var(max_) > self.specs[name + '_max']
-            max_ = self.specs[name + '_max']
+        if name + "_min" in self.specs:
+            assert self.eval_var(min_) < self.specs[name + "_min"]
+            min_ = self.specs[name + "_min"]
+        if name + "_max" in self.specs:
+            assert self.eval_var(max_) > self.specs[name + "_max"]
+            max_ = self.specs[name + "_max"]
 
         if name in self.specs:
-            assert (self.specs[name] >= self.eval_var(min_)
-                    and self.specs[name] <= self.eval_var(max_)
-                    and self.specs[name] in constraints.choices
-                    if constraints.choices else True)
+            assert (
+                self.specs[name] >= self.eval_var(min_)
+                and self.specs[name] <= self.eval_var(max_)
+                and self.specs[name] in constraints.choices
+                if constraints.choices
+                else True
+            )
             value = self.specs[name]
         else:
             min_eval = self.eval_var(min_)
@@ -69,8 +74,9 @@ class Generator():
             self.integers[name] = value
         return str(value)
 
-    def generate_line(self, name: str, type_: Type,
-                      constraints: Optional[Constraints]) -> str:
+    def generate_line(
+        self, name: str, type_: Type, constraints: Optional[Constraints]
+    ) -> str:
         # pylint: disable=too-many-return-statements
         """Generate a raw input for a line"""
         assert type_.fits_in_one_line(self.input.structs)
@@ -84,27 +90,25 @@ class Generator():
             assert constraints is not None
             size = self.eval_var(type_.size)
             return "".join(
-                generate_char(constraints, i not in (0, size - 1))
-                for i in range(size))
+                generate_char(constraints, i not in (0, size - 1)) for i in range(size)
+            )
         if type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
             assert constraints is not None
             size = self.eval_var(type_.size)
             if type_.encapsulated.main == TypeEnum.INT:
                 return " ".join(
-                    self.generate_integer(name, constraints)
-                    for _ in range(size))
+                    self.generate_integer(name, constraints) for _ in range(size)
+                )
             assert type_.encapsulated.main == TypeEnum.CHAR
-            return "".join(
-                generate_char(constraints, False) for i in range(size))
+            return "".join(generate_char(constraints, False) for i in range(size))
         if type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)
             fields = []
             for var in struct.fields:
                 assert var.constraints
                 if var.type.main == TypeEnum.INT:
-                    fields.append(
-                        self.generate_integer(var.name, var.constraints))
+                    fields.append(self.generate_integer(var.name, var.constraints))
                 else:
                     assert var.type.main == TypeEnum.CHAR
                     fields.append(generate_char(var.constraints, False))
@@ -112,8 +116,9 @@ class Generator():
         assert False
         return ""
 
-    def generate_lines(self, name: str, type_: Type,
-                       constraints: Optional[Constraints]) -> List[str]:
+    def generate_lines(
+        self, name: str, type_: Type, constraints: Optional[Constraints]
+    ) -> List[str]:
         """Generate the raw input for a type"""
         if type_.fits_in_one_line(self.input.structs):
             return [self.generate_line(name, type_, constraints)]
@@ -121,23 +126,21 @@ class Generator():
             assert type_.encapsulated
             lines = []
             for _ in range(self.eval_var(type_.size)):
-                lines.extend(
-                    self.generate_lines("", type_.encapsulated, constraints))
+                lines.extend(self.generate_lines("", type_.encapsulated, constraints))
             return lines
         if type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)
             lines = []
             for var in struct.fields:
-                lines.extend(
-                    self.generate_lines(var.name, var.type, var.constraints))
+                lines.extend(self.generate_lines(var.name, var.type, var.constraints))
             return lines
         assert False
         return []
 
 
-def generate_random_input(input_data: Input,
-                          specs: List[str],
-                          perf_mode: bool = False) -> str:
+def generate_random_input(
+    input_data: Input, specs: List[str], perf_mode: bool = False
+) -> str:
     """Generate a randow raw input, as described by input_data"""
     specs_dict = {}
     for i in range(0, len(specs), 2):
@@ -145,6 +148,5 @@ def generate_random_input(input_data: Input,
     generator = Generator(input_data, specs_dict, perf_mode)
     lines = []
     for var in input_data.input:
-        lines.extend(
-            generator.generate_lines(var.name, var.type, var.constraints))
+        lines.extend(generator.generate_lines(var.name, var.type, var.constraints))
     return "\n".join(lines) + "\n"

@@ -33,12 +33,15 @@ from iorgen.parser_scheme import gen_scheme
 
 class Language:
     """Describe how to generate, compile and run, the parser for a language"""
-    def __init__(self,
-                 extension: str,
-                 generator: Callable[[Input, bool], str],
-                 compile_command: List[str],
-                 exec_command: Optional[List[str]] = None,
-                 no_stderr: bool = False) -> None:
+
+    def __init__(
+        self,
+        extension: str,
+        generator: Callable[[Input, bool], str],
+        compile_command: List[str],
+        exec_command: Optional[List[str]] = None,
+        no_stderr: bool = False,
+    ) -> None:
         # pylint: disable=too-many-arguments
         self.extension = extension
         self.generator = generator
@@ -49,13 +52,15 @@ class Language:
     def compile(self, filename: str) -> str:
         """Compile the file at location 'filename'"""
         if self.compile_command:
-            name = filename[:-len(self.extension) - 1]
+            name = filename[: -len(self.extension) - 1]
             command = [i.format(name=name) for i in self.compile_command]
             stderr = subprocess.DEVNULL if self.no_stderr else None
-            subprocess.run(command + [filename],
-                           stderr=stderr,
-                           cwd=os.path.dirname(filename),
-                           check=True)
+            subprocess.run(
+                command + [filename],
+                stderr=stderr,
+                cwd=os.path.dirname(filename),
+                check=True,
+            )
             return name
         return filename
 
@@ -63,11 +68,13 @@ class Language:
         """Run the executable (by self.compile) with input_file as stdin"""
         out = ""
         with open(input_file) as sample_input:
-            res = subprocess.run(self.exec_command + [exe],
-                                 stdin=sample_input,
-                                 stdout=subprocess.PIPE,
-                                 cwd=os.path.dirname(filename),
-                                 check=True)
+            res = subprocess.run(
+                self.exec_command + [exe],
+                stdin=sample_input,
+                stdout=subprocess.PIPE,
+                cwd=os.path.dirname(filename),
+                check=True,
+            )
             out = res.stdout.decode()
         return out
 
@@ -78,18 +85,22 @@ class Language:
 
 ALL_LANGUAGES = [
     Language(
-        "c", gen_c,
-        ["gcc", "-std=c11", "-Wall", "-Wextra", "-O2", "-lm", "-o", "{name}"]),
-    Language("cpp", gen_cpp,
-             ["g++", "-std=c++17", "-Wall", "-Wextra", "-O2", "-o", "{name}"]),
+        "c",
+        gen_c,
+        ["gcc", "-std=c11", "-Wall", "-Wextra", "-O2", "-lm", "-o", "{name}"],
+    ),
+    Language(
+        "cpp", gen_cpp, ["g++", "-std=c++17", "-Wall", "-Wextra", "-O2", "-o", "{name}"]
+    ),
     Language("cs", gen_csharp, ["mcs", "-optimize", "-out:{name}"], ["mono"]),
     Language("d", gen_d, ["gdc", "-Wall", "-O2", "-o", "{name}"]),
     Language("go", gen_go, ["go", "build", "-buildmode=exe"]),
     Language(
-        "hs", gen_haskell,
-        ["ghc", "-v0", "-Wall", "-Wno-name-shadowing", "-dynamic", "-O2"]),
-    Language("java", gen_java, ["javac", "-encoding", "UTF-8"],
-             ["java", "Main"]),
+        "hs",
+        gen_haskell,
+        ["ghc", "-v0", "-Wall", "-Wno-name-shadowing", "-dynamic", "-O2"],
+    ),
+    Language("java", gen_java, ["javac", "-encoding", "UTF-8"], ["java", "Main"]),
     Language("js", gen_javascript, [], ["node"]),
     Language("lua", gen_lua, [], ["lua5.3"]),
     Language("ml", gen_ocaml, ["ocamlopt", "-w", "A-24", "-o", "{name}"]),
@@ -100,12 +111,12 @@ ALL_LANGUAGES = [
     Language("py", gen_python, [], ["python3", "-S"]),
     Language("rb", gen_ruby, [], ["ruby"]),
     Language("rs", gen_rust, ["rustc", "-W", "warnings", "-O"]),
-    Language("scm", gen_scheme, [], ["gsi"])
+    Language("scm", gen_scheme, [], ["gsi"]),
 ]
 
 ALL_MARKDOWN = [
-    Language("en.md", (lambda i, _: gen_markdown(i, 'en')), []),
-    Language("fr.md", (lambda i, _: gen_markdown(i, 'fr')), [])
+    Language("en.md", (lambda i, _: gen_markdown(i, "en")), []),
+    Language("fr.md", (lambda i, _: gen_markdown(i, "fr")), []),
 ]
 
 
@@ -113,43 +124,50 @@ def print_colored_diff(lines: Iterator[str]) -> None:
     """Print a diff with some console colors"""
     for i, line in enumerate(lines):
         if i < 2:
-            print('\033[1m' + line + '\033[0m', end='')
-        elif line[0:2] == '@@':
-            print('\033[96m' + line + '\033[0m', end='')
-        elif line[0] == '+':
-            print('\033[92m' + line + '\033[0m', end='')
-        elif line[0] == '-':
-            print('\033[91m' + line + '\033[0m', end='')
+            print("\033[1m" + line + "\033[0m", end="")
+        elif line[0:2] == "@@":
+            print("\033[96m" + line + "\033[0m", end="")
+        elif line[0] == "+":
+            print("\033[92m" + line + "\033[0m", end="")
+        elif line[0] == "-":
+            print("\033[91m" + line + "\033[0m", end="")
         else:
-            print(line, end='')
+            print(line, end="")
 
 
-def compare_files(generated_content: List[str],
-                  reference_filename: str,
-                  tofile: str = 'generated') -> bool:
+def compare_files(
+    generated_content: List[str], reference_filename: str, tofile: str = "generated"
+) -> bool:
     """Check if a generated result is the same as a reference file"""
     ref = Path(reference_filename).read_text("utf8").splitlines(True)
     if generated_content != ref:
         print_colored_diff(
-            unified_diff(ref,
-                         generated_content,
-                         fromfile=reference_filename,
-                         tofile=tofile))
+            unified_diff(
+                ref, generated_content, fromfile=reference_filename, tofile=tofile
+            )
+        )
         return False
     return True
 
 
-def gen_compile_run_and_compare(input_data: Input,
-                                name: str,
-                                language: Language,
-                                folder_for_generated_source: str,
-                                stdin_filename: List[str],
-                                no_compile: bool = False) -> bool:
+def gen_compile_run_and_compare(
+    input_data: Input,
+    name: str,
+    language: Language,
+    folder_for_generated_source: str,
+    stdin_filename: List[str],
+    no_compile: bool = False,
+) -> bool:
     # pylint: disable = too-many-arguments
     """Check that the generated parser prints the input it is fed in"""
-    source = os.path.join(tempfile.gettempdir(), "iorgen",
-                          folder_for_generated_source, language.extension,
-                          name, name + "." + language.extension)
+    source = os.path.join(
+        tempfile.gettempdir(),
+        "iorgen",
+        folder_for_generated_source,
+        language.extension,
+        name,
+        name + "." + language.extension,
+    )
 
     # Generate source
     generated = language.generator(input_data, True)
@@ -164,6 +182,8 @@ def gen_compile_run_and_compare(input_data: Input,
     success = True
     for file_ in stdin_filename:
         stdout = language.run(exe, source, file_).splitlines(True)
-        success = compare_files(
-            stdout, file_, 'generated from ' + language.extension) and success
+        success = (
+            compare_files(stdout, file_, "generated from " + language.extension)
+            and success
+        )
     return success
