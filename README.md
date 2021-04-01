@@ -34,15 +34,15 @@ for instance, you will have to install lots of compilers.
 
 The complete dependencies for Archlinux are:
 ```shell
-pacman -S --needed python-yaml fpc gambit-c gcc gdc ghc go jdk8-openjdk lua \
+pacman -S --needed python-yaml fpc gambit-c gcc gdc ghc go jdk-openjdk lua \
     mono nodejs ocaml perl php ruby rust swi-prolog
 ```
 
-For Debian 9 (and probably Ubuntu), they are:
+For Debian based distros (tested on Debian 10, Ubuntu 18.04 and 20.04):
 ```shell
-sudo apt install python3-yaml mono-mcs gdc golang ghc openjdk-8-jdk-headless \
-    nodejs-legacy lua5.3 ocaml-nox fp-compiler php-cli swi-prolog-nox ruby \
-    rustc gambc
+sudo apt install python3-yaml default-jdk-headless fp-compiler gambc gcc gdc \
+    ghc golang lua5.3 mono-mcs nodejs ocaml-nox perl php-cli ruby rustc \
+    swi-prolog-nox
 ```
 
 ## Usage
