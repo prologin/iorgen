@@ -102,7 +102,7 @@ ALL_LANGUAGES = [
     ),
     Language("java", gen_java, ["javac", "-encoding", "UTF-8"], ["java", "Main"]),
     Language("js", gen_javascript, [], ["node"]),
-    Language("lua", gen_lua, [], ["lua5.3"]),
+    Language("lua", gen_lua, [], ["lua"]),
     Language("ml", gen_ocaml, ["ocamlopt", "-w", "A-24", "-o", "{name}"]),
     Language("pas", gen_pascal, ["fpc", "-v0ew", "-l-"], no_stderr=True),
     Language("php", gen_php, [], ["php"]),
