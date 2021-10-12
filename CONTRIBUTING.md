@@ -25,10 +25,10 @@ need to install:
 - The tools to check the code quality: black, mypy and pylint. Be sure to have
   the latest version of them. You can install them through you package manager
   **if you have an up-to-date** distribution (like Archlinux), or else install
-  them with `pip3 install -U pyyaml mypy pylint black`. The CI build use fixed
-  versions of these tools to prevent the build failing unexpectedly with new
-  changing releasing of the tools, but these version are meant to be kept up to
-  date.
+  them with `pip3 install -U pyyaml mypy types-PyYAML pylint black`. The CI
+  build use fixed versions of these tools to prevent the build failing
+  unexpectedly with new changing releasing of the tools, but these version are
+  meant to be kept up to date.
 
 Coding style
 ------------
@@ -108,8 +108,8 @@ When your changes are to your liking, please check the following before doing a
 pull request:
 
 - You have ran the tests with success (`cd test && ./test.py`).
-- Your code respects the coding style (`pip3 install -U mypy pylint pyyaml`
-  (optional), then `./check_code.py`).
+- Your code respects the coding style
+  (`pip3 install -U mypy types-PyYAML pylint pyyaml`, then `./check_code.py`).
 - You agree to publish your code under the
   [GNU General Public License v3, or later](COPYING). Place a line on top of
   the files you have modified with `# Copyright YYYY Name` (under the other
