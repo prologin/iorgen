@@ -15,9 +15,9 @@ To develop for *Iorgen*, you will need to run some of its tests, so you will
 need to install:
 
 - Every dependencies needed to run *Iorgen* itself: meaning Python 3.6 or
-  above, and PyYAML. You can PyYAML through your package manager (it will be
-  probably be named `python-yaml`, or `python3-yaml`), or with
-  `pip3 install pyyaml`.
+  above, and PyYAML. You can install PyYAML through your package manager (it
+  will be probably be named `python-yaml`, or `python3-yaml`), or with `pip3
+  install pyyaml`.
 - Every compiler for every language supported by *Iorgen*, as listed
   [in the README](README.md#testing-the-languages). If you are working only on
   one language, and do not touch the others, you may only install a subset of
@@ -38,8 +38,8 @@ The code should follow the Python
 practices.
 
 Also, all code uses [type
-hints](https://docs.python.org/3/library/typing.html). This helps tool to check
-the code better.
+hints](https://docs.python.org/3/library/typing.html). This helps tools to
+check the code better.
 
 To ensure your code follow the coding style, please run the `./check_code.sh`
 script.
@@ -58,7 +58,7 @@ function that can be used by several parser generators. Do not try to factorize
 the code too much between the different languages. You might think, for
 instance, that C and C++ are very close, and thus some functions between the
 two languages might be factorized. But it only makes the code more complicated
-for both languages, and it make it close to impossible to made some tweaks to
+for both languages, and it makes it close to impossible to made some tweaks to
 one of the two. *Iorgen*'s premise is that each language will have its own
 specificities, and will have a unique way to be generated.
 
@@ -77,8 +77,9 @@ Tests
 
 There is no unit tests, because it is not very relevant for *Iorgen*: we want
 to be sure a generated parser works in its whole, not that the line in the
-middle. You may add some unit tests if it is relevant in your case, but for
-language generators, I think you will probably just lose some time.
+middle works with its very specific input. You may add some unit tests if it is
+relevant in your case, but for language generators, I think you will probably
+just lose some time.
 
 There are two kind of tests. The first one is to make sure the generated code
 stays the same with previous versions. This is useful when you do a refactor,
@@ -90,10 +91,10 @@ file, simply run the `./regenerate.py` file.
 The second test consists in generating all the parsers in the “reprint” mode,
 compiling them, and then executing them with a sample input in stdin. The
 program should then output the exact same thing as the input, proving that it
-has correctly parsed everything in stdin. The standart input is given by the
+has correctly parsed everything in stdin. The standard input is given by the
 file with extension `.sample_input`.
 
-To run the tests, run the command `./test.py`. You will often to run
+To run the tests, run the command `./test.py`. You will often want to run
 `./regenerate.py` beforehand: be sure to then check with a `git diff` that the
 modifications are the one you wanted to make to the generated files.
 
