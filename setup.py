@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright 2018 Florian Amsallem
-# Copyright 2020 Sacha Delanoue
+# Copyright 2020-2021 Sacha Delanoue
 
 from setuptools import setup, find_packages
 
@@ -28,6 +28,7 @@ setup(
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
         "Topic :: Software Development :: Code Generators",
         "Typing :: Typed",
     ],
