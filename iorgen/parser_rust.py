@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2020 Sacha Delanoue
+# Copyright 2018-2021 Sacha Delanoue
 # Copyright 2020 Rémi Dupré
 # Copyright 2021 Grégoire Geis
 """Generate a Rust parser"""
@@ -44,7 +44,7 @@ def type_str(type_: Type) -> str:
         return struct_name(type_.struct_name)
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated
-        return "Vec<{}>".format(type_str(type_.encapsulated))
+        return f"Vec<{type_str(type_.encapsulated)}>"
     raise Exception
 
 

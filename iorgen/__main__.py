@@ -98,12 +98,12 @@ def main() -> None:
     try:
         args = parser.parse_args()
     except FileNotFoundError as error:
-        parser.error("Input file not found: {}".format(error))
+        parser.error(f"Input file not found: {error}")
 
     try:
         input_data = parse_input(args.yaml)
     except ValueError as error:
-        print("Could not parse input data: {}".format(error))
+        print(f"Could not parse input data: {error}")
         sys.exit(1)
 
     if args.validate:
@@ -112,7 +112,7 @@ def main() -> None:
             sys.exit(2)
         status = input_errors(input_data, args.validate, args.perf_mode)
         if status:
-            print("Input is invalid: {}".format(status))
+            print(f"Input is invalid: {status}")
             sys.exit(3)
         print("Input is valid")
         sys.exit(0)
@@ -129,7 +129,7 @@ def main() -> None:
         success = True
         check_files = glob.glob(args.run)
         print(
-            "Check with {} (found {} match): ".format(args.run, len(check_files)),
+            f"Check with {args.run} (found {len(check_files)} match): ",
             end="",
             flush=True,
         )

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018 Sacha Delanoue
+# Copyright 2018-2021 Sacha Delanoue
 """Regenerate the test samples"""
 
 import os
@@ -15,7 +15,7 @@ from iorgen import parse_input, ALL_LANGUAGES, ALL_MARKDOWN
 def regenerate_samples() -> None:
     """Regenerate all the samples"""
     for name in os.listdir("samples"):
-        prefix = "samples/{0}/{0}.".format(name)
+        prefix = f"samples/{name}/{name}."
         with open(prefix + "yaml", "r", encoding="utf-8") as stream:
             input_data = parse_input(stream)
         assert input_data is not None

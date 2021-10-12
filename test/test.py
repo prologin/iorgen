@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2019 Sacha Delanoue
+# Copyright 2018-2021 Sacha Delanoue
 """Check that parsers are the same as before, and parse correctly"""
 
 import argparse
@@ -57,15 +57,14 @@ def test_samples() -> None:
             for command in (language.compile_command, language.exec_command):
                 if command and shutil.which(command[0]) is None:
                     print(
-                        "WARNING: skip language {} because `{}` is not found!".format(
-                            language.extension, command[0]
-                        )
+                        "WARNING: skip language "
+                        f"{language.extension} because `{command[0]}` is not found!"
                     )
                     skipped_languages.append(language.extension)
     assert not skipped_languages or not args.no_missing
 
     for name in os.listdir("samples"):
-        prefix = "samples/{0}/{0}.".format(name)
+        prefix = f"samples/{name}/{name}."
         with open(prefix + "yaml", "r", encoding="utf-8") as stream:
             input_data = parse_input(stream)
         sample_errors = input_errors(input_data, prefix + "sample_input")

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018 Sacha Delanoue
+# Copyright 2018-2021 Sacha Delanoue
 # Copyright 2021 Kenji Gaillac
 """Helpers used by several modules"""
 
@@ -78,7 +78,7 @@ class WordsName:
         self.current_nested += 1
         current = self.current_nested if self.cs_mode else self.current
         self.nested_scopes = [max(i, current) for i in self.nested_scopes]
-        candidate = "words{}".format(current if current != 0 else "")
+        candidate = f"words{current if current != 0 else ''}"
         if candidate in self.existing_names:
             return self.next_name()
         return candidate
