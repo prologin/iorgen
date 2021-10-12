@@ -149,7 +149,7 @@ def main() -> None:
         path = Path(
             os.path.join(args.output_dir, prefix + "." + languages[language].extension)
         )
-        path.write_text(languages[language].generate(input_data))
+        path.write_text(languages[language].generate(input_data), encoding="utf-8")
     path = Path(os.path.join(args.output_dir, "..", "subject-io-stub.md"))
     if args.markdown != "None":
         path.write_text(gen_markdown(input_data, args.markdown), encoding="utf-8")

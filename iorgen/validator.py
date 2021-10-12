@@ -224,7 +224,8 @@ class Validator:
 
 def input_errors(input_data: Input, filename: str, perf_mode: bool = False) -> str:
     """Return the first error found in a raw input, if any"""
-    validator = Validator(input_data, [line.rstrip("\n") for line in open(filename)])
+    with open(filename, encoding="utf-8") as file_content:
+        validator = Validator(input_data, [line.rstrip("\n") for line in file_content])
     error = validator.read_all()
     if error:
         return error

@@ -67,7 +67,7 @@ class Language:
     def run(self, exe: str, filename: str, input_file: str) -> str:
         """Run the executable (by self.compile) with input_file as stdin"""
         out = ""
-        with open(input_file) as sample_input:
+        with open(input_file, encoding="utf-8") as sample_input:
             res = subprocess.run(
                 self.exec_command + [exe],
                 stdin=sample_input,
@@ -139,7 +139,7 @@ def compare_files(
     generated_content: List[str], reference_filename: str, tofile: str = "generated"
 ) -> bool:
     """Check if a generated result is the same as a reference file"""
-    ref = Path(reference_filename).read_text("utf8").splitlines(True)
+    ref = Path(reference_filename).read_text(encoding="utf-8").splitlines(True)
     if generated_content != ref:
         print_colored_diff(
             unified_diff(
@@ -172,7 +172,7 @@ def gen_compile_run_and_compare(
     # Generate source
     generated = language.generator(input_data, True)
     Path(os.path.dirname(source)).mkdir(parents=True, exist_ok=True)
-    Path(source).write_text(generated)
+    Path(source).write_text(generated, encoding="utf-8")
 
     if no_compile:
         return True
