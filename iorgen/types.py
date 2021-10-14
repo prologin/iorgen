@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2020 Sacha Delanoue
+# Copyright 2018-2021 Sacha Delanoue
 # Copyright 2019 Matthieu Moatti
 # Copyright 2021 Kenji Gaillac
 """Generic types in a programming language"""
@@ -85,11 +85,11 @@ class Type:
         if self.main == TypeEnum.CHAR:
             return "char"
         if self.main == TypeEnum.STR:
-            return "str({})".format(self.size)
+            return f"str({self.size})"
         if self.main == TypeEnum.LIST:
-            return "List[{}]({})".format(self.encapsulated, self.size)
+            return f"List[{self.encapsulated}]({self.size})"
         if self.main == TypeEnum.STRUCT:
-            return "@{}".format(self.struct_name)
+            return f"@{self.struct_name}"
         raise Exception
 
     def can_be_inlined(self: TYPE) -> bool:
@@ -231,8 +231,8 @@ class Constraints:
     def simple_repr(self, name: str) -> str:
         """Return mathjax representation of integer bounds"""
         if self.choices:
-            return r"{} \in \{{{}\}}".format(
-                name, (", ".join(str(i) for i in sorted(self.choices)))
+            return (
+                rf"{name} \in \{{{', '.join(str(i) for i in sorted(self.choices))}\}}"
             )
         return integer_bounds(name, self.min, self.max, self.is_size)
 
@@ -290,10 +290,9 @@ class Variable:
                 else self.constraints.simple_repr(name)
             )
         if type_ == TypeEnum.CHAR:
-            if self.constraints.choices and not perf:
-                return r"{} \in \{{{}\}}".format(
-                    name, (", ".join(str(i) for i in sorted(self.constraints.choices)))
-                )
+            choices = self.constraints.choices
+            if choices and not perf:
+                return rf"{name} \in \{{{', '.join(str(i) for i in sorted(choices))}\}}"
             return ""
         raise Exception
 
@@ -423,7 +422,7 @@ class Input:
                     for var in struct.fields:
                         if var.name in variables_lookup:
                             raise ValueError(
-                                'Several struct fields are called "{}"'.format(var.name)
+                                f'Several struct fields are called "{var.name}"'
                             )
                         variables_lookup[var.name] = var
                     variables_dicts.extend(node["fields"])
@@ -435,18 +434,15 @@ class Input:
                 variables.append(variable)
                 if variable.name in variables_lookup:
                     raise ValueError(
-                        'Several variables or struct fields are called "{}"'.format(
-                            variable.name
-                        )
+                        "Several variables or struct fields "
+                        f'are called "{variable.name}"'
                     )
                 variables_lookup[variable.name] = variable
                 variables_dicts.append(node)
             for name in variables_lookup:
                 if not re.fullmatch("[a-zA-Z][a-zA-Z0-9 ]*", name):
                     raise ValueError(
-                        'Variable name "{}" should match [a-zA-Z][a-z0-9A-Z ]*'.format(
-                            name
-                        )
+                        f'Variable name "{name}" should match [a-zA-Z][a-z0-9A-Z ]*'
                     )
             set_constraints(variables_lookup, variables_dicts)
             subject = dic["subject"] if "subject" in dic else ""
