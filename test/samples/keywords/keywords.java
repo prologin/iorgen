@@ -1,5 +1,6 @@
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.Arrays;
-import java.util.Scanner;
 
 /**
  * may conflict in c#
@@ -59,23 +60,23 @@ class Main {
         /* TODO If this compiles, it is already a good step! */
     }
 
-    public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        int if_ = Integer.parseInt(scanner.nextLine());
-        char class_ = scanner.nextLine().charAt(0);
-        String i = scanner.nextLine();
-        String[] words1 = scanner.nextLine().split(" ");
+    public static void main(String[] args) throws java.io.IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        int if_ = Integer.parseInt(reader.readLine());
+        char class_ = reader.readLine().charAt(0);
+        String i = reader.readLine();
+        String[] words1 = reader.readLine().split(" ");
         Console in = new Console();
         in.a = Integer.parseInt(words1[0]);
         in.static_ = Integer.parseInt(words1[1]);
-        int[] for_ = Arrays.stream(scanner.nextLine().split(" ")).filter(x -> !x.isEmpty()).mapToInt(Integer::parseInt).toArray();
+        int[] for_ = Arrays.stream(reader.readLine().split(" ")).filter(x -> !x.isEmpty()).mapToInt(Integer::parseInt).toArray();
         Main_[] words = new Main_[2];
         for (int j = 0; j < 2; ++j) {
             words[j] = new Main_();
             words[j].int_ = new System_();
-            words[j].int_.return_ = Integer.parseInt(scanner.nextLine());
-            words[j].int_.void_ = Arrays.stream(scanner.nextLine().split(" ")).mapToInt(Integer::parseInt).toArray();
-            words[j].ifTrue = Integer.parseInt(scanner.nextLine());
+            words[j].int_.return_ = Integer.parseInt(reader.readLine());
+            words[j].int_.void_ = Arrays.stream(reader.readLine().split(" ")).mapToInt(Integer::parseInt).toArray();
+            words[j].ifTrue = Integer.parseInt(reader.readLine());
         }
 
         keywords(if_, class_, i, in, for_, words);

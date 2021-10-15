@@ -1,4 +1,5 @@
-import java.util.Scanner;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 
 /**
  * A simple struct
@@ -84,16 +85,16 @@ class Main {
         /* TODO Look at them structs. */
     }
 
-    public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        String[] words = scanner.nextLine().split(" ");
+    public static void main(String[] args) throws java.io.IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        String[] words = reader.readLine().split(" ");
         Struct1 struct = new Struct1();
         struct.foo = Integer.parseInt(words[0]);
         struct.bar = Integer.parseInt(words[1]);
-        int n = Integer.parseInt(scanner.nextLine());
+        int n = Integer.parseInt(reader.readLine());
         Struct1[] structList = new Struct1[n];
         for (int i = 0; i < n; ++i) {
-            String[] words1 = scanner.nextLine().split(" ");
+            String[] words1 = reader.readLine().split(" ");
             structList[i] = new Struct1();
             structList[i].foo = Integer.parseInt(words1[0]);
             structList[i].bar = Integer.parseInt(words1[1]);
@@ -101,15 +102,15 @@ class Main {
         Point[] triangle = new Point[3];
         for (int i = 0; i < 3; ++i) {
             triangle[i] = new Point();
-            triangle[i].name = scanner.nextLine().charAt(0);
-            triangle[i].description = scanner.nextLine();
-            String[] words1 = scanner.nextLine().split(" ");
+            triangle[i].name = reader.readLine().charAt(0);
+            triangle[i].description = reader.readLine();
+            String[] words1 = reader.readLine().split(" ");
             triangle[i].pos = new Position();
             triangle[i].pos.x = Integer.parseInt(words1[0]);
             triangle[i].pos.y = Integer.parseInt(words1[1]);
             triangle[i].pos.z = Integer.parseInt(words1[2]);
         }
-        String[] words1 = scanner.nextLine().split(" ");
+        String[] words1 = reader.readLine().split(" ");
         Chars structChars = new Chars();
         structChars.firstChar = words1[0].charAt(0);
         structChars.secondChar = words1[1].charAt(0);

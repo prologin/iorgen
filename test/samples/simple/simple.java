@@ -1,4 +1,5 @@
-import java.util.Scanner;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 
 class Main {
     /**
@@ -9,10 +10,10 @@ class Main {
         /* TODO Just do what you want with these numbers, like sum them. */
     }
 
-    public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        int n = Integer.parseInt(scanner.nextLine());
-        int otherNumber = Integer.parseInt(scanner.nextLine());
+    public static void main(String[] args) throws java.io.IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        int n = Integer.parseInt(reader.readLine());
+        int otherNumber = Integer.parseInt(reader.readLine());
 
         simple(n, otherNumber);
     }

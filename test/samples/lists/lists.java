@@ -1,5 +1,6 @@
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.Arrays;
-import java.util.Scanner;
 
 class Main {
     /**
@@ -16,27 +17,27 @@ class Main {
         /* TODO Aren't these lists beautifull? */
     }
 
-    public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        int n = Integer.parseInt(scanner.nextLine());
-        int[] listInt = Arrays.stream(scanner.nextLine().split(" ")).mapToInt(Integer::parseInt).toArray();
-        int size = Integer.parseInt(scanner.nextLine());
-        char[] listChar = scanner.nextLine().toCharArray();
-        String string = scanner.nextLine();
+    public static void main(String[] args) throws java.io.IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        int n = Integer.parseInt(reader.readLine());
+        int[] listInt = Arrays.stream(reader.readLine().split(" ")).mapToInt(Integer::parseInt).toArray();
+        int size = Integer.parseInt(reader.readLine());
+        char[] listChar = reader.readLine().toCharArray();
+        String string = reader.readLine();
         String[] listString4 = new String[size];
         for (int i = 0; i < size; ++i) {
-            listString4[i] = scanner.nextLine();
+            listString4[i] = reader.readLine();
         }
         String[][] listListString2 = new String[2][];
         for (int i = 0; i < 2; ++i) {
             listListString2[i] = new String[2];
             for (int j = 0; j < 2; ++j) {
-                listListString2[i][j] = scanner.nextLine();
+                listListString2[i][j] = reader.readLine();
             }
         }
         int[][] matrix = new int[size][];
         for (int i = 0; i < size; ++i) {
-            matrix[i] = Arrays.stream(scanner.nextLine().split(" ")).filter(x -> !x.isEmpty()).mapToInt(Integer::parseInt).toArray();
+            matrix[i] = Arrays.stream(reader.readLine().split(" ")).filter(x -> !x.isEmpty()).mapToInt(Integer::parseInt).toArray();
         }
 
         lists(n, listInt, size, listChar, string, listString4, listListString2, matrix);

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2020 Sacha Delanoue
+# Copyright 2018-2021 Sacha Delanoue
 """Generate a Java parser"""
 
 import textwrap
@@ -13,7 +13,7 @@ INDENTATION = "    "
 def var_name(name: str) -> str:
     """Transform a variable name into a valid one for Java"""
     candidate = camel_case(name)
-    if candidate == "scanner":
+    if candidate == "reader":
         return candidate + "_"
     return candidate + "_" if candidate in KEYWORDS else candidate
 
@@ -47,7 +47,7 @@ class ParserJava:
     def __init__(self, input_data: Input) -> None:
         self.input = input_data
 
-        self.imports = set(["java.util.Scanner"])
+        self.imports = set(["java.io.BufferedReader", "java.io.InputStreamReader"])
         existing_names = [var.name for var in input_data.input] + [
             var_name(input_data.name)
         ]
@@ -63,9 +63,7 @@ class ParserJava:
         if type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)
             words = self.words.next_name()
-            lines = [
-                indent + 'String[] {} = scanner.nextLine().split(" ");'.format(words)
-            ]
+            lines = [indent + f'String[] {words} = reader.readLine().split(" ");']
             lines.append(
                 indent
                 + "{}{} = new {}();".format(
@@ -79,9 +77,9 @@ class ParserJava:
                     indent,
                     name,
                     var_name(f.name),
-                    "Integer.parseInt({}[{}])".format(words, i)
+                    f"Integer.parseInt({words}[{i}])"
                     if f.type.main == TypeEnum.INT
-                    else "{}[{}].charAt(0)".format(words, i),
+                    else f"{words}[{i}].charAt(0)",
                 )
                 for i, f in enumerate(struct.fields)
             )
@@ -89,21 +87,21 @@ class ParserJava:
         type_decl = (type_str(type_) + " ") if decl else ""
         command = ""
         if type_.main == TypeEnum.INT:
-            command = "Integer.parseInt(scanner.nextLine())"
+            command = "Integer.parseInt(reader.readLine())"
         elif type_.main == TypeEnum.CHAR:
-            command = "scanner.nextLine().charAt(0)"
+            command = "reader.readLine().charAt(0)"
         elif type_.main == TypeEnum.STR:
-            command = "scanner.nextLine()"
+            command = "reader.readLine()"
         else:
             assert type_.main == TypeEnum.LIST
             assert type_.encapsulated is not None
             if type_.encapsulated.main == TypeEnum.CHAR:
-                command = "scanner.nextLine().toCharArray()"
+                command = "reader.readLine().toCharArray()"
             else:
                 assert type_.encapsulated.main == TypeEnum.INT
                 self.imports.add("java.util.Arrays")
                 command = (
-                    'Arrays.stream(scanner.nextLine().split(" ")).{}'
+                    'Arrays.stream(reader.readLine().split(" ")).{}'
                     "mapToInt(Integer::parseInt).toArray()"
                 ).format("filter(x -> !x.isEmpty())." if type_.can_be_empty else "")
         assert command
@@ -206,11 +204,11 @@ class ParserJava:
         """Print the content of a var that holds in one line"""
         assert type_.fits_in_one_line(self.input.structs)
         if type_.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.STR):
-            return "System.out.println({});".format(name)
+            return f"System.out.println({name});"
         if type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
             if type_.encapsulated.main == TypeEnum.CHAR:
-                return "System.out.println(new String({}));".format(name)
+                return f"System.out.println(new String({name}));"
             assert type_.encapsulated.main == TypeEnum.INT
             self.imports.add("java.util.Arrays")
             self.imports.add("java.util.stream.Collectors")
@@ -264,7 +262,7 @@ class ParserJava:
         """Return the parser content"""
         output = ""
         for struct in self.input.structs:
-            output += "/**\n * {}\n */\n".format(struct.comment)
+            output += f"/**\n * {struct.comment}\n */\n"
             output += "class {}\n{{\n".format(class_name(struct.name))
             for field in struct.fields:
                 decl_field = "{0}/**\n{0} * {1}\n{0} */\n{0}public {2} {3};\n"
@@ -277,8 +275,14 @@ class ParserJava:
             output += "}\n\n"
         output += "class Main {\n"
         output += "\n".join(self.call(reprint)) + "\n\n"
-        output += INDENTATION + "public static void main(String[] args) {\n"
-        output += 2 * INDENTATION + "Scanner scanner = new Scanner(System.in);\n"
+        output += (
+            INDENTATION
+            + "public static void main(String[] args) throws java.io.IOException {\n"
+        )
+        output += 2 * INDENTATION + (
+            "BufferedReader reader = "
+            "new BufferedReader(new InputStreamReader(System.in));\n"
+        )
         for var in self.input.input:
             output += (
                 "\n".join(
@@ -293,11 +297,7 @@ class ParserJava:
             INDENTATION * 2, var_name(self.input.name), ", ".join(args)
         )
         output += INDENTATION + "}\n}\n"
-        return (
-            "".join("import {};\n".format(i) for i in sorted(self.imports))
-            + "\n"
-            + output
-        )
+        return "".join(f"import {i};\n" for i in sorted(self.imports)) + "\n" + output
 
 
 def gen_java(input_data: Input, reprint: bool = False) -> str:

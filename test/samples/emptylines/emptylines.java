@@ -1,5 +1,6 @@
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.Arrays;
-import java.util.Scanner;
 
 /**
  * a char struct
@@ -64,26 +65,26 @@ class Main {
         /* TODO Wow, lots of empty lines! */
     }
 
-    public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        int[] emptyList = Arrays.stream(scanner.nextLine().split(" ")).filter(x -> !x.isEmpty()).mapToInt(Integer::parseInt).toArray();
-        String bufferString = scanner.nextLine();
-        int n = Integer.parseInt(scanner.nextLine());
-        int[] emptyInSample = Arrays.stream(scanner.nextLine().split(" ")).filter(x -> !x.isEmpty()).mapToInt(Integer::parseInt).toArray();
-        String emptyString = scanner.nextLine();
-        String main = scanner.nextLine();
-        char[] emptyCharList = scanner.nextLine().toCharArray();
-        char[] nonEmptyCharList = scanner.nextLine().toCharArray();
+    public static void main(String[] args) throws java.io.IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        int[] emptyList = Arrays.stream(reader.readLine().split(" ")).filter(x -> !x.isEmpty()).mapToInt(Integer::parseInt).toArray();
+        String bufferString = reader.readLine();
+        int n = Integer.parseInt(reader.readLine());
+        int[] emptyInSample = Arrays.stream(reader.readLine().split(" ")).filter(x -> !x.isEmpty()).mapToInt(Integer::parseInt).toArray();
+        String emptyString = reader.readLine();
+        String main = reader.readLine();
+        char[] emptyCharList = reader.readLine().toCharArray();
+        char[] nonEmptyCharList = reader.readLine().toCharArray();
         A structWithEmptyLine = new A();
-        structWithEmptyLine.listInStruct = Arrays.stream(scanner.nextLine().split(" ")).filter(x -> !x.isEmpty()).mapToInt(Integer::parseInt).toArray();
-        String[] words = scanner.nextLine().split(" ");
+        structWithEmptyLine.listInStruct = Arrays.stream(reader.readLine().split(" ")).filter(x -> !x.isEmpty()).mapToInt(Integer::parseInt).toArray();
+        String[] words = reader.readLine().split(" ");
         structWithEmptyLine.structInStruct = new StructWithAChar();
         structWithEmptyLine.structInStruct.char1 = words[0].charAt(0);
         structWithEmptyLine.structInStruct.int2 = Integer.parseInt(words[1]);
         SizedStruct aSizedStruct = new SizedStruct();
-        aSizedStruct.size = Integer.parseInt(scanner.nextLine());
-        aSizedStruct.stringInStruct = scanner.nextLine();
-        String finish = scanner.nextLine();
+        aSizedStruct.size = Integer.parseInt(reader.readLine());
+        aSizedStruct.stringInStruct = reader.readLine();
+        String finish = reader.readLine();
 
         emptyLines(emptyList, bufferString, n, emptyInSample, emptyString, main, emptyCharList, nonEmptyCharList, structWithEmptyLine, aSizedStruct, finish);
     }
