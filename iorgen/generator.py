@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2019 Sacha Delanoue
+# Copyright 2018-2021 Sacha Delanoue
 """Helpers to generate, compile and run parsers for all supported languages"""
 
 import subprocess
@@ -74,8 +74,9 @@ class Language:
                 stdout=subprocess.PIPE,
                 cwd=os.path.dirname(filename),
                 check=True,
+                universal_newlines=True,  # also known as 'text' in python >= 3.7
             )
-            out = res.stdout.decode()
+            out = res.stdout
         return out
 
     def generate(self, input_data: Input) -> str:
