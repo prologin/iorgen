@@ -78,10 +78,10 @@ fn main() {
     empty_lines(empty_list, buffer_string, n, empty_in_sample, empty_string, main, empty_char_list, non_empty_char_list, struct_with_empty_line, a_sized_struct, finish);
 }
 
-fn read_line(mut buffer: &mut String) -> &str {
+fn read_line(buffer: &mut String) -> &str {
     buffer.clear();
     std::io::stdin()
-        .read_line(&mut buffer)
+        .read_line(buffer)
         .expect("impossible to read a new line");
     buffer.trim_end()
 }

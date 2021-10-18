@@ -56,10 +56,10 @@ fn main() {
     lists(n, list_int, size, list_char, string, list_string4, list_list_string2, matrix);
 }
 
-fn read_line(mut buffer: &mut String) -> &str {
+fn read_line(buffer: &mut String) -> &str {
     buffer.clear();
     std::io::stdin()
-        .read_line(&mut buffer)
+        .read_line(buffer)
         .expect("impossible to read a new line");
     buffer.trim_end()
 }

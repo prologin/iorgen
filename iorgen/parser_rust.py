@@ -2,6 +2,7 @@
 # Copyright 2018-2021 Sacha Delanoue
 # Copyright 2020 Rémi Dupré
 # Copyright 2021 Grégoire Geis
+# Copyright 2021 Adrien Mathieu
 """Generate a Rust parser"""
 
 import textwrap
@@ -411,10 +412,10 @@ class ParserRust:
         if self.input.input:
             output_lines += [
                 "",
-                "fn read_line(mut buffer: &mut String) -> &str {",
+                "fn read_line(buffer: &mut String) -> &str {",
                 "    buffer.clear();",
                 "    std::io::stdin()",
-                "        .read_line(&mut buffer)",
+                "        .read_line(buffer)",
                 '        .expect("impossible to read a new line");',
                 "    buffer.trim_end()",
                 "}",
