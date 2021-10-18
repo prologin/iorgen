@@ -2,6 +2,7 @@
 # Copyright 2018-2021 Sacha Delanoue
 # Copyright 2020 Rémi Dupré
 # Copyright 2021 Grégoire Geis
+# Copyright 2021 Adrien Mathieu
 """Generate a Rust parser"""
 
 import textwrap
