@@ -112,7 +112,7 @@ class ParserRust:
         return lines + ["}", ""]
 
     def def_read_struct(self, struct: Struct) -> List[str]:
-        """Return a rust function reading a parsing a struct"""
+        """Return a rust function reading and parsing a struct"""
         s_name = struct_name(struct.name)
 
         if Type(TypeEnum.STRUCT, struct_name=struct.name).fits_in_one_line(

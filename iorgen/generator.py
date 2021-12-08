@@ -19,6 +19,7 @@ from iorgen.parser_go import gen_go
 from iorgen.parser_haskell import gen_haskell
 from iorgen.parser_java import gen_java
 from iorgen.parser_javascript import gen_javascript
+from iorgen.parser_julia import gen_julia
 from iorgen.parser_lua import gen_lua
 from iorgen.parser_ocaml import gen_ocaml
 from iorgen.parser_pascal import gen_pascal
@@ -103,6 +104,7 @@ ALL_LANGUAGES = [
     ),
     Language("java", gen_java, ["javac", "-encoding", "UTF-8"], ["java", "Main"]),
     Language("js", gen_javascript, [], ["node"]),
+    Language("jl", gen_julia, [], ["julia"]),
     Language("lua", gen_lua, [], ["lua"]),
     Language("ml", gen_ocaml, ["ocamlopt", "-w", "A-24", "-o", "{name}"]),
     Language("pas", gen_pascal, ["fpc", "-v0ew", "-l-"], no_stderr=True),
