@@ -284,6 +284,7 @@ RESERVED = [
     "local",
     "macro",
     "module",
+    "parse",
     "quote",
     "return",
     "struct",
