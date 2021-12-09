@@ -19,7 +19,7 @@ jobs:
         run: |
           sudo apt update
           sudo apt install mono-mcs gcc g++ gdc ghc lua5.3 ocaml-nox \
-            fp-compiler swi-prolog-nox rustc gambc
+            fp-compiler swi-prolog-nox rustc gambc julia
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
