@@ -1,3 +1,5 @@
+module simple;
+
 import std.stdio : stdin;
 
 /**

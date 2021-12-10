@@ -1,3 +1,5 @@
+module example;
+
 import std.stdio : stdin;
 
 /// A struct for the example

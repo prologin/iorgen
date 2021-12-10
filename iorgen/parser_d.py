@@ -236,7 +236,7 @@ class ParserD:
             imports += "import {} : {};\n".format(
                 module, ", ".join(sorted(self.imports[module]))
             )
-        return imports + "\n" + output
+        return f"module {var_name(self.input.name)};\n\n{imports}\n{output}"
 
 
 def gen_d(input_data: Input, reprint: bool = False) -> str:

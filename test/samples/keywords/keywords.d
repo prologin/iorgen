@@ -1,3 +1,5 @@
+module keywords;
+
 import std.algorithm.iteration : map;
 import std.array : array, split;
 import std.conv : to;

@@ -1,3 +1,5 @@
+module structs;
+
 import std.stdio : stdin;
 
 /// A simple struct
