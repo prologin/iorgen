@@ -157,7 +157,6 @@ def gen_compile_run_and_compare(
     language: Language,
     folder_for_generated_source: str,
     stdin_filename: List[str],
-    no_compile: bool = False,
 ) -> bool:
     # pylint: disable = too-many-arguments
     """Check that the generated parser prints the input it is fed in"""
@@ -174,9 +173,6 @@ def gen_compile_run_and_compare(
     generated = language.generator(input_data, True)
     Path(os.path.dirname(source)).mkdir(parents=True, exist_ok=True)
     Path(source).write_text(generated, encoding="utf-8")
-
-    if no_compile:
-        return True
 
     # Compile and compare
     exe = language.compile(source)

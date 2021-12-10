@@ -52,15 +52,16 @@ def test_samples() -> None:
     args = parser.parse_args()
     selected_languages = args.languages or list(languages.keys())
     skipped_languages = []
-    for language in ALL_LANGUAGES:
-        if language.extension in selected_languages:
-            for command in (language.compile_command, language.exec_command):
-                if command and shutil.which(command[0]) is None:
-                    print(
-                        "WARNING: skip language "
-                        f"{language.extension} because `{command[0]}` is not found!"
-                    )
-                    skipped_languages.append(language.extension)
+    if not args.no_compilation:
+        for language in ALL_LANGUAGES:
+            if language.extension in selected_languages:
+                for command in (language.compile_command, language.exec_command):
+                    if command and shutil.which(command[0]) is None:
+                        print(
+                            "WARNING: skipping language "
+                            f"{language.extension} because `{command[0]}` is not found!"
+                        )
+                        skipped_languages.append(language.extension)
     assert not skipped_languages or not args.no_missing
 
     for name in os.listdir("samples"):
@@ -73,7 +74,8 @@ def test_samples() -> None:
         for language in ALL_LANGUAGES:
             assert gen_is_same_as_sample(input_data, prefix, language)
             if (
-                language.extension in selected_languages
+                not args.no_compilation
+                and language.extension in selected_languages
                 and language.extension not in skipped_languages
             ):
                 assert gen_compile_run_and_compare(
@@ -82,7 +84,6 @@ def test_samples() -> None:
                     language,
                     "tests",
                     [prefix + "sample_input"],
-                    args.no_compilation,
                 )
 
         for language in ALL_MARKDOWN:

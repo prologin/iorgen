@@ -136,7 +136,7 @@ def main() -> None:
         for language in selected_languages:
             print(language, end=" ", flush=True)
             if not gen_compile_run_and_compare(
-                input_data, prefix, languages[language], "run", check_files, False
+                input_data, prefix, languages[language], "run", check_files
             ):
                 print("\nError with", language)
                 success = False
