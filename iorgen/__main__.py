@@ -128,6 +128,9 @@ def main() -> None:
     if args.run:
         success = True
         check_files = glob.glob(args.run)
+        if not check_files:
+            print(f"No file found matching '{args.run}'")
+            sys.exit(1)
         print(
             f"Check with {args.run} (found {len(check_files)} match): ",
             end="",
