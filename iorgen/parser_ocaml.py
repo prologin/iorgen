@@ -216,35 +216,6 @@ def gen_ocaml(input_data: Input, reprint: bool = False) -> str:
         )
     args = (var_name(i.name) for i in input_data.input)
     main += "{}{} {}\n".format(INDENTATION, var_name(input_data.name), " ".join(args))
-    if "List.init " in main:
-        # This is a quick fix to avoid dependency of OCaml 4.06 for List.init
-        output += "(* Emulate List.init from OCaml 4.06 *)\n"
-        output += "module List = struct\n"
-        output += INDENTATION + "include List\n\n"
-        output += INDENTATION + "let init n f =\n"
-        output += INDENTATION * 2 + "let rec aux i =\n"
-        output += INDENTATION * 3 + "if i >= n then [] else\n"
-        output += INDENTATION * 4 + "let r = f i in\n"
-        output += INDENTATION * 4 + "r :: aux (i+1) in\n"
-        output += INDENTATION * 2 + "aux 0\n"
-        output += "end\n\n"
-    if "String.split_on_char " in main:
-        output += "(* Copy String.split_on_char from OCaml 4.04 *)\n"
-        output += "module String = struct\n"
-        output += INDENTATION + "include String\n\n"
-        output += INDENTATION + "let split_on_char sep s =\n"
-        output += INDENTATION * 2 + "let r = ref [] in\n"
-        output += INDENTATION * 2 + "let j = ref (String.length s) in\n"
-        output += INDENTATION * 2 + "for i = String.length s - 1 downto 0 do\n"
-        output += INDENTATION * 3 + ("if String.unsafe_get s i = " "sep then begin\n")
-        output += INDENTATION * 4 + (
-            "r := String.sub s (i + 1) " "(!j - i - 1) :: !r;\n"
-        )
-        output += INDENTATION * 4 + "j := i\n"
-        output += INDENTATION * 3 + "end\n"
-        output += INDENTATION * 2 + "done;\n"
-        output += INDENTATION * 2 + "String.sub s 0 !j :: !r\n"
-        output += "end\n\n"
     output += main
     return output
 

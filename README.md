@@ -45,6 +45,10 @@ sudo apt install python3-yaml default-jdk-headless fp-compiler gambc gcc gdc \
     swi-prolog-nox
 ```
 
+The compilers must not be too old. For instance for Ocaml you need at least
+version 4.06, which is more recent that the default version in Ubuntu 18.04
+and Debian 10.
+
 ## Usage
 
 Make sure python (version 3.6 and above) and python-yaml are installed on your

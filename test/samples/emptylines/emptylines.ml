@@ -1,31 +1,3 @@
-(* Emulate List.init from OCaml 4.06 *)
-module List = struct
-  include List
-
-  let init n f =
-    let rec aux i =
-      if i >= n then [] else
-        let r = f i in
-        r :: aux (i+1) in
-    aux 0
-end
-
-(* Copy String.split_on_char from OCaml 4.04 *)
-module String = struct
-  include String
-
-  let split_on_char sep s =
-    let r = ref [] in
-    let j = ref (String.length s) in
-    for i = String.length s - 1 downto 0 do
-      if String.unsafe_get s i = sep then begin
-        r := String.sub s (i + 1) (!j - i - 1) :: !r;
-        j := i
-      end
-    done;
-    String.sub s 0 !j :: !r
-end
-
 (** a char struct *)
 type struct_with_a_char = {
   char1 : char; (** a char *)
