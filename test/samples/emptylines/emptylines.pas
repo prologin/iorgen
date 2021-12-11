@@ -16,7 +16,7 @@ type
     { a sized struct }
     SizedStruct = record
         Size: longint; { the size }
-        StringInStruct: string; { the string }
+        StringInStruct: AnsiString; { the string }
     end;
 
     T_EmptyList = array of longint;
@@ -33,23 +33,23 @@ type
 { @param StructWithEmptyLine a struct containing an empty line, then a struct }
 { @param ASizedStruct a sized struct containing an empty line }
 { @param Finish a string to finish }
-procedure EmptyLines(const EmptyList: T_EmptyList; const BufferString: string; N: longint; const EmptyInSample: T_EmptyInSample; const EmptyString: string; const Main: string; const EmptyCharList: string; const NonEmptyCharList: string; const StructWithEmptyLine: A; const ASizedStruct: SizedStruct; const Finish: string);
+procedure EmptyLines(const EmptyList: T_EmptyList; const BufferString: AnsiString; N: longint; const EmptyInSample: T_EmptyInSample; const EmptyString: AnsiString; const Main: AnsiString; const EmptyCharList: AnsiString; const NonEmptyCharList: AnsiString; const StructWithEmptyLine: A; const ASizedStruct: SizedStruct; const Finish: AnsiString);
 begin
     {* TODO Wow, lots of empty lines! *}
 end;
 
 var
     EmptyList: T_EmptyList; { an empty list }
-    BufferString: string; { here to check correct parsing of empty line above }
+    BufferString: AnsiString; { here to check correct parsing of empty line above }
     N: longint; { an integer, will be 0 in the sample input }
     EmptyInSample: T_EmptyInSample; { an empty list (only in the sample) }
-    EmptyString: string; { an empty string }
-    Main: string; { an other buffer string }
-    EmptyCharList: string; { an empty char list }
-    NonEmptyCharList: string; { an char list, non empty }
+    EmptyString: AnsiString; { an empty string }
+    Main: AnsiString; { an other buffer string }
+    EmptyCharList: AnsiString; { an empty char list }
+    NonEmptyCharList: AnsiString; { an char list, non empty }
     StructWithEmptyLine: A; { a struct containing an empty line, then a struct }
     ASizedStruct: SizedStruct; { a sized struct containing an empty line }
-    Finish: string; { a string to finish }
+    Finish: AnsiString; { a string to finish }
     i: longint;
 begin
     setLength(EmptyList, 0);

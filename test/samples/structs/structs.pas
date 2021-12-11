@@ -17,7 +17,7 @@ type
     { A point's name and position }
     Point = record
         Name_: char; { the point's name (single character) }
-        Description: string; { the point's description }
+        Description: AnsiString; { the point's description }
         Pos: Position; { the point's position }
     end;
 

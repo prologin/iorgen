@@ -27,13 +27,13 @@ def type_str(var: Variable, decl: bool = False) -> str:
     if var.type.main == TypeEnum.CHAR:
         return "char"
     if var.type.main == TypeEnum.STR:
-        return "string"
+        return "AnsiString"
     if var.type.main == TypeEnum.STRUCT:
         return var_name(var.type.struct_name)
     assert var.type.main == TypeEnum.LIST
     assert var.type.encapsulated
     if var.type.encapsulated.main == TypeEnum.CHAR:
-        return "string"
+        return "AnsiString"
     if decl:
         return "array of " + type_str(Variable("", "", var.type.encapsulated), True)
     return "T_" + var_name(var.name)
@@ -321,6 +321,7 @@ KEYWORDS = [
     "abstract",
     "alias",
     "and",
+    "ansistring",
     "array",
     "asm",
     "assembler",

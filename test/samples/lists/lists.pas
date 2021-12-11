@@ -2,8 +2,8 @@ program Lists;
 
 type
     T_ListInt = array of longint;
-    T_ListString4 = array of string;
-    T_ListListString2 = array of array of string;
+    T_ListString4 = array of AnsiString;
+    T_ListListString2 = array of array of AnsiString;
     T_Matrix = array of array of longint;
 
 { @param N the first list's size }
@@ -14,7 +14,7 @@ type
 { @param ListString4 a list of strings of size 4 }
 { @param ListListString2 a list of list of strings of size 2 of size 2 of size 2 }
 { @param Matrix a matrix of int }
-procedure Lists(N: longint; const ListInt: T_ListInt; Size: longint; const ListChar: string; const String_: string; const ListString4: T_ListString4; const ListListString2: T_ListListString2; const Matrix: T_Matrix);
+procedure Lists(N: longint; const ListInt: T_ListInt; Size: longint; const ListChar: AnsiString; const String_: AnsiString; const ListString4: T_ListString4; const ListListString2: T_ListListString2; const Matrix: T_Matrix);
 begin
     {* TODO Aren't these lists beautifull? *}
 end;
@@ -23,8 +23,8 @@ var
     N: longint; { the first list's size }
     ListInt: T_ListInt; { a list containing ints }
     Size: longint; { an other size }
-    ListChar: string; { a list of char }
-    String_: string; { a string }
+    ListChar: AnsiString; { a list of char }
+    String_: AnsiString; { a string }
     ListString4: T_ListString4; { a list of strings of size 4 }
     ListListString2: T_ListListString2; { a list of list of strings of size 2 of size 2 of size 2 }
     Matrix: T_Matrix; { a matrix of int }

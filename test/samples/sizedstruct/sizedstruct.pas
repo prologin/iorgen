@@ -10,7 +10,7 @@ type
     { contains a string }
     String_ = record
         Size2: longint; { the list's size }
-        StringList: string; { the string list }
+        StringList: AnsiString; { the string list }
     end;
 
     { contains a matrix }

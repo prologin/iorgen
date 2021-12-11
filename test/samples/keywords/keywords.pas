@@ -28,7 +28,7 @@ type
 { @param In_ not in }
 { @param For_ not a loop }
 { @param Words contains lots of things }
-procedure Keywords(If_: longint; Class: char; const I: string; const In_: Console; const For_: T_For_; const Words: T_Words);
+procedure Keywords(If_: longint; Class: char; const I: AnsiString; const In_: Console; const For_: T_For_; const Words: T_Words);
 begin
     {* TODO If this compiles, it is already a good step! *}
 end;
@@ -36,7 +36,7 @@ end;
 var
     If_: longint; { not a condition }
     Class: char; { not a class }
-    I: string; { just a string }
+    I: AnsiString; { just a string }
     In_: Console; { not in }
     For_: T_For_; { not a loop }
     Words: T_Words; { contains lots of things }
