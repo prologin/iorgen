@@ -8,8 +8,8 @@ template. The user writes a YAML describing the input, and *Iorgen* will
 generate the code to read this input from stdin, in all supported languages.
 
 The list of currently supported languages is: C, C++, C#, D, Go, Haskell, Java,
-Javascript, Lua, Ocaml, Pascal, Perl, PHP, Prolog, Python, Ruby, Rust, Scheme.
-A markdown description of the input in English and French can also be
+Javascript, Julia, Lua, Ocaml, Pascal, Perl, PHP, Prolog, Python, Ruby, Rust,
+Scheme. A markdown description of the input in English and French can also be
 generated.
 
 ## Installation
@@ -34,14 +34,14 @@ for instance, you will have to install lots of compilers.
 
 The complete dependencies for Archlinux are:
 ```shell
-pacman -S --needed python-yaml fpc gambit-c gcc gdc ghc go jdk-openjdk lua \
-    mono nodejs ocaml perl php ruby rust swi-prolog
+pacman -S --needed python-yaml fpc gambit-c gcc gdc ghc go jdk-openjdk julia \
+    lua mono nodejs ocaml perl php ruby rust swi-prolog
 ```
 
 For Debian based distros (tested on Debian 10, Ubuntu 18.04 and 20.04):
 ```shell
 sudo apt install python3-yaml default-jdk-headless fp-compiler gambc gcc gdc \
-    ghc golang lua5.3 mono-mcs nodejs ocaml-nox perl php-cli ruby rustc \
+    ghc golang julia lua5.3 mono-mcs nodejs ocaml-nox perl php-cli ruby rustc \
     swi-prolog-nox
 ```
 
