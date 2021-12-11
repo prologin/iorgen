@@ -41,6 +41,11 @@ def type_str(type_: Type, input_data: Input) -> str:
     return "Vector{{{}}}".format(type_str(type_.encapsulated, input_data))
 
 
+def escape_dollar(comment: str) -> str:
+    """Escape `$` in doc comments"""
+    return comment.replace("$", r"\$")
+
+
 def read_line(type_: Type, input_data: Input, input_str: str = "readline()") -> str:
     """Generate the Julia code to read a line of given type"""
     assert type_.fits_in_one_line(input_data.structs)
@@ -123,14 +128,14 @@ class ParserJulia:
         """Return the Julia code for declaring a struct"""
         lines = [
             '"""',
-            struct.comment,
+            escape_dollar(struct.comment),
             '"""',
             f"struct {struct_name(struct.name)}",
         ]
 
         for field in struct.fields:
             lines += [
-                f'    """{field.comment}"""',
+                f'    """{escape_dollar(field.comment)}"""',
                 f"    {var_name(field.name)}::{type_str(field.type, self.input)}",
             ]
 
@@ -174,7 +179,9 @@ class ParserJulia:
         for arg in self.input.input:
             self.method.append(
                 "- `{}::{}`: {}".format(
-                    var_name(arg.name), type_str(arg.type, self.input), arg.comment
+                    var_name(arg.name),
+                    type_str(arg.type, self.input),
+                    escape_dollar(arg.comment),
                 )
             )
         self.method.append('"""')
