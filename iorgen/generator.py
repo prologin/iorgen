@@ -106,7 +106,7 @@ ALL_LANGUAGES = [
     Language("js", gen_javascript, [], ["node"]),
     Language("jl", gen_julia, [], ["julia"]),
     Language("lua", gen_lua, [], ["lua"]),
-    Language("ml", gen_ocaml, ["ocamlopt", "-w", "A-24", "-o", "{name}"]),
+    Language("ml", gen_ocaml, ["ocamlopt", "-w", "A-24-70", "-o", "{name}"]),
     Language("pas", gen_pascal, ["fpc", "-v0ew", "-l-"], no_stderr=True),
     Language("php", gen_php, [], ["php"]),
     Language("pl", gen_perl, [], ["perl"]),
