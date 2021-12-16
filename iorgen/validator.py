@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018 Sacha Delanoue
+# Copyright 2018-2021 Sacha Delanoue
 """Check that a raw input is valid"""
 
 from string import printable, whitespace
@@ -39,6 +39,10 @@ class Validator:
         """Eval an integer, that can be a variable"""
         if isinstance(var, int):
             return var
+        if var.name not in self.integers:
+            raise ValidatorException(
+                f"No variable named '{var.name}' found to be used as a constraint"
+            )
         return self.integers[var.name]
 
     def check_integer(self, string: str, constraints: Constraints, name: str) -> None:
@@ -50,20 +54,19 @@ class Validator:
         value = int(string)
         if name:
             self.integers[name] = value
-        if value < self.eval_var(constraints.min):
+
+        min_value = self.eval_var(constraints.min)
+        if value < min_value:
             if value < self.eval_var(constraints.min_perf):
                 raise ValidatorException(
-                    "Line {}: {} < {} (the min value)".format(
-                        self.current_line, value, constraints.min
-                    )
+                    f"Line {self.current_line}: {value} < {min_value} (the min value)"
                 )
             self.valid_for_perf_only = True
-        if value > self.eval_var(constraints.max):
+        max_value = self.eval_var(constraints.max)
+        if value > max_value:
             if value > self.eval_var(constraints.max_perf):
                 raise ValidatorException(
-                    "Line {}: {} > {} (the max value)".format(
-                        self.current_line, value, constraints.max
-                    )
+                    f"Line {self.current_line}: {value} > {max_value} (the max value)"
                 )
             self.valid_for_perf_only = True
         if constraints.choices and value not in constraints.choices:
@@ -76,9 +79,7 @@ class Validator:
             )
         if constraints.is_size and value < 0:
             raise ValidatorException(
-                "Line {}: {} is negative but used as a size".format(
-                    self.current_line, value
-                )
+                f"Line {self.current_line}: {value} is negative but used as a size"
             )
 
     def check_char(self, string: str, constraints: Constraints, use_ws: bool) -> None:
