@@ -8,6 +8,8 @@ import re
 
 from iorgen.types import Constraints, Input, Type, TypeEnum, Variable
 
+INTEGER_REGEX = re.compile("^-?[0-9]+$")
+
 
 class ValidatorException(Exception):
     """A custom exception for the Validator class"""
@@ -47,7 +49,7 @@ class Validator:
 
     def check_integer(self, string: str, constraints: Constraints, name: str) -> None:
         """Check that the input is a correct integer"""
-        if not re.match("^-?[0-9]+$", string):
+        if not INTEGER_REGEX.match(string):
             raise ValidatorException(
                 "Line {}: '{}' is not an integer".format(self.current_line, string)
             )
