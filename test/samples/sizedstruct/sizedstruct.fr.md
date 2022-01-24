@@ -19,8 +19,8 @@ L’entrée contiendra :
     - Chaque élément de la liste est sur plusieurs lignes : une struct
       **string**.
         - Sur la première ligne, un entier : **size2**, the list's size.
-        - Sur la ligne suivante, une chaine de **size2** caractères : **string
-          list**, the string list.
+        - Sur la ligne suivante, une chaine de **size2** caractères ou moins :
+          **string list**, the string list.
 - Sur les lignes suivantes, une liste de **2** éléments : **matrices**, a list
   of matrices of different sizes.
     - Chaque élément de la liste est sur plusieurs lignes : une struct

@@ -8,7 +8,7 @@ The input will contain:
 
 - On the first line, an integer: **if**, not a condition.
 - On the next line, a char: **class**, not a class.
-- On the next line, a string of size **8**: **i**, just a string.
+- On the next line, a string of size **8** or less: **i**, just a string.
 - On the next line, separated by spaces, an integer **a** (the first letter of
   the alphabet), and an integer **static** (an integer): **in**, not in.
 - On the next line, a list of **if** integers separated by spaces: **for**, not

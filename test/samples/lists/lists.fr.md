@@ -12,16 +12,18 @@ L’entrée contiendra :
 - Sur la ligne suivante, un entier : **size**, an other size.
 - Sur la ligne suivante, une liste de **size** caractères juxtaposés : **list
   char**, a list of char.
-- Sur la ligne suivante, une chaine de **20** caractères : **string**, a
-  string.
+- Sur la ligne suivante, une chaine de **20** caractères ou moins : **string**,
+  a string.
 - Sur les lignes suivantes, une liste de **size** éléments : **list string4**,
   a list of strings of size 4.
-    - Une ligne par élément de la liste : une chaine de **4** caractères.
+    - Une ligne par élément de la liste : une chaine de **4** caractères ou
+      moins.
 - Sur les lignes suivantes, une liste de **2** éléments : **list list
   string2**, a list of list of strings of size 2 of size 2 of size 2.
     - Chaque élément de la liste est sur plusieurs lignes : une liste de **2**
       éléments.
-        - Une ligne par élément de la liste : une chaine de **2** caractères.
+        - Une ligne par élément de la liste : une chaine de **2** caractères ou
+          moins.
 - Sur les lignes suivantes, une liste de **size** éléments : **matrix**, a
   matrix of int.
     - Une ligne par élément de la liste : une liste de **size** entiers séparés
