@@ -1,23 +1,16 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2021 Sacha Delanoue
+# Copyright 2018-2022 Sacha Delanoue
 # Copyright 2019 Matthieu Moatti
 # Copyright 2021 Kenji Gaillac
 """Generic types in a programming language"""
 
+from __future__ import annotations
 import re
 from enum import Enum, unique
-from typing import Any, Callable, Dict, Iterator, List, Optional, Set, Tuple
+from typing import Any, Callable, Dict, Iterator, List, Optional, Set, Tuple, Union
 from typing import Type as T
-from typing import TypeVar, Union
 
 from .utils import str_int
-
-# This stuff is no longer necessary with python 3.7 by including:
-# from __future__ import annotations
-TYPE = TypeVar("TYPE", bound="Type")
-STRUCT = TypeVar("STRUCT", bound="Struct")
-VAR = TypeVar("VAR", bound="Variable")
-INPUT = TypeVar("INPUT", bound="Input")
 
 
 @unique
@@ -35,10 +28,10 @@ class Type:
     """Represents the type of a variable"""
 
     def __init__(
-        self: TYPE,
+        self: Type,
         enum: TypeEnum,
         size: str = "",
-        encapsulated: Optional[TYPE] = None,
+        encapsulated: Optional[Type] = None,
         struct_name: str = "",
     ) -> None:
         self.main = enum
@@ -48,7 +41,7 @@ class Type:
         self.struct_name = struct_name
 
     @classmethod
-    def from_string(cls: T[TYPE], string: str) -> Optional[TYPE]:
+    def from_string(cls: T[Type], string: str) -> Optional[Type]:
         """Create a Type from a string"""
         if string == "int":
             return cls(TypeEnum.INT)
@@ -79,7 +72,7 @@ class Type:
             return None if not size.strip() else cls(type_, size, encapsulated)
         return None
 
-    def __str__(self: TYPE) -> str:
+    def __str__(self: Type) -> str:
         if self.main == TypeEnum.INT:
             return "int"
         if self.main == TypeEnum.CHAR:
@@ -92,11 +85,11 @@ class Type:
             return f"@{self.struct_name}"
         raise Exception
 
-    def can_be_inlined(self: TYPE) -> bool:
+    def can_be_inlined(self: Type) -> bool:
         """Can we parse several of this type on a single line"""
         return self.main in (TypeEnum.INT, TypeEnum.CHAR)
 
-    def fits_in_one_line(self: TYPE, structs: List[STRUCT]) -> bool:
+    def fits_in_one_line(self: Type, structs: List[Struct]) -> bool:
         """Return False if more than one line is needed for this struct"""
         if self.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.STR):
             return True
@@ -108,7 +101,7 @@ class Type:
             return all(i.type.can_be_inlined() for i in struct.fields)
         raise Exception
 
-    def list_contained(self: TYPE) -> TYPE:
+    def list_contained(self: Type) -> Type:
         """Return non-list type contained is list (or list of list, etc)"""
         if self.main != TypeEnum.LIST:
             return self
@@ -117,7 +110,7 @@ class Type:
         return inner.list_contained()
 
 
-def get_min_value(var: Union[int, VAR]) -> int:
+def get_min_value(var: Union[int, Variable]) -> int:
     """Get min value of an integer or a variable"""
     if isinstance(var, Variable):
         assert var.constraints is not None
@@ -126,7 +119,7 @@ def get_min_value(var: Union[int, VAR]) -> int:
     return var
 
 
-def get_max_value(var: Union[int, VAR]) -> int:
+def get_max_value(var: Union[int, Variable]) -> int:
     """Get min value of an integer or a variable"""
     if isinstance(var, Variable):
         assert var.constraints is not None
@@ -136,8 +129,8 @@ def get_max_value(var: Union[int, VAR]) -> int:
 
 
 def get_int_or_var(
-    var_name: Union[str, int], variables: Dict[str, VAR]
-) -> Union[int, VAR]:
+    var_name: Union[str, int], variables: Dict[str, Variable]
+) -> Union[int, Variable]:
     """From a string, return either the corresponding var or int"""
     assert isinstance(var_name, (int, str))
     if var_name in variables:
@@ -148,7 +141,7 @@ def get_int_or_var(
 
 
 def integer_bounds(
-    name: str, min_: Union[int, VAR], max_: Union[int, VAR], is_size: bool
+    name: str, min_: Union[int, Variable], max_: Union[int, Variable], is_size: bool
 ) -> str:
     """Create a string to display an integer's bounds"""
     min_repr = ""
@@ -186,7 +179,7 @@ class Constraints:
     MAX_INT = 2147483647
     MIN_INT = -2147483648
 
-    def __init__(self, dic: Dict[str, Any], variables: Dict[str, VAR]) -> None:
+    def __init__(self, dic: Dict[str, Any], variables: Dict[str, Variable]) -> None:
         self.min = self.MIN_INT  # type: Union[int, Variable]
         self.max = self.MAX_INT  # type: Union[int, Variable]
         self.min_perf = self.MIN_INT  # type: Union[int, Variable]
@@ -248,14 +241,14 @@ class Constraints:
 class Variable:
     """Everything there is to know about a variable"""
 
-    def __init__(self: VAR, name: str, comment: str, type_: Type) -> None:
+    def __init__(self: Variable, name: str, comment: str, type_: Type) -> None:
         self.name = name
         self.comment = comment
         self.type = type_
         self.constraints = None  # type: Optional[Constraints]
 
     @classmethod
-    def from_dict(cls: T[VAR], dic: Dict[str, str]) -> Optional[VAR]:
+    def from_dict(cls: T[Variable], dic: Dict[str, str]) -> Optional[Variable]:
         """Create a Variable from its YAML (dictionary) representation"""
         if "name" not in dic or "comment" not in dic or "type" not in dic:
             return None
@@ -300,15 +293,15 @@ class Variable:
 class Struct:
     """Represent a struct (like in C)"""
 
-    def __init__(self: STRUCT, name: str, comment: str, fields: List[Variable]) -> None:
+    def __init__(self: Struct, name: str, comment: str, fields: List[Variable]) -> None:
         self.name = name
         self.comment = comment
         self.fields = fields
 
     @classmethod
     def from_dict(
-        cls: T[STRUCT], dic: Dict[str, Union[str, List[Dict[str, str]]]]
-    ) -> Optional[STRUCT]:
+        cls: T[Struct], dic: Dict[str, Union[str, List[Dict[str, str]]]]
+    ) -> Optional[Struct]:
         """Create a Struct from its YAML (dictionary) representation"""
         try:
             name = dic["name"]
@@ -389,7 +382,7 @@ class Input:
     """Represents the user input, parsed"""
 
     def __init__(
-        self: INPUT,
+        self: Input,
         name: str,
         structs: List[Struct],
         inputs: List[Variable],
@@ -404,7 +397,7 @@ class Input:
         self.output = output
 
     @classmethod
-    def from_dict(cls: T[INPUT], dic: Dict[str, Any]) -> Optional[INPUT]:
+    def from_dict(cls: T[Input], dic: Dict[str, Any]) -> Optional[Input]:
         """Parse the input yaml"""
         # pylint: disable=too-many-branches
         # We'll be able to reactivate the too-many-branches check when we will
@@ -455,10 +448,10 @@ class Input:
         except KeyError:
             return None
 
-    def get_struct(self: INPUT, name: str) -> Struct:
+    def get_struct(self: Input, name: str) -> Struct:
         """Get a struct by its name (or throw StopIteration)"""
         return next(x for x in self.structs if x.name == name)
 
-    def get_var(self: INPUT, name: str) -> Variable:
+    def get_var(self: Input, name: str) -> Variable:
         """Get a variable by its name."""
         return next(x for x in self.input if x.name == name)

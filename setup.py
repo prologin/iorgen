@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright 2018 Florian Amsallem
-# Copyright 2020-2021 Sacha Delanoue
+# Copyright 2020-2022 Sacha Delanoue
 
 from setuptools import setup, find_packages
 
@@ -24,7 +24,6 @@ setup(
         "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
         "Operating System :: OS Independent",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
@@ -40,5 +39,5 @@ setup(
             "iorgen=iorgen.__main__:main",
         ],
     },
-    python_requires=">=3.6",
+    python_requires=">=3.7",
 )

@@ -14,7 +14,7 @@ Dependencies
 To develop for *Iorgen*, you will need to run some of its tests, so you will
 need to install:
 
-- Every dependencies needed to run *Iorgen* itself: meaning Python 3.6 or
+- Every dependencies needed to run *Iorgen* itself: meaning Python 3.7 or
   above, and PyYAML. You can install PyYAML through your package manager (it
   will be probably be named `python-yaml`, or `python3-yaml`), or with `pip3
   install pyyaml`.
