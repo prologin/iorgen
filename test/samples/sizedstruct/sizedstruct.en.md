@@ -17,8 +17,8 @@ The input will contain:
   of different sizes.
     - Each list element is on several lines: a struct **string**.
         - On the first line, an integer: **size2**, the list's size.
-        - On the next line, a string of size **size2**: **string list**, the
-          string list.
+        - On the next line, a string of size **size2** or less: **string
+          list**, the string list.
 - On the next lines, a list of **2** elements: **matrices**, a list of matrices
   of different sizes.
     - Each list element is on several lines: a struct **matrix**.

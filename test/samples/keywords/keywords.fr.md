@@ -8,7 +8,8 @@ L’entrée contiendra :
 
 - Sur la première ligne, un entier : **if**, not a condition.
 - Sur la ligne suivante, un caractère : **class**, not a class.
-- Sur la ligne suivante, une chaine de **8** caractères : **i**, just a string.
+- Sur la ligne suivante, une chaine de **8** caractères ou moins : **i**, just
+  a string.
 - Sur la ligne suivante, séparés par des espaces, un entier **a** (the first
   letter of the alphabet), et un entier **static** (an integer) : **in**, not
   in.

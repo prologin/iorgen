@@ -9,14 +9,16 @@ The input will contain:
 
 - On the first line, a list of **0** integers separated by spaces: **empty
   list**, an empty list.
-- On the next line, a string of size **3**: **buffer string**, here to check
-  correct parsing of empty line above.
+- On the next line, a string of size **3** or less: **buffer string**, here to
+  check correct parsing of empty line above.
 - On the next line, an integer: **N**, an integer, will be 0 in the sample
   input.
 - On the next line, a list of **N** integers separated by spaces: **empty in
   sample**, an empty list (only in the sample).
-- On the next line, a string of size **0**: **empty string**, an empty string.
-- On the next line, a string of size **4**: **main**, an other buffer string.
+- On the next line, a string of size **0** or less: **empty string**, an empty
+  string.
+- On the next line, a string of size **4** or less: **main**, an other buffer
+  string.
 - On the next line, a list of **0** chars next to each other: **empty char
   list**, an empty char list.
 - On the next line, a list of **5** chars next to each other: **non empty char
@@ -29,9 +31,10 @@ The input will contain:
       struct.
 - On the next lines, a struct **sized struct**.
     - On the first line, an integer: **size**, the size.
-    - On the next line, a string of size **size**: **string in struct**, the
-      string.
-- On the next line, a string of size **6**: **finish**, a string to finish.
+    - On the next line, a string of size **size** or less: **string in
+      struct**, the string.
+- On the next line, a string of size **6** or less: **finish**, a string to
+  finish.
 
 ### Output
 
