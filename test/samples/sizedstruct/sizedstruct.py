@@ -1,15 +1,51 @@
+from dataclasses import dataclass
+from typing import List
+
+
+@dataclass
+class List_:
+    """contains a list"""
+
+    size1: int  # the list's size
+    int_list: List[int]  # the integer list
+
+
+@dataclass
+class String:
+    """contains a string"""
+
+    size2: int  # the list's size
+    string_list: str  # the string list
+
+
+@dataclass
+class Matrix:
+    """contains a matrix"""
+
+    size3: int  # the list's size
+    list_list: List[List[int]]  # the list list
+
+
+@dataclass
+class NotASizedStruct:
+    """this is not a 'sized struct', but a regular one!"""
+
+    size4: int  # not the list's size
+    int_list_n: List[int]  # the integer list
+
+
 def sized_struct(n, lists, strings, matrices, same):
     """
     :param n: the size of the lists
     :type n: int
     :param lists: a list of list of different sizes
-    :type lists: list[dict["size1": int, "int list": list[int]]]
+    :type lists: List[List_]
     :param strings: a list of strings of different sizes
-    :type strings: list[dict["size2": int, "string list": str]]
+    :type strings: List[String]
     :param matrices: a list of matrices of different sizes
-    :type matrices: list[dict["size3": int, "list list": list[list[int]]]]
+    :type matrices: List[Matrix]
     :param same: a list of list of same sizes
-    :type same: list[dict["size4": int, "int list n": list[int]]]
+    :type same: List[NotASizedStruct]
     """
     # TODO The is a special case.
     pass
@@ -18,28 +54,29 @@ def sized_struct(n, lists, strings, matrices, same):
 if __name__ == '__main__':
     n = int(input())
     lists = [
-        (lambda i: {
-            "size1": i,
-            "int list": list(map(int, input().split()))
-        })(int(input()))
+        (lambda i: List_(
+            i,
+            list(map(int, input().split()))
+        ))(int(input()))
         for _ in range(n)
         ]
     strings = [
-        (lambda i: {
-            "size2": i,
-            "string list": input()
-        })(int(input()))
+        (lambda i: String(
+            i,
+            input()
+        ))(int(input()))
         for _ in range(n)
         ]
     matrices = [
-        (lambda i: {
-            "size3": i,
-            "list list": [list(map(int, input().split())) for _ in range(i)]
-        })(int(input()))
+        (lambda i: Matrix(
+            i,
+            [list(map(int, input().split())) for _ in range(i)]
+        ))(int(input()))
         for _ in range(2)
         ]
-    same = [{
-        "size4": int(input()),
-        "int list n": list(map(int, input().split()))
-    } for _ in range(n)]
+    same = [
+        NotASizedStruct(
+            int(input()),
+            list(map(int, input().split())),
+        ) for _ in range(n)]
     sized_struct(n, lists, strings, matrices, same)
