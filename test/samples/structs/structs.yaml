@@ -50,6 +50,15 @@ structs:
           - type: char
             name: third char
             comment: a third char
+    - name: with list
+      comment: contains a big list inside
+      fields:
+          - type: int
+            name: int
+            comment: int
+          - type: List[List[List[int](2)](2)](2)
+            name: big list
+            comment: list nested 3 times!
 input:
     - type: "@struct 1"
       name: struct
@@ -67,4 +76,7 @@ input:
     - type: "@chars"
       name: struct chars
       comment: a struct of chars
+    - type: "@with list"
+      name: big list struct
+      comment: the big list struct
 output: Look at them structs.

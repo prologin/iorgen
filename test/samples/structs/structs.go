@@ -4,6 +4,7 @@ import "bufio"
 import "fmt"
 import "os"
 import "strconv"
+import "strings"
 
 // A simple struct
 type Struct1 struct {
@@ -32,12 +33,19 @@ type Chars struct {
     thirdChar byte // a third char
 }
 
+// contains a big list inside
+type WithList struct {
+    int_ int // int
+    bigList [][][]int // list nested 3 times!
+}
+
 // struct_: a struct 1 instance
 // n: a number
 // structList: a list a struct 1
 // triangle: a triangle
 // structChars: a struct of chars
-func structs(struct_ Struct1, n int, structList []Struct1, triangle []Point, structChars Chars) {
+// bigListStruct: the big list struct
+func structs(struct_ Struct1, n int, structList []Struct1, triangle []Point, structChars Chars, bigListStruct WithList) {
     /* TODO Look at them structs. */
 }
 
@@ -66,5 +74,19 @@ func main() {
     var structChars Chars
     scanner.Scan()
     fmt.Sscanf(scanner.Text(), "%c %c %c", &structChars.firstChar, &structChars.secondChar, &structChars.thirdChar)
-    structs(struct_, n, structList, triangle, structChars);
+    var bigListStruct WithList
+    scanner.Scan()
+    bigListStruct.int_, _ = strconv.Atoi(scanner.Text())
+    bigListStruct.bigList = make([][][]int, 2)
+    for i := range bigListStruct.bigList {
+        bigListStruct.bigList[i] = make([][]int, 2)
+        for j := range bigListStruct.bigList[i] {
+            bigListStruct.bigList[i][j] = make([]int, 2)
+            scanner.Scan()
+            for k, kValue := range strings.SplitN(scanner.Text(), " ", 2) {
+                bigListStruct.bigList[i][j][k], _ = strconv.Atoi(kValue)
+            }
+        }
+    }
+    structs(struct_, n, structList, triangle, structChars, bigListStruct);
 }

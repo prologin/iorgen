@@ -28,6 +28,12 @@ type
         ThirdChar: char; { a third char }
     end;
 
+    { contains a big list inside }
+    WithList = record
+        Int: longint; { int }
+        BigList: array of array of array of longint; { list nested 3 times! }
+    end;
+
     T_StructList = array of Struct1;
     T_Triangle = array of Point;
 
@@ -36,7 +42,8 @@ type
 { @param StructList a list a struct 1 }
 { @param Triangle a triangle }
 { @param StructChars a struct of chars }
-procedure Structs(const Struct: Struct1; N: longint; const StructList: T_StructList; const Triangle: T_Triangle; const StructChars: Chars);
+{ @param BigListStruct the big list struct }
+procedure Structs(const Struct: Struct1; N: longint; const StructList: T_StructList; const Triangle: T_Triangle; const StructChars: Chars; const BigListStruct: WithList);
 begin
     {* TODO Look at them structs. *}
 end;
@@ -47,7 +54,8 @@ var
     StructList: T_StructList; { a list a struct 1 }
     Triangle: T_Triangle; { a triangle }
     StructChars: Chars; { a struct of chars }
-    i: longint;
+    BigListStruct: WithList; { the big list struct }
+    i, j, k: longint;
     _: char;
 begin
     readln(Struct.Foo, Struct.Bar);
@@ -65,5 +73,16 @@ begin
         readln(Triangle[i].Pos.X, Triangle[i].Pos.Y, Triangle[i].Pos.Z);
     end;
     readln(StructChars.FirstChar, _, StructChars.SecondChar, _, StructChars.ThirdChar);
-    Structs(Struct, N, StructList, Triangle, StructChars);
+    readln(BigListStruct.Int);
+    setLength(BigListStruct.BigList, 2, 2, 2);
+    for i := 0 to 2 - 1 do
+    begin
+        for j := 0 to 2 - 1 do
+        begin
+            for k := 0 to 2 - 1 do
+                read(BigListStruct.BigList[i][j][k]);
+            readln();
+        end;
+    end;
+    Structs(Struct, N, StructList, Triangle, StructChars, BigListStruct);
 end.

@@ -30,12 +30,19 @@ struct Chars {
     char third_char; ///< a third char
 };
 
+/// contains a big list inside
+struct WithList {
+    int int_; ///< int
+    std::vector<std::vector<std::vector<int>>> big_list; ///< list nested 3 times!
+};
+
 /// \param struct_ a struct 1 instance
 /// \param n a number
 /// \param struct_list a list a struct 1
 /// \param triangle a triangle
 /// \param struct_chars a struct of chars
-void structs(const Struct1& struct_, int n, const std::vector<Struct1>& struct_list, const std::vector<Point>& triangle, const Chars& struct_chars) {
+/// \param big_list_struct the big list struct
+void structs(const Struct1& struct_, int n, const std::vector<Struct1>& struct_list, const std::vector<Point>& triangle, const Chars& struct_chars, const WithList& big_list_struct) {
     /* TODO Look at them structs. */
 }
 
@@ -56,5 +63,16 @@ int main() {
     }
     Chars struct_chars; ///< a struct of chars
     std::cin >> struct_chars.first_char >> struct_chars.second_char >> struct_chars.third_char;
-    structs(struct_, n, struct_list, triangle, struct_chars);
+    WithList big_list_struct; ///< the big list struct
+    std::cin >> big_list_struct.int_;
+    big_list_struct.big_list.resize(2);
+    for (std::vector<std::vector<int>>& i : big_list_struct.big_list) {
+        i.resize(2);
+        for (std::vector<int>& j : i) {
+            j.resize(2);
+            for (int& k : j)
+                std::cin >> k;
+        }
+    }
+    structs(struct_, n, struct_list, triangle, struct_chars, big_list_struct);
 }

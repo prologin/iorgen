@@ -25,6 +25,13 @@ The input will contain:
 - On the next line, separated by spaces, a char **first char** (a first char),
   a char **second char** (a second char), and a char **third char** (a third
   char): **struct chars**, a struct of chars.
+- On the next lines, a struct **with list**.
+    - On the first line, an integer: **int**, int.
+    - On the next lines, a list of **2** elements: **big list**, list nested 3
+      times!.
+        - Each list element is on several lines: a list of **2** elements.
+            - One line per list element: a list of **2** integers separated by
+              spaces.
 
 ### Output
 

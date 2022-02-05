@@ -7,8 +7,9 @@ use warnings;
 # @struct_list: a list a struct 1
 # @triangle: a triangle
 # %struct_chars: a struct of chars
+# %big_list_struct: the big list struct
 sub structs {
-    my ($struct, $n, $struct_list, $triangle, $struct_chars) = @_;
+    my ($struct, $n, $struct_list, $triangle, $struct_chars, $big_list_struct) = @_;
     # TODO Look at them structs.
 }
 
@@ -31,5 +32,14 @@ for (1..3) {
 }
 my @words1 = split /[ \n]/, <>;
 my %struct_chars = ("first char" => substr($words1[0], 0, 1), "second char" => substr($words1[1], 0, 1), "third char" => substr($words1[2], 0, 1));
+my %big_list_struct = ();
+$big_list_struct{'int'} = int <>;
+$big_list_struct{'big list'} = [];
+for (1..2) {
+    push(@{$big_list_struct{'big list'}}, []);
+    for (1..2) {
+        push(@{$big_list_struct{'big list'}[-1]}, \@{[map { int } split(/[ \n]/, <>)]});
+    }
+}
 
-structs(\%struct, $n, \@struct_list, \@triangle, \%struct_chars);
+structs(\%struct, $n, \@struct_list, \@triangle, \%struct_chars, \%big_list_struct);

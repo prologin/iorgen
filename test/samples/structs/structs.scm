@@ -3,7 +3,8 @@
 ;;; struct-list: a list a struct 1
 ;;; triangle: a triangle
 ;;; struct-chars: a struct of chars
-(define (structs struct n struct-list triangle struct-chars)
+;;; big-list-struct: the big list struct
+(define (structs struct n struct-list triangle struct-chars big-list-struct)
   ;;; TODO Look at them structs.
   (newline))
 
@@ -51,5 +52,17 @@
              (if
                (null? l)
                '()
-               (if b (cons (car l) (loop (cdr l) #f)) (loop (cdr l) #t)))))))
-  (structs struct n struct-list triangle struct-chars))
+               (if b (cons (car l) (loop (cdr l) #f)) (loop (cdr l) #t))))))
+       (big-list-struct
+         (make-assoc-list
+           '(int big-list)
+           (list
+             (lambda () (string->number (read-line)))
+             (lambda
+               ()
+               (make-list
+                 2
+                 (lambda
+                   ()
+                   (make-list 2 (lambda () (parse-int-list (read-line)))))))))))
+  (structs struct n struct-list triangle struct-chars big-list-struct))

@@ -25,14 +25,21 @@ type chars = {
   thirdChar : char; (** a third char *)
 }
 
+(** contains a big list inside *)
+type with_list = {
+  int : int; (** int *)
+  bigList : int list list list; (** list nested 3 times! *)
+}
+
 (**
    @param struct_ a struct 1 instance
    @param n a number
    @param structList a list a struct 1
    @param triangle a triangle
    @param structChars a struct of chars
+   @param bigListStruct the big list struct
 *)
-let structs struct_ n structList triangle structChars =
+let structs struct_ n structList triangle structChars bigListStruct =
   (** TODO Look at them structs. *)
   ()
 
@@ -42,4 +49,5 @@ let () =
   let structList = List.init n (fun _ -> Scanf.sscanf (read_line ()) "%d %d" (fun foo bar -> {foo; bar})) in
   let triangle = List.init 3 (fun _ -> let name = (read_line ()).[0] in let description = read_line () in let pos = Scanf.sscanf (read_line ()) "%d %d %d" (fun x y z -> {x; y; z}) in {name; description; pos}) in
   let structChars = Scanf.sscanf (read_line ()) "%c %c %c" (fun firstChar secondChar thirdChar -> {firstChar; secondChar; thirdChar}) in
-  structs struct_ n structList triangle structChars
+  let bigListStruct = let int = read_int () in let bigList = List.init 2 (fun _ -> List.init 2 (fun _ -> read_line () |> fun x -> if x = "" then [] else String.split_on_char ' ' x |> List.rev_map int_of_string |> List.rev)) in {int; bigList} in
+  structs struct_ n structList triangle structChars bigListStruct

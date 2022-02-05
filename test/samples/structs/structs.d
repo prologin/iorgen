@@ -1,5 +1,8 @@
 module structs;
 
+import std.algorithm.iteration : map;
+import std.array : array, split;
+import std.conv : to;
 import std.stdio : stdin;
 
 /// A simple struct
@@ -33,6 +36,13 @@ struct Chars
     char thirdChar; /// a third char
 }
 
+/// contains a big list inside
+struct WithList
+{
+    int int_; /// int
+    int[][][] bigList; /// list nested 3 times!
+}
+
 /**
 Params:
     struct_ = a struct 1 instance
@@ -40,8 +50,9 @@ Params:
     structList = a list a struct 1
     triangle = a triangle
     structChars = a struct of chars
+    bigListStruct = the big list struct
 */
-void structs(Struct1 struct_, int n, Struct1[] structList, Point[] triangle, Chars structChars)
+void structs(Struct1 struct_, int n, Struct1[] structList, Point[] triangle, Chars structChars, WithList bigListStruct)
 {
     // TODO Look at them structs.
 }
@@ -68,6 +79,17 @@ void main()
     }
     Chars structChars;
     stdin.readf("%c %c %c\n", &structChars.firstChar, &structChars.secondChar, &structChars.thirdChar);
+    WithList bigListStruct;
+    stdin.readf("%d\n", &bigListStruct.int_);
+    bigListStruct.bigList.length = 2;
+    for (size_t i = 0; i < bigListStruct.bigList.length; i++)
+    {
+        bigListStruct.bigList[i].length = 2;
+        for (size_t j = 0; j < bigListStruct.bigList[i].length; j++)
+        {
+            bigListStruct.bigList[i][j] = stdin.readln.split.map!(to!int).array;
+        }
+    }
 
-    structs(struct_, n, structList, triangle, structChars);
+    structs(struct_, n, structList, triangle, structChars, bigListStruct);
 }

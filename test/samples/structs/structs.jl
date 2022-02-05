@@ -51,13 +51,25 @@ end
 
 
 """
+contains a big list inside
+"""
+struct WithList
+    """int"""
+    int::Int
+    """list nested 3 times!"""
+    big_list::Vector{Vector{Vector{Int}}}
+end
+
+
+"""
 - `struct_::Struct1`: a struct 1 instance
 - `n::Int`: a number
 - `struct_list::Vector{Struct1}`: a list a struct 1
 - `triangle::Vector{Point}`: a triangle
 - `struct_chars::Chars`: a struct of chars
+- `big_list_struct::WithList`: the big list struct
 """
-function structs(struct_::Struct1, n::Int, struct_list::Vector{Struct1}, triangle::Vector{Point}, struct_chars::Chars)
+function structs(struct_::Struct1, n::Int, struct_list::Vector{Struct1}, triangle::Vector{Point}, struct_chars::Chars, big_list_struct::WithList)
     # TODO Look at them structs.
 end
 
@@ -83,9 +95,16 @@ function parse(::Type{Chars}, s::AbstractString)
     Chars(s[1][1], s[2][1], s[3][1])
 end
 
+function read_struct_with_list()
+    int = parse(Int, readline())
+    big_list = [ [ map(s -> parse(Int, s), split(readline())) for _=1:2 ] for _=1:2 ]
+    WithList(int, big_list)
+end
+
 struct_ = parse(Struct1, readline())
 n = parse(Int, readline())
 struct_list = [ parse(Struct1, readline()) for _=1:n ]
 triangle = [ read_struct_point() for _=1:3 ]
 struct_chars = parse(Chars, readline())
-structs(struct_, n, struct_list, triangle, struct_chars)
+big_list_struct = read_struct_with_list()
+structs(struct_, n, struct_list, triangle, struct_chars, big_list_struct)

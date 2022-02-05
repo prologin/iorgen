@@ -27,6 +27,14 @@ L’entrée contiendra :
 - Sur la ligne suivante, séparés par des espaces, un caractère **first char**
   (a first char), un caractère **second char** (a second char), et un caractère
   **third char** (a third char) : **struct chars**, a struct of chars.
+- Sur les lignes suivantes, une struct **with list**.
+    - Sur la première ligne, un entier : **int**, int.
+    - Sur les lignes suivantes, une liste de **2** éléments : **big list**,
+      list nested 3 times!.
+        - Chaque élément de la liste est sur plusieurs lignes : une liste de
+          **2** éléments.
+            - Une ligne par élément de la liste : une liste de **2** entiers
+              séparés par des espaces.
 
 ### Sortie
 

@@ -3,7 +3,8 @@
 % StructList: a list a struct 1
 % Triangle: a triangle
 % StructChars: a struct of chars
-structs(Struct, N, StructList, Triangle, StructChars) :-
+% BigListStruct: the big list struct
+structs(Struct, N, StructList, Triangle, StructChars, BigListStruct) :-
     % TODO Look at them structs.
     nl.
 
@@ -24,6 +25,10 @@ read_assoc_point(X) :-
     read_assoc_position(Pos),
     pairs_keys_values(P, ["name", "description", "pos"], [Name, Description, Pos]), list_to_assoc(P, X).
 read_assoc_chars(X) :- read_line(S), atomic_list_concat(L, ' ',S), pairs_keys_values(P, ["first char", "second char", "third char"], L), list_to_assoc(P, X).
+read_assoc_with_list(X) :-
+    read_int(Int),
+    read_list(read_list(read_int_list, 2), 2, BigList),
+    pairs_keys_values(P, ["int", "big list"], [Int, BigList]), list_to_assoc(P, X).
 :-
     prompt(_, ''),
     read_assoc_struct_1(Struct),
@@ -31,4 +36,5 @@ read_assoc_chars(X) :- read_line(S), atomic_list_concat(L, ' ',S), pairs_keys_va
     read_list(read_assoc_struct_1, N, StructList),
     read_list(read_assoc_point, 3, Triangle),
     read_assoc_chars(StructChars),
-    structs(Struct, N, StructList, Triangle, StructChars).
+    read_assoc_with_list(BigListStruct),
+    structs(Struct, N, StructList, Triangle, StructChars, BigListStruct).

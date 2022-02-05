@@ -31,6 +31,13 @@ struct Chars
     public char thirdChar; //!< a third char
 }
 
+/// contains a big list inside
+struct WithList
+{
+    public int @int; //!< int
+    public int[][][] bigList; //!< list nested 3 times!
+}
+
 class Program
 {
     /// \param @struct a struct 1 instance
@@ -38,7 +45,8 @@ class Program
     /// \param structList a list a struct 1
     /// \param triangle a triangle
     /// \param structChars a struct of chars
-    static void Structs(Struct1 @struct, int n, Struct1[] structList, Point[] triangle, Chars structChars)
+    /// \param bigListStruct the big list struct
+    static void Structs(Struct1 @struct, int n, Struct1[] structList, Point[] triangle, Chars structChars, WithList bigListStruct)
     {
         /* TODO Look at them structs. */
     }
@@ -64,7 +72,18 @@ class Program
         }
         string[] words2 = Console.ReadLine().Split(' ');
         Chars structChars = new Chars {firstChar = words2[0][0], secondChar = words2[1][0], thirdChar = words2[2][0]};
+        WithList bigListStruct;
+        bigListStruct.@int = int.Parse(Console.ReadLine());
+        bigListStruct.bigList = new int[2][][];
+        for (int i = 0; i < 2; ++i)
+        {
+            bigListStruct.bigList[i] = new int[2][];
+            for (int j = 0; j < 2; ++j)
+            {
+                bigListStruct.bigList[i][j] = Array.ConvertAll(Console.ReadLine().Split(' '), int.Parse);
+            }
+        }
 
-        Structs(@struct, n, structList, triangle, structChars);
+        Structs(@struct, n, structList, triangle, structChars, bigListStruct);
     }
 }

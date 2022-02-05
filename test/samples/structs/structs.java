@@ -1,5 +1,6 @@
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 
 /**
  * A simple struct
@@ -73,6 +74,21 @@ class Chars
     public char thirdChar;
 }
 
+/**
+ * contains a big list inside
+ */
+class WithList
+{
+    /**
+     * int
+     */
+    public int int_;
+    /**
+     * list nested 3 times!
+     */
+    public int[][][] bigList;
+}
+
 class Main {
     /**
      * @param struct a struct 1 instance
@@ -80,8 +96,9 @@ class Main {
      * @param structList a list a struct 1
      * @param triangle a triangle
      * @param structChars a struct of chars
+     * @param bigListStruct the big list struct
      */
-    static void structs(Struct1 struct, int n, Struct1[] structList, Point[] triangle, Chars structChars) {
+    static void structs(Struct1 struct, int n, Struct1[] structList, Point[] triangle, Chars structChars, WithList bigListStruct) {
         /* TODO Look at them structs. */
     }
 
@@ -115,7 +132,16 @@ class Main {
         structChars.firstChar = words1[0].charAt(0);
         structChars.secondChar = words1[1].charAt(0);
         structChars.thirdChar = words1[2].charAt(0);
+        WithList bigListStruct = new WithList();
+        bigListStruct.int_ = Integer.parseInt(reader.readLine());
+        bigListStruct.bigList = new int[2][][];
+        for (int i = 0; i < 2; ++i) {
+            bigListStruct.bigList[i] = new int[2][];
+            for (int j = 0; j < 2; ++j) {
+                bigListStruct.bigList[i][j] = Arrays.stream(reader.readLine().split(" ")).mapToInt(Integer::parseInt).toArray();
+            }
+        }
 
-        structs(struct, n, structList, triangle, structChars);
+        structs(struct, n, structList, triangle, structChars, bigListStruct);
     }
 }

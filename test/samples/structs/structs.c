@@ -28,12 +28,19 @@ struct chars {
     char third_char; ///< a third char
 };
 
+/// contains a big list inside
+struct with_list {
+    int int_; ///< int
+    int*** big_list; ///< list nested 3 times!
+};
+
 /// \param struct_ a struct 1 instance
 /// \param n a number
 /// \param struct_list a list a struct 1
 /// \param triangle a triangle
 /// \param struct_chars a struct of chars
-void structs(struct struct_1 struct_, int n, struct struct_1* struct_list, struct point* triangle, struct chars struct_chars) {
+/// \param big_list_struct the big list struct
+void structs(struct struct_1 struct_, int n, struct struct_1* struct_list, struct point* triangle, struct chars struct_chars, struct with_list big_list_struct) {
     /* TODO Look at them structs. */
 }
 
@@ -59,7 +66,18 @@ int main() {
     }
     struct chars struct_chars;
     scanf("%c %c %c", &struct_chars.first_char, &struct_chars.second_char, &struct_chars.third_char);
-    structs(struct_, n, struct_list, triangle, struct_chars);
+    struct with_list big_list_struct;
+    scanf("%d", &big_list_struct.int_);
+    big_list_struct.big_list = (int***)malloc(2 * sizeof(int**));
+    for (int i = 0; i < 2; ++i) {
+        big_list_struct.big_list[i] = (int**)malloc(2 * sizeof(int*));
+        for (int j = 0; j < 2; ++j) {
+            big_list_struct.big_list[i][j] = (int*)malloc(2 * sizeof(int));
+            for (int k = 0; k < 2; ++k)
+                scanf("%d", &big_list_struct.big_list[i][j][k]);
+        }
+    }
+    structs(struct_, n, struct_list, triangle, struct_chars, big_list_struct);
 
     return 0;
 }

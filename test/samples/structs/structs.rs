@@ -40,12 +40,22 @@ struct Chars {
     third_char: char,
 }
 
+/// contains a big list inside
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+struct WithList {
+    /// int
+    int: i32,
+    /// list nested 3 times!
+    big_list: Vec<Vec<Vec<i32>>>,
+}
+
 /// * `struct_` - a struct 1 instance
 /// * `n` - a number
 /// * `struct_list` - a list a struct 1
 /// * `triangle` - a triangle
 /// * `struct_chars` - a struct of chars
-fn structs(struct_: Struct1, n: i32, struct_list: Vec<Struct1>, triangle: Vec<Point>, struct_chars: Chars) {
+/// * `big_list_struct` - the big list struct
+fn structs(struct_: Struct1, n: i32, struct_list: Vec<Struct1>, triangle: Vec<Point>, struct_chars: Chars, big_list_struct: WithList) {
     /* TODO Look at them structs. */
 }
 
@@ -74,7 +84,9 @@ fn main() {
         .parse()
         .expect("invalid `struct chars` parameter");
 
-    structs(struct_, n, struct_list, triangle, struct_chars);
+    let big_list_struct = read_struct_with_list(&mut buffer).expect("invalid `big_list_struct` parameter");
+
+    structs(struct_, n, struct_list, triangle, struct_chars, big_list_struct);
 }
 
 fn read_line(buffer: &mut String) -> &str {
@@ -128,4 +140,21 @@ impl std::str::FromStr for Chars {
             third_char: line.next().ok_or("missing `third_char`")?.parse()?,
         })
     }
+}
+
+fn read_struct_with_list(mut buffer: &mut String) -> Result<WithList, Box<dyn std::error::Error>> {
+    let int = read_line(&mut buffer).parse()?;
+    let big_list = (0..2)
+        .map(|_| {
+            (0..2)
+                .map(|_| {
+                    read_line(&mut buffer)
+                        .split_whitespace()
+                        .map(str::parse)
+                        .collect::<Result<_, _>>()
+                })
+                .collect::<Result<_, _>>()
+        })
+        .collect::<Result<_, _>>()?;
+    Ok(WithList { int, big_list })
 }

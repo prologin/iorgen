@@ -27,14 +27,21 @@ data Chars = Chars
   , thirdChar  :: Char  -- ^ a third char
   }
 
+-- | contains a big list inside
+data WithList = WithList
+  { int     :: Int        -- ^ int
+  , bigList :: [[[Int]]]  -- ^ list nested 3 times!
+  }
+
 structs :: Struct1    -- ^ a struct 1 instance
         -> Int        -- ^ a number
         -> [Struct1]  -- ^ a list a struct 1
         -> [Point]    -- ^ a triangle
         -> Chars      -- ^ a struct of chars
+        -> WithList   -- ^ the big list struct
         -> String     -- ^ TODO
 -- Look at them structs.
-structs struct n structList triangle structChars = "TODO"
+structs struct n structList triangle structChars bigListStruct = "TODO"
 
 main :: IO ()
 main = do
@@ -43,9 +50,11 @@ main = do
   structList <- replicateM n readStruct1
   triangle <- replicateM 3 readPoint
   structChars <- readChars
-  putStrLn $ structs struct n structList triangle structChars
+  bigListStruct <- readWithList
+  putStrLn $ structs struct n structList triangle structChars bigListStruct
   where
     readStruct1 = fmap ((\[a, b] -> Struct1 (read a) (read b)) . words) getLine
     readPoint = Point <$> fmap head getLine <*> getLine <*> readPosition
     readChars = fmap ((\[a, b, c] -> Chars (head a) (head b) (head c)) . words) getLine
+    readWithList = WithList <$> fmap read getLine <*> replicateM 2 (replicateM 2 $ fmap (map read . words) getLine)
     readPosition = fmap ((\[a, b, c] -> Position (read a) (read b) (read c)) . words) getLine
