@@ -34,18 +34,13 @@ class NotASizedStruct:
     int_list_n: List[int]  # the integer list
 
 
-def sized_struct(n, lists, strings, matrices, same):
+def sized_struct(n: int, lists: List[List_], strings: List[String], matrices: List[Matrix], same: List[NotASizedStruct]) -> None:
     """
     :param n: the size of the lists
-    :type n: int
     :param lists: a list of list of different sizes
-    :type lists: List[List_]
     :param strings: a list of strings of different sizes
-    :type strings: List[String]
     :param matrices: a list of matrices of different sizes
-    :type matrices: List[Matrix]
     :param same: a list of list of same sizes
-    :type same: List[NotASizedStruct]
     """
     # TODO The is a special case.
     pass

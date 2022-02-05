@@ -40,15 +40,12 @@ def type_str(type_: Type) -> str:
         return class_name(type_.struct_name)
     assert type_.encapsulated
     assert type_.main == TypeEnum.LIST
-    # we should import List from typing when needed
     return f"List[{type_str(type_.encapsulated)}]"
 
 
 def decl_classes(input_data: Input) -> List[str]:
     """Return declarations of structs as data classes"""
     lines = []
-    if input_data.structs:
-        lines = ["from dataclasses import dataclass", "from typing import List", "", ""]
     for struct in input_data.structs:
         lines.append("@dataclass")
         lines.append(f"class {class_name(struct.name)}:")
@@ -61,6 +58,26 @@ def decl_classes(input_data: Input) -> List[str]:
             )
         lines.append("")
         lines.append("")
+    return lines
+
+
+def decl_imports(input_data: Input) -> List[str]:
+    """Return import declarations"""
+    lines = []
+    if input_data.structs:
+        lines.append("from dataclasses import dataclass")
+    has_list = False
+    for struct in input_data.structs:
+        for field in struct.fields:
+            if field.type.main == TypeEnum.LIST:
+                has_list = True
+    for var in input_data.input:
+        if var.type.main == TypeEnum.LIST:
+            has_list = True
+    if has_list:
+        lines.append("from typing import List")
+    if lines:
+        lines.extend(["", ""])
     return lines
 
 
@@ -170,19 +187,17 @@ class ParserPython:
         """Declare and call the function take all inputs in arguments"""
         name = var_name(self.input.name)
         self.method.append(
-            "def {}({}):".format(
-                name, ", ".join(var_name(i.name) for i in self.input.input)
+            "def {}({}) -> None:".format(
+                name,
+                ", ".join(
+                    f"{var_name(i.name)}: {type_str(i.type)}" for i in self.input.input
+                ),
             )
         )
         self.method.append(INDENTATION + '"""')
         for arg in self.input.input:
             self.method.append(
                 "{}:param {}: {}".format(INDENTATION, var_name(arg.name), arg.comment)
-            )
-            self.method.append(
-                "{}:type {}: {}".format(
-                    INDENTATION, var_name(arg.name), type_str(arg.type)
-                )
             )
         self.method.append(INDENTATION + '"""')
         if reprint:
@@ -226,6 +241,8 @@ class ParserPython:
     def content(self) -> str:
         """Return the parser content"""
         output = ""
+        for line in decl_imports(self.input):
+            output += line + "\n"
         for line in decl_classes(self.input):
             output += line + "\n"
         for line in self.method:

@@ -1,21 +1,16 @@
-def lists(n, list_int, size, list_char, string, list_string4, list_list_string2, matrix):
+from typing import List
+
+
+def lists(n: int, list_int: List[int], size: int, list_char: List[str], string: str, list_string4: List[str], list_list_string2: List[List[str]], matrix: List[List[int]]) -> None:
     """
     :param n: the first list's size
-    :type n: int
     :param list_int: a list containing ints
-    :type list_int: List[int]
     :param size: an other size
-    :type size: int
     :param list_char: a list of char
-    :type list_char: List[str]
     :param string: a string
-    :type string: str
     :param list_string4: a list of strings of size 4
-    :type list_string4: List[str]
     :param list_list_string2: a list of list of strings of size 2 of size 2 of size 2
-    :type list_list_string2: List[List[str]]
     :param matrix: a matrix of int
-    :type matrix: List[List[int]]
     """
     # TODO Aren't these lists beautifull?
     pass

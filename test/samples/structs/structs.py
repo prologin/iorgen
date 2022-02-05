@@ -45,20 +45,14 @@ class WithList:
     big_list: List[List[List[int]]]  # list nested 3 times!
 
 
-def structs(struct, n, struct_list, triangle, struct_chars, big_list_struct):
+def structs(struct: Struct1, n: int, struct_list: List[Struct1], triangle: List[Point], struct_chars: Chars, big_list_struct: WithList) -> None:
     """
     :param struct: a struct 1 instance
-    :type struct: Struct1
     :param n: a number
-    :type n: int
     :param struct_list: a list a struct 1
-    :type struct_list: List[Struct1]
     :param triangle: a triangle
-    :type triangle: List[Point]
     :param struct_chars: a struct of chars
-    :type struct_chars: Chars
     :param big_list_struct: the big list struct
-    :type big_list_struct: WithList
     """
     # TODO Look at them structs.
     pass

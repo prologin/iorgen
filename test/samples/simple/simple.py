@@ -1,9 +1,7 @@
-def simple(n, other_number):
+def simple(n: int, other_number: int) -> None:
     """
     :param n: the first number
-    :type n: int
     :param other_number: the second number
-    :type other_number: int
     """
     # TODO Just do what you want with these numbers, like sum them.
     pass

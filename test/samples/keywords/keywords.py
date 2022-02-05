@@ -26,20 +26,14 @@ class Main:
     if_true: int  # should not cause conflict
 
 
-def keywords(if_, class_, i, in_, for_, words):
+def keywords(if_: int, class_: str, i: str, in_: Console, for_: List[int], words: List[Main]) -> None:
     """
     :param if_: not a condition
-    :type if_: int
     :param class_: not a class
-    :type class_: str
     :param i: just a string
-    :type i: str
     :param in_: not in
-    :type in_: Console
     :param for_: not a loop
-    :type for_: List[int]
     :param words: contains lots of things
-    :type words: List[Main]
     """
     # TODO If this compiles, it is already a good step!
     pass

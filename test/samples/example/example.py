@@ -10,12 +10,10 @@ class AStruct:
     character: str  # a char
 
 
-def example(n, list):
+def example(n: int, list: List[AStruct]) -> None:
     """
     :param n: a number, used as a size
-    :type n: int
     :param list: a list of structs
-    :type list: List[AStruct]
     """
     # TODO In a real life scenario, you will describe here what you want the
     # end user to do with this generated code
