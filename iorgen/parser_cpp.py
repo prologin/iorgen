@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2020 Sacha Delanoue
+# Copyright 2018-2022 Sacha Delanoue
 """Generate a C++ parser"""
 
 import textwrap
@@ -31,6 +31,7 @@ class ParserCpp:
         self.main = []  # type: List[str]
         self.method = []  # type: List[str]
         self.iterator = IteratorName([var.name for var in input_data.input])
+        self.indent_lvl = 0
 
         self.indentation = 4
 
@@ -50,10 +51,10 @@ class ParserCpp:
         self.includes.add("vector")
         return "std::vector<{}>".format(self.type_str(type_.encapsulated))
 
-    def read_line(self, name: str, type_: Type, size: str, indent_lvl: int) -> None:
+    def read_line(self, name: str, type_: Type, size: str) -> None:
         """Read an entire line and store it into the right place(s)"""
         assert type_.fits_in_one_line(self.input.structs)
-        indent = " " * (self.indentation * indent_lvl)
+        indent = " " * (self.indentation * self.indent_lvl)
         self.includes.add("iostream")
         if type_.main in (TypeEnum.INT, TypeEnum.CHAR):
             self.main.append(indent + "std::cin >> {};".format(name))
@@ -93,43 +94,48 @@ class ParserCpp:
             )
 
     def read_lines(
-        self, name: str, type_: Type, size: str, indent_lvl: int = 0
+        self,
+        name: str,
+        type_: Type,
+        size: str,
+        already_resized: bool = False,
     ) -> None:
         """Read one or several lines and store them into the right place(s)"""
-        if type_.main == TypeEnum.LIST and indent_lvl != 0:
+        if type_.main == TypeEnum.LIST and not already_resized:
             self.main.append(
                 "{}{}.resize({});".format(
-                    " " * self.indentation * indent_lvl, name, size
+                    " " * self.indentation * self.indent_lvl, name, size
                 )
             )
         if type_.fits_in_one_line(self.input.structs):
-            self.read_line(name, type_, size, indent_lvl)
+            self.read_line(name, type_, size)
         else:
             if type_.main == TypeEnum.STRUCT:
                 struct = self.input.get_struct(type_.struct_name)
                 for f_name, f_type, f_size in struct.fields_name_type_size(
                     "{}.{{}}".format(name), var_name
                 ):
-                    self.read_lines(f_name, f_type, f_size, indent_lvl)
+                    self.read_lines(f_name, f_type, f_size)
             else:
                 assert type_.main == TypeEnum.LIST
                 assert type_.encapsulated is not None
                 inner_name = self.iterator.new_it()
                 self.main.append(
                     "{}for ({}& {} : {}) {{".format(
-                        " " * self.indentation * indent_lvl,
+                        " " * self.indentation * self.indent_lvl,
                         self.type_str(type_.encapsulated),
                         inner_name,
                         name,
                     )
                 )
+                self.indent_lvl += 1
                 self.read_lines(
                     inner_name,
                     type_.encapsulated,
                     var_name(type_.encapsulated.size),
-                    indent_lvl + 1,
                 )
-                self.main.append(" " * self.indentation * indent_lvl + "}")
+                self.indent_lvl -= 1
+                self.main.append(" " * self.indentation * self.indent_lvl + "}")
                 self.iterator.pop_it()
 
     def read_var(self, var: Variable) -> None:
@@ -145,7 +151,9 @@ class ParserCpp:
                 self.type_str(var.type), var_name(var.name), size, var.comment
             )
         )
-        self.read_lines(var_name(var.name), var.type, var_name(var.type.size))
+        self.read_lines(
+            var_name(var.name), var.type, var_name(var.type.size), already_resized=True
+        )
 
     def call(self, reprint: bool) -> None:
         """Declare and call the function take all inputs in arguments"""

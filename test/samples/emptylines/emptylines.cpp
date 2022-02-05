@@ -59,6 +59,7 @@ int main() {
     for (char& i : non_empty_char_list)
         std::cin >> i;
     A struct_with_empty_line; ///< a struct containing an empty line, then a struct
+    struct_with_empty_line.list_in_struct.resize(n);
     for (int& i : struct_with_empty_line.list_in_struct)
         std::cin >> i;
     std::cin >> struct_with_empty_line.struct_in_struct.char1 >> struct_with_empty_line.struct_in_struct.int2;
