@@ -71,6 +71,7 @@ func main() {
     scanner.Scan()
     nonEmptyCharList = scanner.Bytes()
     var structWithEmptyLine A
+    structWithEmptyLine.listInStruct = make([]int, n)
     scanner.Scan()
     for i, iValue := range strings.SplitN(scanner.Text(), " ", n) {
         structWithEmptyLine.listInStruct[i], _ = strconv.Atoi(iValue)

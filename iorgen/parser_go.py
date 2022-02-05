@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2020 Sacha Delanoue
+# Copyright 2018-2022 Sacha Delanoue
 """Generate a Go parser"""
 
 import textwrap
@@ -105,61 +105,52 @@ class ParserGo:
 
         self.iterator = IteratorName([var.name for var in input_data.input])
 
-    def read_line(
-        self, name: str, size: str, type_: Type, indent_lvl: int
-    ) -> List[str]:
+    def read_line(self, name: str, size: str, type_: Type) -> List[str]:
         """Read an entire line and store it into the right place(s)"""
 
         # pylint: disable=too-many-return-statements
 
         assert type_.fits_in_one_line(self.input.structs)
-        indent = INDENTATION * indent_lvl
         if type_.main == TypeEnum.INT:
             self.imports.add("strconv")
             return [
-                indent + "scanner.Scan()",
-                indent + "{}, _ = strconv.Atoi(scanner.Text())".format(name),
+                "scanner.Scan()",
+                f"{name}, _ = strconv.Atoi(scanner.Text())",
             ]
         if type_.main == TypeEnum.CHAR:
-            return [
-                indent + "scanner.Scan()",
-                indent + "{} = scanner.Text()[0]".format(name),
-            ]
+            return ["scanner.Scan()", f"{name} = scanner.Text()[0]"]
         if type_.main == TypeEnum.STR:
             return [
-                indent + "scanner.Scan()",
-                indent + "{} = scanner.Text()".format(name),
+                "scanner.Scan()",
+                f"{name} = scanner.Text()",
             ]
         if type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
             if type_.encapsulated.main == TypeEnum.CHAR:
                 return [
-                    indent + "scanner.Scan()",
-                    indent + "{} = scanner.Bytes()".format(name),
+                    "scanner.Scan()",
+                    f"{name} = scanner.Bytes()",
                 ]
             inner_name = self.iterator.new_it()
             self.imports.add("strings")
             self.imports.add("strconv")
             lines = [
-                indent + "scanner.Scan()",
-                indent
-                + "for {0}, {0}Value ".format(inner_name)
-                + ':= range strings.SplitN(scanner.Text(), " ", {}) {{'.format(size),
+                "scanner.Scan()",
+                f"for {inner_name}, {inner_name}Value "
+                + f':= range strings.SplitN(scanner.Text(), " ", {size}) {{',
             ]
             lines.append(
-                indent
-                + INDENTATION
-                + "{0}[{1}], _ = strconv.Atoi({1}Value)".format(name, inner_name)
+                INDENTATION
+                + f"{name}[{inner_name}], _ = strconv.Atoi({inner_name}Value)"
             )
             self.iterator.pop_it()
-            return lines + [indent + "}"]
+            return lines + ["}"]
         assert type_.main == TypeEnum.STRUCT
         struct = self.input.get_struct(type_.struct_name)
         self.imports.add("fmt")
         return [
-            indent + "scanner.Scan()",
-            indent
-            + 'fmt.Sscanf(scanner.Text(), "{}", {})'.format(
+            "scanner.Scan()",
+            'fmt.Sscanf(scanner.Text(), "{}", {})'.format(
                 " ".join(
                     "%d" if f.type.main == TypeEnum.INT else "%c" for f in struct.fields
                 ),
@@ -170,40 +161,34 @@ class ParserGo:
         ]
 
     def read_lines(
-        self, name: str, type_: Type, size: str, indent_lvl: int
+        self, name: str, type_: Type, size: str, already_allocated: bool = False
     ) -> List[str]:
         """Read one or several lines and store them into the right place(s)"""
         lines = []
-        if type_.main == TypeEnum.LIST and indent_lvl != 0:
-            lines.append(
-                "{}{} = make({}, {})".format(
-                    INDENTATION * indent_lvl, name, type_str(type_), size
-                )
-            )
+        if type_.main == TypeEnum.LIST and not already_allocated:
+            lines.append(f"{name} = make({type_str(type_)}, {size})")
         if type_.fits_in_one_line(self.input.structs):
-            return lines + self.read_line(name, size, type_, indent_lvl)
+            return lines + self.read_line(name, size, type_)
         if type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)
             for f_name, f_type, f_size in struct.fields_name_type_size(
-                "{}.{{}}".format(name), var_name
+                name + ".{}", var_name
             ):
-                lines.extend(self.read_lines(f_name, f_type, f_size, indent_lvl))
+                lines.extend(self.read_lines(f_name, f_type, f_size))
             return lines
         assert type_.main == TypeEnum.LIST
         assert type_.encapsulated is not None
         inner_name = self.iterator.new_it()
-        lines.append(
-            "{}for {} := range {} {{".format(INDENTATION * indent_lvl, inner_name, name)
-        )
+        lines.append(f"for {inner_name} := range {name} {{")
         lines.extend(
-            self.read_lines(
+            INDENTATION + i
+            for i in self.read_lines(
                 "{}[{}]".format(name, inner_name),
                 type_.encapsulated,
                 var_name(type_.encapsulated.size),
-                indent_lvl + 1,
             )
         )
-        lines.append(INDENTATION * indent_lvl + "}")
+        lines.append("}")
         self.iterator.pop_it()
         return lines
 
@@ -224,7 +209,12 @@ class ParserGo:
         else:
             lines.append("var {} {}".format(var_name(var.name), type_str(var.type)))
         lines.extend(
-            self.read_lines(var_name(var.name), var.type, var_name(var.type.size), 0)
+            self.read_lines(
+                var_name(var.name),
+                var.type,
+                var_name(var.type.size),
+                already_allocated=True,
+            )
         )
         return lines
 
