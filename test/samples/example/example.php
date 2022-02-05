@@ -9,7 +9,7 @@ function example($n, &$list) {
 }
 
 $n = intval(trim(fgets(STDIN)));
-$list = [];
+$list = new SplFixedArray($n);
 for ($i = 0; $i < $n; $i++) {
     $list[$i] = array_combine(["integer", "character"], explode(' ', trim(fgets(STDIN))));
 }

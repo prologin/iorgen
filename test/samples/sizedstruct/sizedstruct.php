@@ -11,31 +11,35 @@ function sized_struct($n, &$lists, &$strings, &$matrices, &$same) {
 }
 
 $n = intval(trim(fgets(STDIN)));
-$lists = [];
+$lists = new SplFixedArray($n);
 for ($i = 0; $i < $n; $i++) {
-    $lists[$i] = [];
-    $lists[$i]["size1"] = intval(trim(fgets(STDIN)));
-    $lists[$i]["int list"] = array_map('intval', preg_split('/ /', trim(fgets(STDIN)), -1, PREG_SPLIT_NO_EMPTY));
+    $j = [];
+    $j["size1"] = intval(trim(fgets(STDIN)));
+    $j["int list"] = array_map('intval', preg_split('/ /', trim(fgets(STDIN)), -1, PREG_SPLIT_NO_EMPTY));
+    $lists[$i] = $j;
 }
-$strings = [];
+$strings = new SplFixedArray($n);
 for ($i = 0; $i < $n; $i++) {
-    $strings[$i] = [];
-    $strings[$i]["size2"] = intval(trim(fgets(STDIN)));
-    $strings[$i]["string list"] = trim(fgets(STDIN));
+    $j = [];
+    $j["size2"] = intval(trim(fgets(STDIN)));
+    $j["string list"] = trim(fgets(STDIN));
+    $strings[$i] = $j;
 }
-$matrices = [];
+$matrices = new SplFixedArray(2);
 for ($i = 0; $i < 2; $i++) {
-    $matrices[$i] = [];
-    $matrices[$i]["size3"] = intval(trim(fgets(STDIN)));
-    $matrices[$i]["list list"] = [];
-    for ($j = 0; $j < $matrices[$i]["size3"]; $j++) {
-        $matrices[$i]["list list"][$j] = array_map('intval', preg_split('/ /', trim(fgets(STDIN)), -1, PREG_SPLIT_NO_EMPTY));
+    $j = [];
+    $j["size3"] = intval(trim(fgets(STDIN)));
+    $j["list list"] = new SplFixedArray($j["size3"]);
+    for ($k = 0; $k < $j["size3"]; $k++) {
+        $j["list list"][$k] = array_map('intval', preg_split('/ /', trim(fgets(STDIN)), -1, PREG_SPLIT_NO_EMPTY));
     }
+    $matrices[$i] = $j;
 }
-$same = [];
+$same = new SplFixedArray($n);
 for ($i = 0; $i < $n; $i++) {
-    $same[$i] = [];
-    $same[$i]["size4"] = intval(trim(fgets(STDIN)));
-    $same[$i]["int list n"] = array_map('intval', preg_split('/ /', trim(fgets(STDIN)), -1, PREG_SPLIT_NO_EMPTY));
+    $j = [];
+    $j["size4"] = intval(trim(fgets(STDIN)));
+    $j["int list n"] = array_map('intval', preg_split('/ /', trim(fgets(STDIN)), -1, PREG_SPLIT_NO_EMPTY));
+    $same[$i] = $j;
 }
 sized_struct($n, $lists, $strings, $matrices, $same);

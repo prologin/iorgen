@@ -18,18 +18,19 @@ $list_int = array_map('intval', preg_split('/ /', trim(fgets(STDIN)), -1, PREG_S
 $size = intval(trim(fgets(STDIN)));
 $list_char = preg_split('//', trim(fgets(STDIN)), -1, PREG_SPLIT_NO_EMPTY);
 $string = trim(fgets(STDIN));
-$list_string4 = [];
+$list_string4 = new SplFixedArray($size);
 for ($i = 0; $i < $size; $i++) {
     $list_string4[$i] = trim(fgets(STDIN));
 }
-$list_list_string2 = [];
+$list_list_string2 = new SplFixedArray(2);
 for ($i = 0; $i < 2; $i++) {
-    $list_list_string2[$i] = [];
-    for ($j = 0; $j < 2; $j++) {
-        $list_list_string2[$i][$j] = trim(fgets(STDIN));
+    $j = new SplFixedArray(2);
+    for ($k = 0; $k < 2; $k++) {
+        $j[$k] = trim(fgets(STDIN));
     }
+    $list_list_string2[$i] = $j;
 }
-$matrix = [];
+$matrix = new SplFixedArray($size);
 for ($i = 0; $i < $size; $i++) {
     $matrix[$i] = array_map('intval', preg_split('/ /', trim(fgets(STDIN)), -1, PREG_SPLIT_NO_EMPTY));
 }

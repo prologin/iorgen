@@ -16,12 +16,13 @@ $class = fgets(STDIN)[0];
 $i = trim(fgets(STDIN));
 $in = array_combine(["a", "static"], array_map('intval', explode(' ', fgets(STDIN))));
 $for = array_map('intval', preg_split('/ /', trim(fgets(STDIN)), -1, PREG_SPLIT_NO_EMPTY));
-$words = [];
+$words = new SplFixedArray(2);
 for ($j = 0; $j < 2; $j++) {
-    $words[$j] = [];
-    $words[$j]["int"] = [];
-    $words[$j]["int"]["return"] = intval(trim(fgets(STDIN)));
-    $words[$j]["int"]["void"] = array_map('intval', preg_split('/ /', trim(fgets(STDIN)), -1, PREG_SPLIT_NO_EMPTY));
-    $words[$j]["if true"] = intval(trim(fgets(STDIN)));
+    $k = [];
+    $k["int"] = [];
+    $k["int"]["return"] = intval(trim(fgets(STDIN)));
+    $k["int"]["void"] = array_map('intval', preg_split('/ /', trim(fgets(STDIN)), -1, PREG_SPLIT_NO_EMPTY));
+    $k["if true"] = intval(trim(fgets(STDIN)));
+    $words[$j] = $k;
 }
 keywords($if, $class, $i, $in, $for, $words);

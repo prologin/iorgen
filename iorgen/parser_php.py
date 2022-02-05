@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2020 Sacha Delanoue
+# Copyright 2018-2022 Sacha Delanoue
 """Generate a PHP parser"""
 
 import textwrap
@@ -97,17 +97,28 @@ class ParserPHP:
         if type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
             iterator = "$" + self.iterator.new_it()
-            lines = self.read_lines(
-                "{}[{}]".format(name, iterator),
-                type_.encapsulated,
-                var_name(type_.encapsulated.size),
-            )
+            lines = []
+            if type_.encapsulated.fits_in_one_line(self.input.structs):
+                # Here we don't really care if the encapsulated type really fits on
+                # on line. What we are interested in, is that the fact that the code
+                # generated to read it will fit on one line, and will need to be
+                # directly assigned to a variable
+                lines = [
+                    f"{name}[{iterator}] = {read_line(type_.encapsulated, self.input)};"
+                ]
+            else:
+                tmp_name = "$" + self.iterator.new_it()
+                lines = self.read_lines(
+                    tmp_name,
+                    type_.encapsulated,
+                    var_name(type_.encapsulated.size),
+                )
+                lines.append(f"{name}[{iterator}] = {tmp_name};")
+                self.iterator.pop_it()
             self.iterator.pop_it()
-            if len(lines) == 1:
-                lines[0] = "{}[{}] = {};".format(name, iterator, lines[0])
             prefix = [
-                "{} = [];".format(name),
-                "for ({0} = 0; {0} < {1}; {0}++) {{".format(iterator, size),
+                f"{name} = new SplFixedArray({size});",
+                f"for ({iterator} = 0; {iterator} < {size}; {iterator}++) {{",
             ]
             return prefix + [INDENTATION + i for i in lines] + ["}"]
         assert type_.main == TypeEnum.STRUCT
@@ -164,7 +175,7 @@ def print_lines(
         assert type_.encapsulated is not None
         inner = "$iT" + str(abs(hash(name)))  # quick way to have a unique name
         return (
-            [indent + "foreach ({} as &{}) {{".format(name, inner)]
+            [indent + f"foreach ({name} as $_ => {inner}) {{"]
             + print_lines(input_data, inner, type_.encapsulated, indent_lvl + 1)
             + [indent + "}"]
         )
