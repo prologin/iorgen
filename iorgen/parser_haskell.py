@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2020 Sacha Delanoue
+# Copyright 2018-2022 Sacha Delanoue
 """Generate a Haskll parser"""
 
 import textwrap
@@ -151,8 +151,11 @@ class ParserHaskell:
             type_.encapsulated, var_name(type_.encapsulated.size)
         )
         if len(replicate.split()) != 1:
-            replicate = "$ " + replicate
-        return "replicateM {} {}".format(size, replicate)
+            if "$" in replicate:
+                replicate = f"({replicate})"
+            else:
+                replicate = "$ " + replicate
+        return f"replicateM {size} {replicate}"
 
     def read_var(self, var: Variable) -> None:
         """Read a variable"""
