@@ -34,7 +34,13 @@ class NotASizedStruct:
     int_list_n: List[int]  # the integer list
 
 
-def sized_struct(n: int, lists: List[List_], strings: List[String], matrices: List[Matrix], same: List[NotASizedStruct]) -> None:
+def sized_struct(
+    n: int,
+    lists: List[List_],
+    strings: List[String],
+    matrices: List[Matrix],
+    same: List[NotASizedStruct],
+) -> None:
     """
     :param n: the size of the lists
     :param lists: a list of list of different sizes
@@ -46,7 +52,7 @@ def sized_struct(n: int, lists: List[List_], strings: List[String], matrices: Li
     pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     n = int(input())
     lists = [
         (lambda i: List_(
@@ -54,24 +60,26 @@ if __name__ == '__main__':
             list(map(int, input().split()))
         ))(int(input()))
         for _ in range(n)
-        ]
+    ]
     strings = [
         (lambda i: String(
             i,
             input()
         ))(int(input()))
         for _ in range(n)
-        ]
+    ]
     matrices = [
         (lambda i: Matrix(
             i,
             [list(map(int, input().split())) for _ in range(i)]
         ))(int(input()))
         for _ in range(2)
-        ]
+    ]
     same = [
         NotASizedStruct(
             int(input()),
             list(map(int, input().split())),
-        ) for _ in range(n)]
+        )
+        for _ in range(n)
+    ]
     sized_struct(n, lists, strings, matrices, same)

@@ -7,7 +7,7 @@ def simple(n: int, other_number: int) -> None:
     pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     n = int(input())
     other_number = int(input())
     simple(n, other_number)

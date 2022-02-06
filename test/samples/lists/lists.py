@@ -1,7 +1,16 @@
 from typing import List
 
 
-def lists(n: int, list_int: List[int], size: int, list_char: List[str], string: str, list_string4: List[str], list_list_string2: List[List[str]], matrix: List[List[int]]) -> None:
+def lists(
+    n: int,
+    list_int: List[int],
+    size: int,
+    list_char: List[str],
+    string: str,
+    list_string4: List[str],
+    list_list_string2: List[List[str]],
+    matrix: List[List[int]],
+) -> None:
     """
     :param n: the first list's size
     :param list_int: a list containing ints
@@ -16,7 +25,7 @@ def lists(n: int, list_int: List[int], size: int, list_char: List[str], string: 
     pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     n = int(input())
     list_int = list(map(int, input().split()))
     size = int(input())

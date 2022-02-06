@@ -81,6 +81,25 @@ def decl_imports(input_data: Input) -> List[str]:
     return lines
 
 
+def wrap_line(begin: str, end: str, args: List[str], indent_lvl: int = 0) -> List[str]:
+    """Wrap a line of function define/call just like black would do"""
+    max_chars = 88
+    args_size = len(", ".join(args))
+    if len(begin) + len(end) + args_size + len(INDENTATION * indent_lvl) <= max_chars:
+        return [f"{INDENTATION * indent_lvl}{begin}{', '.join(args)}{end}"]
+    if args_size + len(INDENTATION * (indent_lvl + 1)) <= max_chars:
+        return [
+            f"{INDENTATION * indent_lvl}{begin}",
+            f"{INDENTATION * (indent_lvl + 1)}{', '.join(args)}",
+            f"{INDENTATION * indent_lvl}{end}",
+        ]
+    return (
+        [f"{INDENTATION * indent_lvl}{begin}"]
+        + [f"{INDENTATION * (indent_lvl + 1)}{line}," for line in args]
+        + [f"{INDENTATION * indent_lvl}{end}"]
+    )
+
+
 def read_line(type_: Type, input_data: Input) -> str:
     """Generate the Python code to read a line of given type"""
     assert type_.fits_in_one_line(input_data.structs)
@@ -123,15 +142,12 @@ def read_lines(type_: Type, size: str, input_data: Input) -> List[str]:
             candidate = "[{} for _ in range({})]".format(lines[0], size)
             if len(candidate) <= 75:
                 return [candidate]
-        if len(lines[-1]) < 5:
-            lines[-1] += " for _ in range({})]".format(size)
-        else:
-            lines.append("for _ in range({})".format(size))
-            lines.append("]")
+        lines.append("for _ in range({})".format(size))
         if len(lines[0]) < 5:
             lines[0] = "[" + lines[0]
         else:
             lines = ["["] + [INDENTATION + i for i in lines]
+        lines.append("]")
         return lines
     assert type_.main == TypeEnum.STRUCT
     struct = input_data.get_struct(type_.struct_name)
@@ -186,12 +202,11 @@ class ParserPython:
     def call(self, reprint: bool) -> None:
         """Declare and call the function take all inputs in arguments"""
         name = var_name(self.input.name)
-        self.method.append(
-            "def {}({}) -> None:".format(
-                name,
-                ", ".join(
-                    f"{var_name(i.name)}: {type_str(i.type)}" for i in self.input.input
-                ),
+        self.method.extend(
+            wrap_line(
+                f"def {name}(",
+                ") -> None:",
+                [f"{var_name(i.name)}: {type_str(i.type)}" for i in self.input.input],
             )
         )
         self.method.append(INDENTATION + '"""')
@@ -213,10 +228,8 @@ class ParserPython:
                 )
             )
             self.method.append(INDENTATION + "pass")
-        self.main.append(
-            "{}({})".format(
-                name, ", ".join([var_name(i.name) for i in self.input.input])
-            )
+        self.main.extend(
+            wrap_line(f"{name}(", ")", [var_name(i.name) for i in self.input.input])
         )
 
     def print_lines(self, name: str, type_: Type, indent_lvl: int = 0) -> List[str]:
@@ -249,7 +262,7 @@ class ParserPython:
             output += line + "\n"
         if self.method:
             output += "\n"
-        output += "\nif __name__ == '__main__':\n"
+        output += '\nif __name__ == "__main__":\n'
         for line in self.main:
             output += INDENTATION + line + "\n"
         return output

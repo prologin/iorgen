@@ -26,7 +26,9 @@ class Main:
     if_true: int  # should not cause conflict
 
 
-def keywords(if_: int, class_: str, i: str, in_: Console, for_: List[int], words: List[Main]) -> None:
+def keywords(
+    if_: int, class_: str, i: str, in_: Console, for_: List[int], words: List[Main]
+) -> None:
     """
     :param if_: not a condition
     :param class_: not a class
@@ -39,7 +41,7 @@ def keywords(if_: int, class_: str, i: str, in_: Console, for_: List[int], words
     pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     if_ = int(input())
     class_ = input()[0]
     i = input()
@@ -52,5 +54,7 @@ if __name__ == '__main__':
                 list(map(int, input().split())),
             ),
             int(input()),
-        ) for _ in range(2)]
+        )
+        for _ in range(2)
+    ]
     keywords(if_, class_, i, in_, for_, words)

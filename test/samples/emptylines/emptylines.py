@@ -26,7 +26,19 @@ class SizedStruct:
     string_in_struct: str  # the string
 
 
-def empty_lines(empty_list: List[int], buffer_string: str, n: int, empty_in_sample: List[int], empty_string: str, main: str, empty_char_list: List[str], non_empty_char_list: List[str], struct_with_empty_line: A, a_sized_struct: SizedStruct, finish: str) -> None:
+def empty_lines(
+    empty_list: List[int],
+    buffer_string: str,
+    n: int,
+    empty_in_sample: List[int],
+    empty_string: str,
+    main: str,
+    empty_char_list: List[str],
+    non_empty_char_list: List[str],
+    struct_with_empty_line: A,
+    a_sized_struct: SizedStruct,
+    finish: str,
+) -> None:
     """
     :param empty_list: an empty list
     :param buffer_string: here to check correct parsing of empty line above
@@ -44,7 +56,7 @@ def empty_lines(empty_list: List[int], buffer_string: str, n: int, empty_in_samp
     pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     empty_list = list(map(int, input().split()))
     buffer_string = input()
     n = int(input())
@@ -62,4 +74,16 @@ if __name__ == '__main__':
         input()
     ))(int(input()))
     finish = input()
-    empty_lines(empty_list, buffer_string, n, empty_in_sample, empty_string, main, empty_char_list, non_empty_char_list, struct_with_empty_line, a_sized_struct, finish)
+    empty_lines(
+        empty_list,
+        buffer_string,
+        n,
+        empty_in_sample,
+        empty_string,
+        main,
+        empty_char_list,
+        non_empty_char_list,
+        struct_with_empty_line,
+        a_sized_struct,
+        finish,
+    )
