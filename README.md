@@ -137,6 +137,8 @@ format:
       a string is considered as a list of chars). `"choices"` is a list of
       values possible for this integer or char. If this list is not empty,
       then the `"min"` fields and similar fields will be ignored.
+    - An optional `"format"` field, containing a string; see the
+      [manual formatting](#manual-formatting) section to know more.
 - An optional `"structs"` field, if your input uses structs, a list of structs.
   Each struct is a map with the following fields:
     - A `"name"` field, containing a string: the struct’s name
@@ -169,6 +171,28 @@ and `structname` following this guidelines:
 - `type` can be any valid type, even an other list
 - `structname` is the name of a struct, as declared in the `"name"` field of
   `"structs"`
+
+#### Manual formatting
+
+*Iorgen* is supposed to choose how the input should be. For instance, each
+integer variable stands on its own line. Lists of integers however put them
+all on the same line. There are reasons for this: one variable per line is
+easier to parse on most languages; putting integers on the same line keeps
+inputs shorter. Anyway, even if you don't agree with those choices, you should
+not really care and just go with how *Iorgen* does things.
+
+If you have the choice, don't try to change the defaults, just go with the
+flow: it is how *Iorgen* was meant to work and it is well tested with those
+defaults. However if your input is already set is stone and you can not change
+it, *Iorgen* provides a few options to tweak the input layout.
+
+- You can have several integers variables on the same line. All variables must
+  be integers, and follow each other in the `input` list. For every of the
+  variables but the last one put the `"format": no_endline` field.
+- You can have a list of integers with one entry per line, instead of having
+  all the integers on the same line. This currently works for a simple
+  `List[int]`, not for any nested type. Use the `"format": force_newlines`
+  field.
 
 ### Example
 

@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018 Sacha Delanoue
+# Copyright 2018-2022 Sacha Delanoue
 """Input parser generators"""
 
 from iorgen.checkinput import parse_input
-from iorgen.types import Input, Struct, Variable
+from iorgen.types import FormatStyle, Input, Struct, Variable
 from iorgen.markdown import gen_markdown
 from iorgen.parser_c import gen_c
 from iorgen.parser_cpp import gen_cpp

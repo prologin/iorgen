@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2020 Sacha Delanoue
+# Copyright 2018-2022 Sacha Delanoue
 """Generate a C# parser"""
 
 import textwrap
 from typing import List
-from iorgen.types import Input, Type, TypeEnum
+from iorgen.types import FormatStyle, Input, Type, TypeEnum
 from iorgen.utils import camel_case, pascal_case, IteratorName, WordsName
 
 INDENTATION = "    "
@@ -108,12 +108,18 @@ class ParserCS:
         return ["{}{}{} = {};".format(indent, type_decl, name, command)]
 
     def read_lines(
-        self, decl: bool, name: str, type_: Type, size: str, indent_lvl: int
+        self,
+        decl: bool,
+        name: str,
+        type_: Type,
+        size: str,
+        indent_lvl: int,
+        style: FormatStyle = FormatStyle.DEFAULT,
     ) -> List[str]:
         # pylint: disable=too-many-arguments
         # pylint: disable=too-many-locals
         """Read one or several lines and store them into the right place(s)"""
-        if type_.fits_in_one_line(self.input.structs):
+        if type_.fits_in_one_line(self.input.structs, style):
             return self.read_line(decl, name, type_, indent_lvl)
         indent = INDENTATION * indent_lvl
         if type_.main == TypeEnum.STRUCT:
@@ -181,8 +187,21 @@ class ParserCS:
             )
         )
         if reprint:
-            for var in self.input.input:
-                lines.extend(self.print_lines(var_name(var.name), var.type, 2))
+            for variables in self.input.get_all_vars():
+                if len(variables) == 1:
+                    var = variables[0]
+                    lines.extend(
+                        self.print_lines(
+                            var_name(var.name), var.type, 2, var.format_style
+                        )
+                    )
+                else:
+                    fmt = " ".join(f"{{{i}}}" for i in range(len(variables)))
+                    lines.append(
+                        INDENTATION * 2
+                        + f'Console.WriteLine("{fmt}", '
+                        + f"{', '.join(var_name(i.name) for i in variables)});"
+                    )
         else:
             lines.extend(
                 [
@@ -213,9 +232,15 @@ class ParserCS:
             ", ".join("{}.{}".format(name, var_name(f.name)) for f in fields),
         )
 
-    def print_lines(self, name: str, type_: Type, indent_lvl: int) -> List[str]:
+    def print_lines(
+        self,
+        name: str,
+        type_: Type,
+        indent_lvl: int,
+        style: FormatStyle = FormatStyle.DEFAULT,
+    ) -> List[str]:
         """Print the content of a var that holds in one or more lines"""
-        if type_.fits_in_one_line(self.input.structs):
+        if type_.fits_in_one_line(self.input.structs, style):
             return [INDENTATION * indent_lvl + self.print_line(name, type_)]
         if type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)
@@ -259,15 +284,30 @@ class ParserCS:
         output += "class Program\n{\n"
         output += "\n".join(self.call(reprint)) + "\n"
         output += "\n{0}static void Main()\n{0}{{\n".format(INDENTATION)
-        for var in self.input.input:
-            output += (
-                "\n".join(
-                    self.read_lines(
-                        True, var_name(var.name), var.type, var_name(var.type.size), 2
-                    )
+        for variables in self.input.get_all_vars():
+            if len(variables) == 1:
+                var = variables[0]
+                for line in self.read_lines(
+                    True,
+                    var_name(var.name),
+                    var.type,
+                    var_name(var.type.size),
+                    2,
+                    var.format_style,
+                ):
+                    output += line + "\n"
+            else:
+                words = self.words.next_name()
+                output += (
+                    f"{INDENTATION * 2}string[] {words}"
+                    " = Console.ReadLine().Split(' ');\n"
                 )
-                + "\n"
-            )
+                for i, var in enumerate(variables):
+                    assert var.type.main == TypeEnum.INT
+                    output += (
+                        INDENTATION * 2
+                        + f"int {var_name(var.name)} = int.Parse({words}[{i}]);\n"
+                    )
         args = (var_name(var.name) for var in self.input.input)
         output += "\n{}{}({});\n".format(
             INDENTATION * 2, pascal_name(self.input.name), ", ".join(args)

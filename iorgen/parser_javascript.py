@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2020 Sacha Delanoue
+# Copyright 2018-2022 Sacha Delanoue
 # Copyright 2019 Victor Collod
 """Generate a Javascript parser"""
 
 import textwrap
 from typing import List
 
-from iorgen.types import Input, Type, TypeEnum
+from iorgen.types import FormatStyle, Input, Type, TypeEnum, Variable
 from iorgen.utils import camel_case, IteratorName, WordsName
 
 INDENTATION = "    "
@@ -100,16 +100,16 @@ class ParserJS:
         ]
 
     def read_lines(
-        self, decl: bool, name: str, type_: Type, size: str, indent_lvl: int
+        self, decl: bool, var: Variable, size: str, indent_lvl: int
     ) -> List[str]:
         # pylint: disable=too-many-arguments
         """Generate the Javascript code to read the lines for a given type"""
-        if type_.fits_in_one_line(self.input.structs):
-            return self.read_line(decl, name, type_, size, indent_lvl)
+        if var.fits_in_one_line(self.input.structs):
+            return self.read_line(decl, var.name, var.type, size, indent_lvl)
         indent = INDENTATION * indent_lvl
-        if type_.main == TypeEnum.LIST:
-            assert type_.encapsulated is not None
-            lines = [indent + "{}{} = [];".format(("const " if decl else ""), name)]
+        if var.type.main == TypeEnum.LIST:
+            assert var.type.encapsulated is not None
+            lines = [indent + f"{'const ' if decl else ''}{var.name} = [];"]
             iterator = self.iterator.new_it()
             inner_name = self.iterator.new_it()
             lines.append(
@@ -119,35 +119,48 @@ class ParserJS:
             lines.extend(
                 self.read_lines(
                     True,
-                    inner_name,
-                    type_.encapsulated,
-                    var_name(type_.encapsulated.size),
+                    Variable(inner_name, "", var.type.encapsulated),
+                    var_name(var.type.encapsulated.size),
                     indent_lvl + 1,
                 )
             )
-            lines.append(indent + INDENTATION + "{}.push({});".format(name, inner_name))
+            lines.append(indent + INDENTATION + f"{var.name}.push({inner_name});")
             self.words.pop_scope()
             self.iterator.pop_it()
             self.iterator.pop_it()
             return lines + [indent + "}"]
-        assert type_.main == TypeEnum.STRUCT
-        struct = self.input.get_struct(type_.struct_name)
-        lines = [indent + "{}{} = {{}};".format("const " if decl else "", name)]
+        assert var.type.main == TypeEnum.STRUCT
+        struct = self.input.get_struct(var.type.struct_name)
+        lines = [indent + f"{'const ' if decl else ''}{var.name} = {{}};"]
         for f_name, f_type, f_size in struct.fields_name_type_size(
-            "{}.{{}}".format(name), var_name
+            f"{var.name}.{{}}", var_name
         ):
-            lines.extend(self.read_lines(False, f_name, f_type, f_size, indent_lvl))
+            lines.extend(
+                self.read_lines(False, Variable(f_name, "", f_type), f_size, indent_lvl)
+            )
         return lines
 
     def read_vars(self) -> List[str]:
         """Generate the Javascript code to read all input variables"""
         lines = []
-        for var in self.input.input:
-            lines.extend(
-                self.read_lines(
-                    True, var_name(var.name), var.type, var_name(var.type.size), 1
+        for variables in self.input.get_all_vars():
+            if len(variables) == 1:
+                var = variables[0]
+                lines.extend(
+                    self.read_lines(
+                        True,
+                        Variable(var_name(var.name), "", var.type, var.format_style),
+                        var_name(var.type.size),
+                        1,
+                    )
                 )
-            )
+            else:
+                lines.append(
+                    INDENTATION
+                    + "const ["
+                    + ", ".join(var_name(i.name) for i in variables)
+                    + '] = stdin[line++].split(" ").map(Number);'
+                )
         return lines
 
 
@@ -170,11 +183,15 @@ def print_line(name: str, type_: Type, input_data: Input) -> str:
 
 
 def print_lines(
-    input_data: Input, name: str, type_: Type, indent_lvl: int = 0
+    input_data: Input,
+    name: str,
+    type_: Type,
+    indent_lvl: int,
+    style: FormatStyle = FormatStyle.DEFAULT,
 ) -> List[str]:
     """Print the content of a var that holds in one or more lines"""
     indent = "    " * indent_lvl
-    if type_.fits_in_one_line(input_data.structs):
+    if type_.fits_in_one_line(input_data.structs, style):
         return [indent + print_line(name, type_, input_data)]
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
@@ -214,8 +231,21 @@ def call(input_data: Input, reprint: bool) -> List[str]:
         )
     )
     if reprint:
-        for var in input_data.input:
-            out.extend(print_lines(input_data, var_name(var.name), var.type, 1))
+        for variables in input_data.get_all_vars():
+            if len(variables) == 1:
+                var = variables[0]
+                out.extend(
+                    print_lines(
+                        input_data, var_name(var.name), var.type, 1, var.format_style
+                    )
+                )
+            else:
+                out.append(
+                    INDENTATION
+                    + "console.log("
+                    + ", ".join(var_name(i.name) for i in variables)
+                    + ");"
+                )
     else:
         out.extend(
             [

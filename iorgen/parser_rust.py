@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2021 Sacha Delanoue
+# Copyright 2018-2022 Sacha Delanoue
 # Copyright 2020 Rémi Dupré
 # Copyright 2021 Grégoire Geis
 # Copyright 2021 Adrien Mathieu
@@ -7,7 +7,7 @@
 
 import textwrap
 from typing import List, Optional
-from iorgen.types import Input, Struct, Type, TypeEnum, Variable
+from iorgen.types import FormatStyle, Input, Struct, Type, TypeEnum, Variable
 from iorgen.utils import pascal_case, snake_case
 
 
@@ -163,8 +163,6 @@ class ParserRust:
         unwrap_method: Optional[str] = None,
     ) -> str:
         """Return a Rust command for parsing a line into a given type"""
-        assert type_.fits_in_one_line(self.input.structs)
-
         if unwrap_method is None:
             if name:
                 unwrap_method = f'.expect("invalid `{name}` parameter")'
@@ -221,8 +219,6 @@ class ParserRust:
         unwrap_method: Optional[str] = None,
     ) -> List[str]:
         """Return a Rust command for parsing some lines into a given type"""
-        assert not type_.fits_in_one_line(self.input.structs)
-
         if unwrap_method is None:
             unwrap_method = f'.expect("invalid `{name}` parameter")'
 
@@ -283,7 +279,7 @@ class ParserRust:
         name = var_name(var.name)
         unwrap_method = "?" if in_error_context else None
 
-        if var.type.fits_in_one_line(self.input.structs):
+        if var.fits_in_one_line(self.input.structs):
             read_method = self.read_line(var.type, 1, var.name, unwrap_method)
         else:
             read_method = "\n".join(self.read_lines(name, var.type, 1, unwrap_method))
@@ -303,7 +299,9 @@ class ParserRust:
 
         if reprint:
             for var in self.input.input:
-                lines.extend(self.print_lines(var_name(var.name), var.type, 1))
+                lines.extend(
+                    self.print_lines(var_name(var.name), var.type, 1, var.format_style)
+                )
         else:
             lines.extend(
                 INDENTATION + i
@@ -314,12 +312,13 @@ class ParserRust:
 
         return lines + ["}"]
 
-    def print_line(self, name: str, type_: Type) -> str:
+    def print_line(self, name: str, type_: Type, style: FormatStyle) -> str:
         """Print the content of a var that holds in one line"""
-        assert type_.fits_in_one_line(self.input.structs)
+        assert type_.fits_in_one_line(self.input.structs, style)
 
         if type_.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.STR):
-            return f'print!("{{}}\\n", {name});'
+            endline = " " if style == FormatStyle.NO_ENDLINE else r"\n"
+            return f'print!("{{}}{endline}", {name});'
 
         if type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
@@ -344,12 +343,18 @@ class ParserRust:
 
         raise Exception
 
-    def print_lines(self, name: str, type_: Type, indent_lvl: int) -> List[str]:
+    def print_lines(
+        self,
+        name: str,
+        type_: Type,
+        indent_lvl: int,
+        style: FormatStyle = FormatStyle.DEFAULT,
+    ) -> List[str]:
         """Print the content of a var that holds in one or more lines"""
         idt = INDENTATION * indent_lvl
 
-        if type_.fits_in_one_line(self.input.structs):
-            return [idt + self.print_line(name, type_)]
+        if type_.fits_in_one_line(self.input.structs, style):
+            return [idt + self.print_line(name, type_, style)]
 
         if type_.main == TypeEnum.STRUCT:
             return sum(
@@ -377,9 +382,33 @@ class ParserRust:
         """Return the parser content"""
         read_vars = []
 
-        for var in self.input.input:
-            read_vars.append(self.read_var(var))
-            read_vars.append("")
+        for variables in self.input.get_all_vars():
+            if len(variables) == 1:
+                read_vars.append(self.read_var(variables[0]))
+                read_vars.append("")
+            else:
+                parse_code = INDENTATION + "let ("
+                parse_code += ", ".join(var_name(i.name) for i in variables)
+                parse_code += ") = match read_line(&mut buffer)\n"
+                parse_code += 2 * INDENTATION + ".split_whitespace()\n"
+                parse_code += 2 * INDENTATION + ".collect::<Vec<&str>>()\n"
+                parse_code += 2 * INDENTATION + ".as_slice()\n"
+                parse_code += INDENTATION + "{\n" + 2 * INDENTATION + "["
+                parse_code += ", ".join(var_name(i.name) for i in variables)
+                parse_code += "] => (\n"
+                for var in variables:
+                    parse_code += (
+                        3 * INDENTATION
+                        + f"{var_name(var.name)}.parse()"
+                        + f'.expect("invalid `{var.name}` parameter"),\n'
+                    )
+                parse_code += INDENTATION * 2 + "),\n"
+                parse_code += INDENTATION * 2 + '_ => panic!("invalid '
+                parse_code += " ".join(f"`{i.name}`" for i in variables)
+                parse_code += ' parameters"),\n'
+                parse_code += INDENTATION + "};"
+                read_vars.append(parse_code)
+                read_vars.append("")
 
         structs = [self.def_read_struct(struct) for struct in self.input.structs]
 

@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright 2018-2022 Sacha Delanoue
-"""Generate a Haskll parser"""
+"""Generate a Haskell parser"""
 
 import textwrap
 from collections import OrderedDict
 from typing import List, Set
 
-from iorgen.types import Input, Struct, Type, TypeEnum, Variable
+from iorgen.types import FormatStyle, Input, Struct, Type, TypeEnum
 from iorgen.utils import camel_case, pascal_case
 
 
@@ -45,18 +45,19 @@ def type_str(type_: Type) -> str:
     return "[{}]".format(type_str(type_.encapsulated))
 
 
-def print_var_content(type_: Type, structs: List[Struct]) -> str:
+def print_var_content(type_: Type, structs: List[Struct], style: FormatStyle) -> str:
     """Return Haskell function to print a variable of given type"""
     # pylint: disable=too-many-return-statements
+    newline = '" "' if style == FormatStyle.NO_ENDLINE else r'"\n"'
     if type_.main == TypeEnum.INT:
-        return '(++ "\\n") . show'
+        return f"(++ {newline}) . show"
     if type_.main == TypeEnum.CHAR:
-        return '(: "\\n")'
+        return f"(: {newline})"
     if type_.main == TypeEnum.STR:
-        return '(++ "\\n")'
+        return f"(++ {newline})"
     if type_.main == TypeEnum.STRUCT:
         struct = next(x for x in structs if x.name == type_.struct_name)
-        if type_.fits_in_one_line(structs):
+        if type_.fits_in_one_line(structs, style):
             fields = []
             for i in struct.fields:
                 if i.type.main == TypeEnum.INT:
@@ -68,19 +69,20 @@ def print_var_content(type_: Type, structs: List[Struct]) -> str:
         return "(\\r' -> {})".format(
             " ++ ".join(
                 "({} $ {} r')".format(
-                    print_var_content(i.type, structs), var_name(i.name)
+                    print_var_content(i.type, structs, FormatStyle.DEFAULT),
+                    var_name(i.name),
                 )
                 for i in struct.fields
             )
         )
     assert type_.main == TypeEnum.LIST
     assert type_.encapsulated
-    if type_.encapsulated.main == TypeEnum.INT:
+    if type_.encapsulated.main == TypeEnum.INT and style != FormatStyle.FORCE_NEWLINES:
         return '(++ "\\n") . unwords . (map show)'
     if type_.encapsulated.main == TypeEnum.CHAR:
         return '(++ "\\n")'
     return 'foldr (++) "" . (map $ {})'.format(
-        print_var_content(type_.encapsulated, structs)
+        print_var_content(type_.encapsulated, structs, FormatStyle.DEFAULT)
     )
 
 
@@ -137,9 +139,11 @@ class ParserHaskell:
         self.where[type_.struct_name] = True
         return "read{}".format(data_name(type_.struct_name))
 
-    def read_lines(self, type_: Type, size: str) -> str:
+    def read_lines(
+        self, type_: Type, size: str, style: FormatStyle = FormatStyle.DEFAULT
+    ) -> str:
         """Read one or several lines and parse them"""
-        if type_.fits_in_one_line(self.input.structs):
+        if type_.fits_in_one_line(self.input.structs, style):
             return self.read_line(type_)
         if type_.main == TypeEnum.STRUCT:
             self.where[type_.struct_name] = False
@@ -157,13 +161,24 @@ class ParserHaskell:
                 replicate = "$ " + replicate
         return f"replicateM {size} {replicate}"
 
-    def read_var(self, var: Variable) -> None:
-        """Read a variable"""
-        self.main.append(
-            "{} <- {}".format(
-                var_name(var.name), self.read_lines(var.type, var_name(var.type.size))
-            )
-        )
+    def read_vars(self) -> None:
+        """Read all input variables"""
+        for variables in self.input.get_all_vars():
+            if len(variables) == 1:
+                var = variables[0]
+                self.main.append(
+                    var_name(var.name)
+                    + " <- "
+                    + self.read_lines(
+                        var.type, var_name(var.type.size), var.format_style
+                    )
+                )
+            else:
+                assert all(var.type.main == TypeEnum.INT for var in variables)
+                self.main.append(
+                    f"[{', '.join(var_name(i.name) for i in variables)}] <- "
+                    "fmap (map read . words) getLine"
+                )
 
     def call(self, reprint: bool) -> None:
         """Declare and call the function take all inputs in arguments"""
@@ -201,7 +216,9 @@ class ParserHaskell:
                 self.method.append(
                     "{}({} $ {}) ++".format(
                         " " * self.indentation,
-                        print_var_content(var.type, self.input.structs),
+                        print_var_content(
+                            var.type, self.input.structs, var.format_style
+                        ),
                         var_name(var.name),
                     )
                 )
@@ -253,8 +270,10 @@ class ParserHaskell:
             done = last_size
         return out
 
-    def content(self) -> str:
+    def content(self, reprint: bool) -> str:
         """Return the parser content"""
+        self.read_vars()
+        self.call(reprint)
         where = self.read_structs()
         output = "".join("import {}\n".format(i) for i in sorted(self.imports))
         if self.imports:
@@ -276,11 +295,7 @@ class ParserHaskell:
 
 def gen_haskell(input_data: Input, reprint: bool = False) -> str:
     """Generate a Haskell code to parse input"""
-    parser = ParserHaskell(input_data)
-    for var in input_data.input:
-        parser.read_var(var)
-    parser.call(reprint)
-    return parser.content()
+    return ParserHaskell(input_data).content(reprint)
 
 
 # keywords taken from wiki.haskell.org on 2018-10-26

@@ -4,7 +4,7 @@
 
 import textwrap
 from typing import List, Optional
-from iorgen.types import Constraints, Input, Type, TypeEnum, Variable
+from iorgen.types import Constraints, FormatStyle, Input, Type, TypeEnum, Variable
 from iorgen.utils import pascal_case, camel_case, IteratorName
 
 
@@ -57,7 +57,12 @@ def type_str(type_: Type) -> str:
     return "[]{}".format(type_str(type_.encapsulated))
 
 
-def max_size(type_: Type, constraints: Optional[Constraints], input_data: Input) -> int:
+def max_size(
+    type_: Type,
+    constraints: Optional[Constraints],
+    input_data: Input,
+    style: FormatStyle = FormatStyle.DEFAULT,
+) -> int:
     """Computes the maximum number of bytes the type can take on stdin"""
     if type_.main == TypeEnum.INT:
         assert constraints
@@ -69,7 +74,7 @@ def max_size(type_: Type, constraints: Optional[Constraints], input_data: Input)
     if type_.main == TypeEnum.STRUCT:
         struct = input_data.get_struct(type_.struct_name)
         sizes = [max_size(i.type, i.constraints, input_data) for i in struct.fields]
-        if type_.fits_in_one_line(input_data.structs):
+        if type_.fits_in_one_line(input_data.structs, style):
             return sum(sizes) + len(struct.fields) - 1
         return max(sizes)
     size = -1
@@ -91,7 +96,7 @@ def max_size(type_: Type, constraints: Optional[Constraints], input_data: Input)
     value = max_size(type_.encapsulated, constraints, input_data)
     return (
         value * size + max(0, size - 1)
-        if type_.fits_in_one_line(input_data.structs)
+        if type_.fits_in_one_line(input_data.structs, style)
         else value
     )
 
@@ -161,31 +166,33 @@ class ParserGo:
         ]
 
     def read_lines(
-        self, name: str, type_: Type, size: str, already_allocated: bool = False
+        self,
+        var: Variable,
+        size: str,
+        already_allocated: bool = False,
     ) -> List[str]:
         """Read one or several lines and store them into the right place(s)"""
         lines = []
-        if type_.main == TypeEnum.LIST and not already_allocated:
-            lines.append(f"{name} = make({type_str(type_)}, {size})")
-        if type_.fits_in_one_line(self.input.structs):
-            return lines + self.read_line(name, size, type_)
-        if type_.main == TypeEnum.STRUCT:
-            struct = self.input.get_struct(type_.struct_name)
+        if var.type.main == TypeEnum.LIST and not already_allocated:
+            lines.append(f"{var.name} = make({type_str(var.type)}, {size})")
+        if var.fits_in_one_line(self.input.structs):
+            return lines + self.read_line(var.name, size, var.type)
+        if var.type.main == TypeEnum.STRUCT:
+            struct = self.input.get_struct(var.type.struct_name)
             for f_name, f_type, f_size in struct.fields_name_type_size(
-                name + ".{}", var_name
+                var.name + ".{}", var_name
             ):
-                lines.extend(self.read_lines(f_name, f_type, f_size))
+                lines.extend(self.read_lines(Variable(f_name, "", f_type), f_size))
             return lines
-        assert type_.main == TypeEnum.LIST
-        assert type_.encapsulated is not None
+        assert var.type.main == TypeEnum.LIST
+        assert var.type.encapsulated is not None
         inner_name = self.iterator.new_it()
-        lines.append(f"for {inner_name} := range {name} {{")
+        lines.append(f"for {inner_name} := range {var.name} {{")
         lines.extend(
             INDENTATION + i
             for i in self.read_lines(
-                "{}[{}]".format(name, inner_name),
-                type_.encapsulated,
-                var_name(type_.encapsulated.size),
+                Variable(f"{var.name}[{inner_name}]", "", var.type.encapsulated),
+                var_name(var.type.encapsulated.size),
             )
         )
         lines.append("}")
@@ -210,8 +217,7 @@ class ParserGo:
             lines.append("var {} {}".format(var_name(var.name), type_str(var.type)))
         lines.extend(
             self.read_lines(
-                var_name(var.name),
-                var.type,
+                Variable(var_name(var.name), "", var.type, var.format_style),
                 var_name(var.type.size),
                 already_allocated=True,
             )
@@ -230,7 +236,9 @@ class ParserGo:
         lines.append("func {}({}) {{".format(name, ", ".join(arguments)))
         if reprint:
             for var in self.input.input:
-                lines.extend(self.print_lines(var_name(var.name), var.type, 1))
+                lines.extend(
+                    self.print_lines(var_name(var.name), var.type, 1, var.format_style)
+                )
         else:
             lines.extend(
                 [
@@ -242,13 +250,22 @@ class ParserGo:
             )
         return lines + ["}"]
 
-    def print_line(self, name: str, type_: Type, indent_lvl: int) -> List[str]:
+    def print_line(
+        self, name: str, type_: Type, indent_lvl: int, style: FormatStyle
+    ) -> List[str]:
         """Print the content of a var that holds in one line"""
-        assert type_.fits_in_one_line(self.input.structs)
+        assert type_.fits_in_one_line(self.input.structs, style)
         indent = INDENTATION * indent_lvl
         self.imports.add("fmt")
         if type_.main in (TypeEnum.INT, TypeEnum.STR):
-            return [indent + "fmt.Println({});".format(name)]
+            return [
+                indent
+                + (
+                    f'fmt.Print({name}, " ");'
+                    if style == FormatStyle.NO_ENDLINE
+                    else f"fmt.Println({name});"
+                )
+            ]
         if type_.main == TypeEnum.CHAR:
             return [indent + 'fmt.Printf("%c\\n", {});'.format(name)]
         if type_.main == TypeEnum.LIST:
@@ -283,10 +300,16 @@ class ParserGo:
             )
         ]
 
-    def print_lines(self, name: str, type_: Type, indent_lvl: int) -> List[str]:
+    def print_lines(
+        self,
+        name: str,
+        type_: Type,
+        indent_lvl: int,
+        style: FormatStyle = FormatStyle.DEFAULT,
+    ) -> List[str]:
         """Print the content of a var that holds in one or more lines"""
-        if type_.fits_in_one_line(self.input.structs):
-            return self.print_line(name, type_, indent_lvl)
+        if type_.fits_in_one_line(self.input.structs, style):
+            return self.print_line(name, type_, indent_lvl, style)
         if type_.main == TypeEnum.STRUCT:
             lines = []
             for field in self.input.get_struct(type_.struct_name).fields:
@@ -326,15 +349,32 @@ class ParserGo:
         output += "func main() {\n"
         output += INDENTATION + "scanner := bufio.NewScanner(os.Stdin)\n"
         max_line_length = max(
-            max_size(i.type, i.constraints, self.input) for i in self.input.input
+            max_size(i.type, i.constraints, self.input, i.format_style)
+            for i in self.input.input
         )
         if max_line_length > 64 * 1024:  # bufio.MaxScanTokenSize
             output += INDENTATION + (
                 "scanner.Buffer(make([]byte, 0, " "64 * 1024), {})\n"
             ).format(max_line_length + 1)
-        for var in self.input.input:
-            for line in self.read_var(var):
-                output += INDENTATION + line + "\n"
+        for variables in self.input.get_all_vars():
+            if len(variables) == 1:
+                for line in self.read_var(variables[0]):
+                    output += INDENTATION + line + "\n"
+            else:
+                assert all(var.type.main == TypeEnum.INT for var in variables)
+                output += (
+                    INDENTATION
+                    + f"var {', '.join(var_name(i.name) for i in variables)} int\n"
+                )
+                self.imports.add("fmt")
+                output += INDENTATION + "scanner.Scan()\n"
+                output += (
+                    INDENTATION
+                    + 'fmt.Sscanf(scanner.Text(), "{}", {});\n'.format(
+                        " ".join(["%d"] * len(variables)),
+                        ", ".join("&" + var_name(i.name) for i in variables),
+                    )
+                )
         output += INDENTATION + "{}({});\n".format(
             var_name(self.input.name),
             ", ".join([var_name(i.name) for i in self.input.input]),

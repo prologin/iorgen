@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2020 Sacha Delanoue
+# Copyright 2018-2022 Sacha Delanoue
 # Copyright 2021 Kenji Gaillac
 """Generate the markdown describing the subject"""
 
 import textwrap
 from typing import Dict, List, Optional
 
-from iorgen.types import Input, Type, TypeEnum, Variable
+from iorgen.types import FormatStyle, Input, Type, TypeEnum, Variable
 
 LANG = {
     "en": {
@@ -22,6 +22,7 @@ LANG = {
         "input decl": "The input will contain:",
         "int": "an integer",
         "int list": "a list of **{}** integers separated by spaces",
+        "int sameline": "some integers separated by spaces",
         "list": "a list of **{}** elements",
         "list line": "One line per list element:",
         "list lines": "Each list element is on several lines:",
@@ -47,6 +48,7 @@ LANG = {
         "input decl": "L’entrée contiendra :",
         "int": "un entier",
         "int list": "une liste de **{}** entiers séparés par des espaces",
+        "int sameline": "des entiers séparés par des espaces",
         "list": "une liste de **{}** éléments",
         "list line": "Une ligne par élément de la liste :",
         "list lines": "Chaque élément de la liste est sur plusieurs lignes :",
@@ -80,6 +82,7 @@ class Markdown:
         self.lang = LANG[lang]
         self.first_line = True
         self.start_list = False
+        self.indent_lvl = 0
 
     def line_description(self, plural: bool = False) -> str:
         """Return the key for a line: is it the first or not?"""
@@ -93,7 +96,10 @@ class Markdown:
         return self.lang["next lines" if plural else "next line"]
 
     def describe_oneline(
-        self, name: Optional[str], comment: Optional[str], type_: Type, indent: int
+        self,
+        name: Optional[str],
+        comment: Optional[str],
+        type_: Type,
     ) -> List[str]:
         """Describe a line of input"""
         assert type_.fits_in_one_line(self.input.structs)
@@ -135,25 +141,31 @@ class Markdown:
             )
         else:
             content = "{} {}.".format(self.line_description(), type_str)
-        return wrap_item(content, indent)
+        return wrap_item(content, self.indent_lvl)
 
     def describe_multi(
-        self, name: Optional[str], comment: Optional[str], type_: Type, indent: int = 0
+        self,
+        name: Optional[str],
+        comment: Optional[str],
+        type_: Type,
+        style: FormatStyle = FormatStyle.DEFAULT,
     ) -> List[str]:
         """Describe a type taking several lines of input"""
-        if type_.fits_in_one_line(self.input.structs):
-            return self.describe_oneline(name, comment, type_, indent)
+        if type_.fits_in_one_line(self.input.structs, style):
+            return self.describe_oneline(name, comment, type_)
         if type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)
             out = wrap_item(
                 "{} {}.".format(
                     self.line_description(True), self.lang["struct lines"]
                 ).format(struct.name),
-                indent,
+                self.indent_lvl,
             )
             self.first_line = True
+            self.indent_lvl += 1
             for i in struct.fields:
-                out.extend(self.describe_multi(i.name, i.comment, i.type, indent + 1))
+                out.extend(self.describe_multi(i.name, i.comment, i.type))
+            self.indent_lvl -= 1
             return out
         assert type_.main == TypeEnum.LIST
         assert type_.encapsulated is not None
@@ -166,16 +178,33 @@ class Markdown:
                 self.lang["list"].format(type_.size),
                 comment_and_name,
             ),
-            indent,
+            self.indent_lvl,
         )
         self.start_list = True
-        return out + self.describe_multi(None, None, type_.encapsulated, indent + 1)
+        self.indent_lvl += 1
+        out += self.describe_multi(None, None, type_.encapsulated)
+        self.indent_lvl -= 1
+        return out
 
     def content(self) -> str:
         """Return the generated content"""
         output = []
-        for var in self.input.input:
-            output.extend(self.describe_multi(var.name, var.comment, var.type))
+        for variables in self.input.get_all_vars():
+            if len(variables) == 1:
+                var = variables[0]
+                output.extend(
+                    self.describe_multi(
+                        var.name, var.comment, var.type, var.format_style
+                    )
+                )
+            else:
+                assert all(var.type.main == TypeEnum.INT for var in variables)
+                line = self.line_description()
+                output.extend(
+                    wrap_item(f"{line} {self.lang['int sameline']}{self.lang[':']}", 0)
+                )
+                for var in variables:
+                    output.extend(wrap_item(f"**{var.name}**, {var.comment}.", 1))
         return "\n".join(output) + "\n"
 
 

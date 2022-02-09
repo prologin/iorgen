@@ -1,11 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright 2021 Léo Lanteri Thauvin
+# Copyright 2022 Sacha Delanoue
 """Generate a Julia parser"""
 
 import textwrap
 from typing import List
 
-from iorgen.types import Input, Struct, Type, TypeEnum, Variable
+from iorgen.types import FormatStyle, Input, Struct, Type, TypeEnum, Variable
 from iorgen.utils import snake_case, pascal_case
 
 
@@ -64,9 +65,11 @@ def read_line(type_: Type, input_data: Input, input_str: str = "readline()") -> 
     }[type_.main]
 
 
-def read_lines(type_: Type, size: str, input_data: Input) -> List[str]:
+def read_lines(
+    type_: Type, size: str, input_data: Input, style: FormatStyle = FormatStyle.DEFAULT
+) -> List[str]:
     """Generate the Julia code to read the lines for a given type"""
-    if type_.fits_in_one_line(input_data.structs):
+    if type_.fits_in_one_line(input_data.structs, style):
         return [read_line(type_, input_data)]
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
@@ -91,11 +94,15 @@ def read_lines(type_: Type, size: str, input_data: Input) -> List[str]:
     return [f"read_struct_{var_name(type_.struct_name)}()"]
 
 
-def print_line(name: str, type_: Type, input_data: Input) -> str:
+def print_line(name: str, type_: Type, input_data: Input, style: FormatStyle) -> str:
     """Print the content of a var in one line"""
-    assert type_.fits_in_one_line(input_data.structs)
+    assert type_.fits_in_one_line(input_data.structs, style)
     if type_.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.STR):
-        return "println({})".format(name)
+        return (
+            f'print({name}, " ")'
+            if style == FormatStyle.NO_ENDLINE
+            else f"println({name})"
+        )
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
         if type_.encapsulated.main == TypeEnum.CHAR:
@@ -120,8 +127,24 @@ class ParserJulia:
 
     def read_var(self, var: Variable) -> List[str]:
         """Read a variable"""
-        lines = read_lines(var.type, var_name(var.type.size), self.input)
-        lines[0] = "{} = {}".format(var_name(var.name), lines[0])
+        lines = read_lines(
+            var.type, var_name(var.type.size), self.input, var.format_style
+        )
+        lines[0] = f"{var_name(var.name)} = {lines[0]}"
+        return lines
+
+    def read_vars(self) -> List[str]:
+        """Read all input variables"""
+        lines = []
+        for variables in self.input.get_all_vars():
+            if len(variables) == 1:
+                lines.extend(self.read_var(variables[0]))
+            else:
+                assert all(var.type.main == TypeEnum.INT for var in variables)
+                lines.append(
+                    ", ".join(var_name(i.name) for i in variables)
+                    + " = map(s -> parse(Int, s), split(readline()))"
+                )
         return lines
 
     def decl_struct(self, struct: Struct) -> List[str]:
@@ -196,7 +219,9 @@ class ParserJulia:
         )
         if reprint:
             for var in self.input.input:
-                self.method.extend(self.print_lines(var_name(var.name), var.type, 1))
+                self.method.extend(
+                    self.print_lines(var_name(var.name), var.type, 1, var.format_style)
+                )
         else:
             self.method.extend(
                 textwrap.wrap(
@@ -213,17 +238,21 @@ class ParserJulia:
             )
         )
 
-    def print_lines(self, name: str, type_: Type, indent_lvl: int = 0) -> List[str]:
+    def print_lines(
+        self, name: str, type_: Type, indent_lvl: int, style: FormatStyle
+    ) -> List[str]:
         """Print the content of a var that holds in one or more lines"""
         indent = INDENTATION * indent_lvl
-        if type_.fits_in_one_line(self.input.structs):
-            return [indent + print_line(name, type_, self.input)]
+        if type_.fits_in_one_line(self.input.structs, style):
+            return [indent + print_line(name, type_, self.input, style)]
         if type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
             inner = "iT" + str(abs(hash(name)))  # unique name
             return (
                 [indent + "for {} in {}".format(inner, name)]
-                + self.print_lines(inner, type_.encapsulated, indent_lvl + 1)
+                + self.print_lines(
+                    inner, type_.encapsulated, indent_lvl + 1, FormatStyle.DEFAULT
+                )
                 + [indent + "end"]
             )
         assert type_.main == TypeEnum.STRUCT
@@ -231,13 +260,18 @@ class ParserJulia:
         for i in self.input.get_struct(type_.struct_name).fields:
             lines.extend(
                 self.print_lines(
-                    "{}.{}".format(name, var_name(i.name)), i.type, indent_lvl
+                    "{}.{}".format(name, var_name(i.name)),
+                    i.type,
+                    indent_lvl,
+                    FormatStyle.DEFAULT,
                 )
             )
         return lines
 
-    def content(self) -> str:
+    def content(self, reprint: bool) -> str:
         """Return the parser content"""
+        self.main.extend(self.read_vars())
+        self.call(reprint)
         output = ""
         struct_parsers = [self.def_read_struct(struct) for struct in self.input.structs]
         if self.import_parse:
@@ -261,11 +295,7 @@ class ParserJulia:
 
 def gen_julia(input_data: Input, reprint: bool = False) -> str:
     """Generate a Julia code to parse input"""
-    parser = ParserJulia(input_data)
-    for var in input_data.input:
-        parser.main.extend(parser.read_var(var))
-    parser.call(reprint)
-    return parser.content()
+    return ParserJulia(input_data).content(reprint)
 
 
 RESERVED = [

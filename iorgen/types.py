@@ -24,6 +24,15 @@ class TypeEnum(Enum):
     STRUCT = 5
 
 
+@unique
+class FormatStyle(Enum):
+    """Configurable formatting style option for the input"""
+
+    DEFAULT = 0
+    NO_ENDLINE = 1  # An integer that has no endline after it (an other follows)
+    FORCE_NEWLINES = 2  # A integer list with each int on a new line
+
+
 class Type:
     """Represents the type of a variable"""
 
@@ -89,13 +98,18 @@ class Type:
         """Can we parse several of this type on a single line"""
         return self.main in (TypeEnum.INT, TypeEnum.CHAR)
 
-    def fits_in_one_line(self: Type, structs: List[Struct]) -> bool:
-        """Return False if more than one line is needed for this struct"""
+    def fits_in_one_line(
+        self: Type, structs: List[Struct], style: FormatStyle = FormatStyle.DEFAULT
+    ) -> bool:
+        """Return False if more than one line is needed for this type"""
         if self.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.STR):
             return True
         if self.main == TypeEnum.LIST:
             assert self.encapsulated is not None
-            return self.encapsulated.can_be_inlined()
+            return (
+                style != FormatStyle.FORCE_NEWLINES
+                and self.encapsulated.can_be_inlined()
+            )
         if self.main == TypeEnum.STRUCT:
             struct = next(x for x in structs if x.name == self.struct_name)
             return all(i.type.can_be_inlined() for i in struct.fields)
@@ -241,11 +255,18 @@ class Constraints:
 class Variable:
     """Everything there is to know about a variable"""
 
-    def __init__(self: Variable, name: str, comment: str, type_: Type) -> None:
+    def __init__(
+        self: Variable,
+        name: str,
+        comment: str,
+        type_: Type,
+        format_style: FormatStyle = FormatStyle.DEFAULT,
+    ) -> None:
         self.name = name
         self.comment = comment
         self.type = type_
         self.constraints = None  # type: Optional[Constraints]
+        self.format_style = format_style
 
     @classmethod
     def from_dict(cls: T[Variable], dic: Dict[str, str]) -> Optional[Variable]:
@@ -255,7 +276,23 @@ class Variable:
         type_ = Type.from_string(dic["type"])
         if type_ is None:
             return None
-        return cls(dic["name"], dic["comment"], type_)
+        style = FormatStyle.DEFAULT
+        if "format" in dic:
+            if dic["format"] == "no_endline":
+                if type_.main != TypeEnum.INT:
+                    return None
+                style = FormatStyle.NO_ENDLINE
+            elif dic["format"] == "force_newlines":
+                if (
+                    type_.main != TypeEnum.LIST
+                    or type_.encapsulated is None
+                    or type_.encapsulated.main != TypeEnum.INT
+                ):
+                    return None
+                style = FormatStyle.FORCE_NEWLINES
+            else:
+                print(f'WARNING: unknown format "{dic["format"]}')
+        return cls(dic["name"], dic["comment"], type_, format_style=style)
 
     def constraints_repr(self, perf: bool = False) -> str:
         """Return a string representing the variable's constraints"""
@@ -288,6 +325,10 @@ class Variable:
                 return rf"{name} \in \{{{', '.join(str(i) for i in sorted(choices))}\}}"
             return ""
         raise Exception
+
+    def fits_in_one_line(self, structs: List[Struct]) -> bool:
+        """Return False if more than one line is needed for this variable"""
+        return self.type.fits_in_one_line(structs, self.format_style)
 
 
 class Struct:
@@ -455,3 +496,16 @@ class Input:
     def get_var(self: Input, name: str) -> Variable:
         """Get a variable by its name."""
         return next(x for x in self.input if x.name == name)
+
+    def get_all_vars(self: Input) -> List[List[Variable]]:
+        """Return input variables. The difference from this method and simply the
+        'input' field, is that this method will group integers that are read on the
+        same line."""
+        ret = []
+        current = []
+        for var in self.input:
+            current.append(var)
+            if var.format_style != FormatStyle.NO_ENDLINE:
+                ret.append(current)
+                current = []
+        return ret

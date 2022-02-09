@@ -1,11 +1,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2020 Sacha Delanoue
+# Copyright 2018-2022 Sacha Delanoue
 """Generate a Ruby parser"""
 
 import textwrap
 from typing import List
 
-from iorgen.types import Input, Type, TypeEnum, Variable
+from iorgen.types import FormatStyle, Input, Type, TypeEnum
 from iorgen.utils import snake_case, IteratorName
 
 
@@ -49,10 +49,14 @@ def read_line(type_: Type, input_data: Input) -> str:
 
 
 def read_lines(
-    type_: Type, size: str, input_data: Input, iterator: IteratorName
+    type_: Type,
+    size: str,
+    input_data: Input,
+    iterator: IteratorName,
+    style: FormatStyle = FormatStyle.DEFAULT,
 ) -> List[str]:
     """Generate the Ruby code to read the lines for a given type"""
-    if type_.fits_in_one_line(input_data.structs):
+    if type_.fits_in_one_line(input_data.structs, style):
         return [read_line(type_, input_data)]
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
@@ -98,10 +102,27 @@ def read_lines(
     return ["{"] + fields + ["}"]
 
 
-def read_var(var: Variable, input_data: Input, iterator: IteratorName) -> List[str]:
-    """Read a Ruby variable"""
-    lines = read_lines(var.type, var_name(var.type.size), input_data, iterator)
-    lines[0] = "{} = {}".format(var_name(var.name), lines[0])
+def read_vars(input_data: Input, iterator: IteratorName) -> List[str]:
+    """Read all input variables"""
+    lines = []
+    for variables in input_data.get_all_vars():
+        if len(variables) == 1:
+            var = variables[0]
+            var_lines = read_lines(
+                var.type,
+                var_name(var.type.size),
+                input_data,
+                iterator,
+                var.format_style,
+            )
+            var_lines[0] = f"{var_name(var.name)} = {var_lines[0]}"
+            lines.extend(var_lines)
+        else:
+            assert all(var.type.main == TypeEnum.INT for var in variables)
+            lines.append(
+                ", ".join(var_name(i.name) for i in variables)
+                + " = STDIN.gets.split.map(&:to_i)"
+            )
     return lines
 
 
@@ -124,11 +145,15 @@ def print_line(name: str, type_: Type, input_data: Input) -> str:
 
 
 def print_lines(
-    name: str, type_: Type, input_data: Input, indent_lvl: int
+    name: str,
+    type_: Type,
+    input_data: Input,
+    indent_lvl: int,
+    style: FormatStyle = FormatStyle.DEFAULT,
 ) -> List[str]:
     """Print the content of a var that holds in one or more lines"""
     indent = INDENTATION * indent_lvl
-    if type_.fits_in_one_line(input_data.structs):
+    if type_.fits_in_one_line(input_data.structs, style):
         return [indent + print_line(name, type_, input_data)]
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
@@ -159,8 +184,20 @@ def call(input_data: Input, reprint: bool) -> List[str]:
     )
     if reprint:
         lines.append(INDENTATION + '$\\ = "\\n"')
-        for var in input_data.input:
-            lines.extend(print_lines(var_name(var.name), var.type, input_data, 1))
+        for variables in input_data.get_all_vars():
+            if len(variables) == 1:
+                var = variables[0]
+                lines.extend(
+                    print_lines(
+                        var_name(var.name), var.type, input_data, 1, var.format_style
+                    )
+                )
+            else:
+                lines.append(
+                    INDENTATION
+                    + "puts "
+                    + f'[{", ".join(var_name(i.name) for i in variables)}].join(" ")'
+                )
     else:
         lines.extend(
             textwrap.wrap(
@@ -177,8 +214,8 @@ def gen_ruby(input_data: Input, reprint: bool = False) -> str:
     """Generate a Ruby code to parse input"""
     iterator = IteratorName([var.name for var in input_data.input] + [input_data.name])
     output = "\n".join(call(input_data, reprint)) + "\n\n"
-    for var in input_data.input:
-        output += "\n".join(read_var(var, input_data, iterator)) + "\n"
+    for line in read_vars(input_data, iterator):
+        output += line + "\n"
     args = (var_name(i.name) for i in input_data.input)
     output += "\n{}({})\n".format(var_name(input_data.name), ", ".join(args))
     return output

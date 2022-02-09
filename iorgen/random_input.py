@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2019 Sacha Delanoue
+# Copyright 2018-2022 Sacha Delanoue
 # Copyright 2019 Matthieu Moatti
 """Generate a valid raw input"""
 
@@ -116,23 +116,23 @@ class Generator:
         assert False
         return ""
 
-    def generate_lines(
-        self, name: str, type_: Type, constraints: Optional[Constraints]
-    ) -> List[str]:
+    def generate_lines(self, var: Variable) -> List[str]:
         """Generate the raw input for a type"""
-        if type_.fits_in_one_line(self.input.structs):
-            return [self.generate_line(name, type_, constraints)]
-        if type_.main == TypeEnum.LIST:
-            assert type_.encapsulated
+        if var.fits_in_one_line(self.input.structs):
+            return [self.generate_line(var.name, var.type, var.constraints)]
+        if var.type.main == TypeEnum.LIST:
+            assert var.type.encapsulated
+            inner = Variable("", "", var.type.encapsulated)
+            inner.constraints = var.constraints
             lines = []
-            for _ in range(self.eval_var(type_.size)):
-                lines.extend(self.generate_lines("", type_.encapsulated, constraints))
+            for _ in range(self.eval_var(var.type.size)):
+                lines.extend(self.generate_lines(inner))
             return lines
-        if type_.main == TypeEnum.STRUCT:
-            struct = self.input.get_struct(type_.struct_name)
+        if var.type.main == TypeEnum.STRUCT:
+            struct = self.input.get_struct(var.type.struct_name)
             lines = []
-            for var in struct.fields:
-                lines.extend(self.generate_lines(var.name, var.type, var.constraints))
+            for field in struct.fields:
+                lines.extend(self.generate_lines(field))
             return lines
         assert False
         return []
@@ -147,6 +147,14 @@ def generate_random_input(
         specs_dict[specs[i]] = int(specs[i + 1])
     generator = Generator(input_data, specs_dict, perf_mode)
     lines = []
-    for var in input_data.input:
-        lines.extend(generator.generate_lines(var.name, var.type, var.constraints))
+    for variables in input_data.get_all_vars():
+        if len(variables) == 1:
+            lines.extend(generator.generate_lines(variables[0]))
+        else:
+            values = []
+            for var in variables:
+                assert var.type.main == TypeEnum.INT
+                assert var.constraints is not None
+                values.append(generator.generate_integer(var.name, var.constraints))
+            lines.append(" ".join(values))
     return "\n".join(lines) + "\n"

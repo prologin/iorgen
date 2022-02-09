@@ -6,7 +6,7 @@ import textwrap
 from keyword import iskeyword
 from typing import List
 
-from iorgen.types import Input, Type, TypeEnum, Variable
+from iorgen.types import FormatStyle, Input, Type, TypeEnum
 from iorgen.utils import pascal_case, snake_case
 
 INDENTATION = "    "
@@ -129,9 +129,11 @@ def read_line(type_: Type, input_data: Input) -> str:
     }[type_.main]
 
 
-def read_lines(type_: Type, size: str, input_data: Input) -> List[str]:
+def read_lines(
+    type_: Type, size: str, input_data: Input, style: FormatStyle = FormatStyle.DEFAULT
+) -> List[str]:
     """Generate the Python code to read the lines for a given type"""
-    if type_.fits_in_one_line(input_data.structs):
+    if type_.fits_in_one_line(input_data.structs, style):
         return [read_line(type_, input_data)]
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
@@ -167,11 +169,32 @@ def read_lines(type_: Type, size: str, input_data: Input) -> List[str]:
     return [f"{class_name(struct.name)}("] + fields + [")"]
 
 
-def print_line(name: str, type_: Type, input_data: Input) -> str:
+def read_vars(input_data: Input) -> List[str]:
+    """Read all input variables"""
+    lines = []
+    for variables in input_data.get_all_vars():
+        if len(variables) == 1:
+            var = variables[0]
+            var_lines = read_lines(
+                var.type, var_name(var.type.size), input_data, var.format_style
+            )
+            var_lines[0] = f"{var_name(var.name)} = {var_lines[0]}"
+            lines.extend(var_lines)
+        else:
+            assert all(var.type.main == TypeEnum.INT for var in variables)
+            lines.append(
+                ", ".join(var_name(i.name) for i in variables)
+                + " = map(int, input().split())"
+            )
+    return lines
+
+
+def print_line(name: str, type_: Type, input_data: Input, style: FormatStyle) -> str:
     """Print the content of a var in one line"""
-    assert type_.fits_in_one_line(input_data.structs)
+    assert type_.fits_in_one_line(input_data.structs, style)
     if type_.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.STR):
-        return "print({})".format(name)
+        end = ", end=' '" if style == FormatStyle.NO_ENDLINE else ""
+        return f"print({name}{end})"
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
         if type_.encapsulated.main == TypeEnum.CHAR:
@@ -193,12 +216,6 @@ class ParserPython:
         self.main = []  # type: List[str]
         self.method = []  # type: List[str]
 
-    def read_var(self, var: Variable) -> List[str]:
-        """Read a variable"""
-        lines = read_lines(var.type, var_name(var.type.size), self.input)
-        lines[0] = "{} = {}".format(var_name(var.name), lines[0])
-        return lines
-
     def call(self, reprint: bool) -> None:
         """Declare and call the function take all inputs in arguments"""
         name = var_name(self.input.name)
@@ -217,7 +234,9 @@ class ParserPython:
         self.method.append(INDENTATION + '"""')
         if reprint:
             for var in self.input.input:
-                self.method.extend(self.print_lines(var_name(var.name), var.type, 1))
+                self.method.extend(
+                    self.print_lines(var_name(var.name), var.type, 1, var.format_style)
+                )
         else:
             self.method.extend(
                 textwrap.wrap(
@@ -232,11 +251,17 @@ class ParserPython:
             wrap_line(f"{name}(", ")", [var_name(i.name) for i in self.input.input])
         )
 
-    def print_lines(self, name: str, type_: Type, indent_lvl: int = 0) -> List[str]:
+    def print_lines(
+        self,
+        name: str,
+        type_: Type,
+        indent_lvl: int,
+        style: FormatStyle = FormatStyle.DEFAULT,
+    ) -> List[str]:
         """Print the content of a var that holds in one or more lines"""
         indent = INDENTATION * indent_lvl
-        if type_.fits_in_one_line(self.input.structs):
-            return [indent + print_line(name, type_, self.input)]
+        if type_.fits_in_one_line(self.input.structs, style):
+            return [indent + print_line(name, type_, self.input, style)]
         if type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
             inner = "iT" + str(abs(hash(name)))  # unique name
@@ -251,13 +276,16 @@ class ParserPython:
             )
         return lines
 
-    def content(self) -> str:
+    def content(self, reprint: bool) -> str:
         """Return the parser content"""
         output = ""
         for line in decl_imports(self.input):
             output += line + "\n"
         for line in decl_classes(self.input):
             output += line + "\n"
+
+        self.main.extend(read_vars(self.input))
+        self.call(reprint)
         for line in self.method:
             output += line + "\n"
         if self.method:
@@ -270,8 +298,4 @@ class ParserPython:
 
 def gen_python(input_data: Input, reprint: bool = False) -> str:
     """Generate a Python code to parse input"""
-    parser = ParserPython(input_data)
-    for var in input_data.input:
-        parser.main.extend(parser.read_var(var))
-    parser.call(reprint)
-    return parser.content()
+    return ParserPython(input_data).content(reprint)

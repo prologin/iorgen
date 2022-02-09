@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2020 Sacha Delanoue
+# Copyright 2018-2022 Sacha Delanoue
 # Copyright 2019 Fardale
 """Generate a OCaml parser"""
 
 import textwrap
 from typing import List
 
-from iorgen.types import Input, Struct, Type, TypeEnum
+from iorgen.types import FormatStyle, Input, Struct, Type, TypeEnum
 from iorgen.utils import camel_case, snake_case
 
 
@@ -92,9 +92,11 @@ def read_line(type_: Type, input_data: Input) -> str:
     )
 
 
-def read_lines(type_: Type, input_data: Input) -> str:
+def read_lines(
+    type_: Type, input_data: Input, style: FormatStyle = FormatStyle.DEFAULT
+) -> str:
     """Read one or several lines into the correct type"""
-    if type_.fits_in_one_line(input_data.structs):
+    if type_.fits_in_one_line(input_data.structs, style):
         return read_line(type_, input_data)
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
@@ -114,15 +116,16 @@ def read_lines(type_: Type, input_data: Input) -> str:
     )
 
 
-def print_line(name: str, type_: Type, input_data: Input) -> str:
+def print_line(name: str, type_: Type, input_data: Input, style: FormatStyle) -> str:
     """Print a variable on one line"""
-    assert type_.fits_in_one_line(input_data.structs)
+    assert type_.fits_in_one_line(input_data.structs, style)
+    newline = " " if style == FormatStyle.NO_ENDLINE else r"\n"
     if type_.main == TypeEnum.INT:
-        return 'Printf.printf "%d\\n" ' + name
+        return f'Printf.printf "%d{newline}" {name}'
     if type_.main == TypeEnum.CHAR:
-        return 'Printf.printf "%c\\n" ' + name
+        return f'Printf.printf "%c{newline}" {name}'
     if type_.main == TypeEnum.STR:
-        return 'Printf.printf "%s\\n" ' + name
+        return f'Printf.printf "%s{newline}" {name}'
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
         concat = ""
@@ -140,10 +143,12 @@ def print_line(name: str, type_: Type, input_data: Input) -> str:
     )
 
 
-def print_lines(name: str, type_: Type, input_data: Input) -> str:
+def print_lines(
+    name: str, type_: Type, input_data: Input, style: FormatStyle = FormatStyle.DEFAULT
+) -> str:
     """Print a variable on several lines"""
-    if type_.fits_in_one_line(input_data.structs):
-        return print_line(name, type_, input_data)
+    if type_.fits_in_one_line(input_data.structs, style):
+        return print_line(name, type_, input_data, style)
     if type_.main == TypeEnum.STRUCT:
         struct = input_data.get_struct(type_.struct_name)
         return "{} ()".format(
@@ -193,7 +198,7 @@ def method(input_data: Input, reprint: bool) -> List[str]:
         out.extend(
             INDENTATION
             + "let () = {} in".format(
-                print_lines(var_name(var.name), var.type, input_data)
+                print_lines(var_name(var.name), var.type, input_data, var.format_style)
             )
             for var in input_data.input
         )
@@ -210,10 +215,23 @@ def gen_ocaml(input_data: Input, reprint: bool = False) -> str:
         main += "\n\n"
     main += "\n".join(method(input_data, reprint))
     main += "\n\nlet () =\n"
-    for var in input_data.input:
-        main += INDENTATION + "let {} = {} in\n".format(
-            var_name(var.name), read_lines(var.type, input_data)
-        )
+    for variables in input_data.get_all_vars():
+        if len(variables) == 1:
+            var = variables[0]
+            main += (
+                INDENTATION
+                + f"let {var_name(var.name)} = "
+                + f"{read_lines(var.type, input_data, var.format_style)} in\n"
+            )
+        else:
+            assert all(var.type.main == TypeEnum.INT for var in variables)
+            main += (
+                INDENTATION
+                + 'let[@warning "-8"] ['
+                + "; ".join(var_name(i.name) for i in variables)
+                + "] = read_line () |> String.split_on_char ' '"
+                '|> List.map int_of_string [@warning "+8"] in \n'
+            )
     args = (var_name(i.name) for i in input_data.input)
     main += "{}{} {}\n".format(INDENTATION, var_name(input_data.name), " ".join(args))
     output += main

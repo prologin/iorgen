@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2021 Sacha Delanoue
+# Copyright 2018-2022 Sacha Delanoue
 """Generate a Java parser"""
 
 import textwrap
 from typing import List
-from iorgen.types import Input, Type, TypeEnum
+from iorgen.types import Input, Type, TypeEnum, Variable
 from iorgen.utils import camel_case, pascal_case, IteratorName, WordsName
 
 INDENTATION = "    "
@@ -108,32 +108,36 @@ class ParserJava:
         return ["{}{}{} = {};".format(indent, type_decl, name, command)]
 
     def read_lines(
-        self, decl: bool, name: str, type_: Type, size: str, indent_lvl: int
+        self, decl: bool, var: Variable, size: str, indent_lvl: int
     ) -> List[str]:
         # pylint: disable=too-many-arguments
         # pylint: disable=too-many-locals
         """Read one or several lines and store them into the right place(s)"""
-        if type_.fits_in_one_line(self.input.structs):
-            return self.read_line(decl, name, type_, indent_lvl)
+        if var.fits_in_one_line(self.input.structs):
+            return self.read_line(decl, var.name, var.type, indent_lvl)
         indent = INDENTATION * indent_lvl
-        if type_.main == TypeEnum.STRUCT:
+        if var.type.main == TypeEnum.STRUCT:
             lines = [
                 indent
                 + "{}{} = new {}();".format(
-                    class_name(type_.struct_name) + " " if decl else "",
-                    name,
-                    class_name(type_.struct_name),
+                    class_name(var.type.struct_name) + " " if decl else "",
+                    var.name,
+                    class_name(var.type.struct_name),
                 )
             ]
-            struct = self.input.get_struct(type_.struct_name)
+            struct = self.input.get_struct(var.type.struct_name)
             for f_name, f_type, f_size in struct.fields_name_type_size(
-                "{}.{{}}".format(name), var_name
+                f"{var.name}.{{}}", var_name
             ):
-                lines.extend(self.read_lines(False, f_name, f_type, f_size, indent_lvl))
+                lines.extend(
+                    self.read_lines(
+                        False, Variable(f_name, "", f_type), f_size, indent_lvl
+                    )
+                )
             return lines
-        assert type_.main == TypeEnum.LIST
-        assert type_.encapsulated is not None
-        far_inner_type = type_.encapsulated
+        assert var.type.main == TypeEnum.LIST
+        assert var.type.encapsulated is not None
+        far_inner_type = var.type.encapsulated
         list_suffix = ""
         while far_inner_type.main == TypeEnum.LIST:
             assert far_inner_type.encapsulated is not None
@@ -142,8 +146,8 @@ class ParserJava:
         lines = [
             "{}{}{} = new {}[{}]{};".format(
                 indent,
-                (type_str(type_) + " ") if decl else "",
-                name,
+                (type_str(var.type) + " ") if decl else "",
+                var.name,
                 type_str(far_inner_type),
                 size,
                 list_suffix,
@@ -157,9 +161,8 @@ class ParserJava:
         lines.extend(
             self.read_lines(
                 False,
-                "{}[{}]".format(name, index),
-                type_.encapsulated,
-                var_name(type_.encapsulated.size),
+                Variable(f"{var.name}[{index}]", "", var.type.encapsulated),
+                var_name(var.type.encapsulated.size),
                 indent_lvl + 1,
             )
         )
@@ -182,12 +185,26 @@ class ParserJava:
             )
         )
         if reprint:
-            for var in self.input.input:
-                lines.extend(
-                    self.print_lines(
-                        var_name(var.name), var.type, var_name(var.type.size), 2
+            for variables in self.input.get_all_vars():
+                if len(variables) == 1:
+                    var = variables[0]
+                    lines.extend(
+                        self.print_lines(
+                            Variable(
+                                var_name(var.name), "", var.type, var.format_style
+                            ),
+                            var_name(var.type.size),
+                            2,
+                        )
                     )
-                )
+                else:
+                    lines.append(
+                        INDENTATION * 2
+                        + 'System.out.printf("{}\\n", {});'.format(
+                            " ".join(["%d"] * len(variables)),
+                            ", ".join(var_name(i.name) for i in variables),
+                        )
+                    )
         else:
             lines.extend(
                 [
@@ -223,21 +240,26 @@ class ParserJava:
         )
 
     def print_lines(
-        self, name: str, type_: Type, size: str, indent_lvl: int
+        self,
+        var: Variable,
+        size: str,
+        indent_lvl: int,
     ) -> List[str]:
         """Print the content of a var that holds in one or more lines"""
-        if type_.fits_in_one_line(self.input.structs):
-            return [INDENTATION * indent_lvl + self.print_line(name, type_)]
-        if type_.main == TypeEnum.STRUCT:
-            struct = self.input.get_struct(type_.struct_name)
+        if var.fits_in_one_line(self.input.structs):
+            return [INDENTATION * indent_lvl + self.print_line(var.name, var.type)]
+        if var.type.main == TypeEnum.STRUCT:
+            struct = self.input.get_struct(var.type.struct_name)
             lines = []
             for f_name, f_type, f_size in struct.fields_name_type_size(
-                "{}.{{}}".format(name), var_name
+                f"{var.name}.{{}}", var_name
             ):
-                lines.extend(self.print_lines(f_name, f_type, f_size, indent_lvl))
+                lines.extend(
+                    self.print_lines(Variable(f_name, "", f_type), f_size, indent_lvl)
+                )
             return lines
-        assert type_.main == TypeEnum.LIST
-        assert type_.encapsulated is not None
+        assert var.type.main == TypeEnum.LIST
+        assert var.type.encapsulated is not None
         index = self.iterator.new_it()
         self.words.push_scope()
         lines = [
@@ -247,9 +269,8 @@ class ParserJava:
         ]
         lines.extend(
             self.print_lines(
-                "{}[{}]".format(name, index),
-                type_.encapsulated,
-                var_name(type_.encapsulated.size),
+                Variable(f"{var.name}[{index}]", "", var.type.encapsulated),
+                var_name(var.type.encapsulated.size),
                 indent_lvl + 1,
             )
         )
@@ -283,15 +304,28 @@ class ParserJava:
             "BufferedReader reader = "
             "new BufferedReader(new InputStreamReader(System.in));\n"
         )
-        for var in self.input.input:
-            output += (
-                "\n".join(
-                    self.read_lines(
-                        True, var_name(var.name), var.type, var_name(var.type.size), 2
-                    )
+        for variables in self.input.get_all_vars():
+            if len(variables) == 1:
+                var = variables[0]
+                for line in self.read_lines(
+                    True,
+                    Variable(var_name(var.name), "", var.type, var.format_style),
+                    var_name(var.type.size),
+                    2,
+                ):
+                    output += line + "\n"
+            else:
+                words = self.words.next_name()
+                output += (
+                    f"{INDENTATION * 2}String[] {words}"
+                    ' = reader.readLine().split(" ");\n'
                 )
-                + "\n"
-            )
+                for i, var in enumerate(variables):
+                    assert var.type.main == TypeEnum.INT
+                    output += (
+                        INDENTATION * 2
+                        + f"int {var_name(var.name)} = Integer.parseInt({words}[{i}]);\n"
+                    )
         args = (var_name(var.name) for var in self.input.input)
         output += "\n{}{}({});\n".format(
             INDENTATION * 2, var_name(self.input.name), ", ".join(args)

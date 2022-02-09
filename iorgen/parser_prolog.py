@@ -1,11 +1,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2020 Sacha Delanoue
+# Copyright 2018-2022 Sacha Delanoue
 """Generate a Prolog parser"""
 
 import textwrap
 from typing import List, Tuple
 
-from iorgen.types import Input, Type, TypeEnum, Variable
+from iorgen.types import FormatStyle, Input, Type, TypeEnum
 from iorgen.utils import pascal_case, snake_case
 
 INDENTATION = "    "
@@ -35,15 +35,20 @@ def call_goal(goal: str, var: str) -> str:
     return "{}{}),".format(goal, var)
 
 
-def print_line(name: str, type_: Type, input_data: Input) -> str:
+def print_line(name: str, type_: Type, input_data: Input, style: FormatStyle) -> str:
     """Print a variable that fits in one line"""
-    assert type_.fits_in_one_line(input_data.structs)
+    assert type_.fits_in_one_line(input_data.structs, style)
+    write = (
+        f'write({name}), write(" ")'
+        if style == FormatStyle.NO_ENDLINE
+        else f"writeln({name})"
+    )
     if type_.main == TypeEnum.INT:
-        return "integer({0}), writeln({0})".format(name)
+        return f"integer({name}), {write}"
     if type_.main == TypeEnum.CHAR:
-        return "atom({0}), writeln({0})".format(name)
+        return f"atom({name}), {write}"
     if type_.main == TypeEnum.STR:
-        return "string({0}), writeln({0})".format(name)
+        return f"string({name}), {write}"
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
         if type_.encapsulated.main == TypeEnum.INT:
@@ -74,13 +79,15 @@ def print_line(name: str, type_: Type, input_data: Input) -> str:
 
 
 # I'd love to use lambda, but they come with swig 7.4, not in debian 9
-def print_lines(name: str, type_: Type, input_data: Input) -> Tuple[List[str], str]:
+def print_lines(
+    name: str, type_: Type, input_data: Input, style: FormatStyle = FormatStyle.DEFAULT
+) -> Tuple[List[str], str]:
     """Print a variable that fits in several lines
 
     Return a list of declarations to be put before, and the actual code to
     print the variable"""
-    if type_.fits_in_one_line(input_data.structs):
-        return ([], print_line(name, type_, input_data))
+    if type_.fits_in_one_line(input_data.structs, style):
+        return ([], print_line(name, type_, input_data, style))
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
         arg = name + "_S"
@@ -197,9 +204,9 @@ class ParserProlog:
         assert type_.main == TypeEnum.STRUCT
         return "read_assoc_{}".format(snake_case(type_.struct_name))
 
-    def read_lines(self, type_: Type) -> str:
+    def read_lines(self, type_: Type, style: FormatStyle = FormatStyle.DEFAULT) -> str:
         """Read one or several lines and parse them"""
-        if type_.fits_in_one_line(self.input.structs):
+        if type_.fits_in_one_line(self.input.structs, style):
             return self.read_line(type_)
         if type_.main == TypeEnum.STRUCT:
             return "read_assoc_{}".format(snake_case(type_.struct_name))
@@ -209,10 +216,23 @@ class ParserProlog:
         replicate = self.read_lines(type_.encapsulated)
         return "read_list({}, {})".format(replicate, var_name(type_.size))
 
-    def read_var(self, var: Variable) -> str:
-        """Read a variable"""
-        goal = self.read_lines(var.type)
-        return call_goal(goal, var_name(var.name))
+    def read_vars(self) -> List[str]:
+        """Read all input variables"""
+        lines = []
+        for variables in self.input.get_all_vars():
+            if len(variables) == 1:
+                var = variables[0]
+                lines.append(
+                    call_goal(
+                        self.read_lines(var.type, var.format_style), var_name(var.name)
+                    )
+                )
+            else:
+                self.read.add("List[int]")
+                lines.append(
+                    f"read_int_list([{', '.join(var_name(i.name) for i in variables)}]),"
+                )
+        return lines
 
     def method(self, reprint: bool) -> List[str]:
         """The method with all the parsed arguments"""
@@ -220,7 +240,9 @@ class ParserProlog:
         reprint_code = []
         if reprint:
             for var in self.input.input:
-                (decl, code) = print_lines(var_name(var.name), var.type, self.input)
+                (decl, code) = print_lines(
+                    var_name(var.name), var.type, self.input, var.format_style
+                )
                 lines.extend(decl)
                 reprint_code.append(INDENTATION + code + ",")
             reprint_code[-1] = reprint_code[-1][:-1] + "."
@@ -247,9 +269,7 @@ class ParserProlog:
 
     def content(self, reprint: bool) -> str:
         """Return the parser content"""
-        main = []
-        for var in self.input.input:
-            main.append(self.read_var(var))
+        main = self.read_vars()
         output = "\n".join(self.method(reprint)) + "\n\n"
         decl = self.declare_read_struct()
         if "str" in self.read:

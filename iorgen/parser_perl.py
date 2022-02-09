@@ -1,11 +1,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2021 Sacha Delanoue
+# Copyright 2018-2022 Sacha Delanoue
 """Generate a Perl parser"""
 
 import textwrap
 from typing import List
 
-from iorgen.types import Input, Type, TypeEnum, Variable
+from iorgen.types import FormatStyle, Input, Type, TypeEnum, Variable
 from iorgen.utils import snake_case, WordsName
 
 INDENTATION = "    "
@@ -93,30 +93,28 @@ def read_line(
 
 
 def read_lines(
-    name: str, decl: str, type_: Type, size: str, input_data: Input, words: WordsName
+    var: Variable, decl: str, size: str, input_data: Input, words: WordsName
 ) -> List[str]:
-    # pylint: disable=too-many-arguments
     """Generate the Ruby code to read the lines for a given type"""
-    if type_.fits_in_one_line(input_data.structs):
-        return read_line(name, decl, type_, input_data, words)
-    if type_.main == TypeEnum.LIST:
-        assert type_.encapsulated is not None
+    if var.fits_in_one_line(input_data.structs):
+        return read_line(var.name, decl, var.type, input_data, words)
+    if var.type.main == TypeEnum.LIST:
+        assert var.type.encapsulated is not None
         lines = [
-            decl.format("()" if name[0] == "@" else "[]"),
+            decl.format("()" if var.name[0] == "@" else "[]"),
             "for (1..{}) {{".format(size),
         ]
         words.push_scope()
-        array_name = name.replace("{", "{{").replace("}", "}}")
+        array_name = var.name.replace("{", "{{").replace("}", "}}")
         if array_name[0] != "@":
             array_name = "@{{" + array_name + "}}"
         lines.extend(
             [
                 INDENTATION + i
                 for i in read_lines(
-                    "$" + name[1:] + "[-1]",
+                    Variable("$" + var.name[1:] + "[-1]", "", var.type.encapsulated),
                     "push({}, {{}});".format(array_name),
-                    type_.encapsulated,
-                    size_name(type_.encapsulated.size),
+                    size_name(var.type.encapsulated.size),
                     input_data,
                     words,
                 )
@@ -124,19 +122,18 @@ def read_lines(
         )
         words.pop_scope()
         return lines + ["}"]
-    assert type_.main == TypeEnum.STRUCT
-    struct = input_data.get_struct(type_.struct_name)
+    assert var.type.main == TypeEnum.STRUCT
+    struct = input_data.get_struct(var.type.struct_name)
     sizes = [size_name(field.type.size) for field in struct.fields]
     if struct.is_sized_struct():
-        sizes = ["", "{}{{'{}'}}".format(name, struct.fields[0].name)]
-    lines = [decl.format("()" if name[0] == "%" else "{}")]
+        sizes = ["", f"{var.name}{{'{struct.fields[0].name}'}}"]
+    lines = [decl.format("()" if var.name[0] == "%" else "{}")]
     for (field, f_size) in zip(struct.fields, sizes):
-        f_name = "${}{{'{}'}}".format(name[1:], field.name)
+        f_name = f"${var.name[1:]}{{'{field.name}'}}"
         lines.extend(
             read_lines(
-                f_name,
+                Variable(f_name, "", field.type),
                 f_name.replace("{", "{{").replace("}", "}}") + " = {};",
-                field.type,
                 f_size,
                 input_data,
                 words,
@@ -145,24 +142,37 @@ def read_lines(
     return lines
 
 
-def read_var(var: Variable, input_data: Input, words: WordsName) -> List[str]:
-    """Read a Perl variable"""
-    return read_lines(
-        var_name(var),
-        "my {} = {{}};".format(var_name(var)),
-        var.type,
-        size_name(var.type.size),
-        input_data,
-        words,
-    )
+def read_vars(input_data: Input, words: WordsName) -> List[str]:
+    """Read all input variables"""
+    lines = []
+    for variables in input_data.get_all_vars():
+        if len(variables) == 1:
+            var = variables[0]
+            lines.extend(
+                read_lines(
+                    Variable(var_name(var), "", var.type, var.format_style),
+                    "my {} = {{}};".format(var_name(var)),
+                    size_name(var.type.size),
+                    input_data,
+                    words,
+                )
+            )
+        else:
+            split = words.next_name()
+            lines.append(f"my @{split} = split / /, <>;")
+            for i, var in enumerate(variables):
+                lines.append(f"my {var_name(var)} = int(${split}[{i}]);")
+
+    return lines
 
 
-def print_line(varname: str, type_: Type, input_data: Input) -> str:
+def print_line(varname: str, type_: Type, input_data: Input, style: FormatStyle) -> str:
     """Print the content of a var in one line"""
     assert type_.fits_in_one_line(input_data.structs)
     name = "$" + varname[1:]
     if type_.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.STR):
-        return 'print "{}\\n";'.format(name)
+        endline = " " if style == FormatStyle.NO_ENDLINE else r"\n"
+        return f'print "{name}{endline}";'
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
         if type_.encapsulated.main == TypeEnum.CHAR:
@@ -177,12 +187,16 @@ def print_line(varname: str, type_: Type, input_data: Input) -> str:
 
 
 def print_lines(
-    name: str, type_: Type, input_data: Input, indent_lvl: int
+    name: str,
+    type_: Type,
+    input_data: Input,
+    indent_lvl: int,
+    style: FormatStyle = FormatStyle.DEFAULT,
 ) -> List[str]:
     """Print the content of a var that holds in one or more lines"""
     indent = INDENTATION * indent_lvl
-    if type_.fits_in_one_line(input_data.structs):
-        return [indent + print_line(name, type_, input_data)]
+    if type_.fits_in_one_line(input_data.structs, style):
+        return [indent + print_line(name, type_, input_data, style)]
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
         return (
@@ -214,7 +228,9 @@ def call(input_data: Input, reprint: bool) -> List[str]:
     )
     if reprint:
         for var in input_data.input:
-            lines.extend(print_lines(var_name(var), var.type, input_data, 1))
+            lines.extend(
+                print_lines(var_name(var), var.type, input_data, 1, var.format_style)
+            )
     else:
         lines.extend(
             textwrap.wrap(
@@ -232,8 +248,8 @@ def gen_perl(input_data: Input, reprint: bool = False) -> str:
     words = WordsName([var.name for var in input_data.input])
     output = "#!/usr/bin/perl\nuse strict;\nuse warnings;\n\n"
     output += "\n".join(call(input_data, reprint)) + "\n\n"
-    for var in input_data.input:
-        output += "\n".join(read_var(var, input_data, words)) + "\n"
+    for line in read_vars(input_data, words):
+        output += line + "\n"
     args = (("\\" + var_name(i)).replace("\\$", "$") for i in input_data.input)
     output += "\n{}({});\n".format(sub_name(input_data.name), ", ".join(args))
     return output

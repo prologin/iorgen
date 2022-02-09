@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2021 Sacha Delanoue
+# Copyright 2018-2022 Sacha Delanoue
 """Check that a raw input is valid"""
 
 from string import printable, whitespace
 from typing import Dict, List, Optional, Tuple, Union
 import re
 
-from iorgen.types import Constraints, Input, Type, TypeEnum, Variable
+from iorgen.types import Constraints, FormatStyle, Input, Type, TypeEnum, Variable
 
 INTEGER_REGEX = re.compile("^-?[0-9]+$")
 
@@ -120,7 +120,11 @@ class Validator:
         return (int(size), size)
 
     def read_type(
-        self, name: str, type_: Type, constraints: Optional[Constraints]
+        self,
+        name: str,
+        type_: Type,
+        constraints: Optional[Constraints],
+        style: FormatStyle = FormatStyle.DEFAULT,
     ) -> None:
         """Read a type, or throw an exception if incorrect"""
         # pylint: disable=too-many-branches,too-many-statements
@@ -151,7 +155,9 @@ class Validator:
         elif type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
             (size, size_desc) = self.get_size(type_.size)
-            if not type_.fits_in_one_line(self.input.structs):
+            if style == FormatStyle.FORCE_NEWLINES or not type_.fits_in_one_line(
+                self.input.structs, style
+            ):
                 for _ in range(size):
                     self.read_type("", type_.encapsulated, constraints)
             elif type_.encapsulated.main == TypeEnum.CHAR:
@@ -186,7 +192,7 @@ class Validator:
                     self.check_integer(i, constraints, "")
         elif type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)
-            if not type_.fits_in_one_line(self.input.structs):
+            if not type_.fits_in_one_line(self.input.structs, style):
                 for var in struct.fields:
                     self.read_type(var.name, var.type, var.constraints)
             else:
@@ -213,11 +219,35 @@ class Validator:
                         assert var.type.main == TypeEnum.CHAR
                         self.check_char(word, var.constraints, use_ws=False)
 
+    def read_ints(self, variables: List[Variable]) -> None:
+        """Read several ints on a line, or throw an exception if incorrect"""
+        line = self.next_line()
+        words = line.split()
+        if len(words) != len(variables):
+            raise ValidatorException(
+                f"Line {self.current_line}: '{line}' should be {len(variables)}"
+                " ints separated by spaces"
+            )
+        if " ".join(words) != line:
+            raise ValidatorException(
+                f"Line {self.current_line}: '{line}' should have whitespaces only "
+                "between ints, and only one"
+            )
+        for i, var in zip(words, variables):
+            assert var.constraints is not None
+            self.check_integer(i, var.constraints, var.name)
+
     def read_all(self) -> str:
         """Parse the entire raw input and return an error if there was one"""
         try:
-            for var in self.input.input:
-                self.read_type(var.name, var.type, var.constraints)
+            for variables in self.input.get_all_vars():
+                if len(variables) == 1:
+                    var = variables[0]
+                    self.read_type(
+                        var.name, var.type, var.constraints, var.format_style
+                    )
+                else:
+                    self.read_ints(variables)
         except ValidatorException as exception:
             return exception.message
         if self.current_line != len(self.lines):

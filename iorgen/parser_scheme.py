@@ -1,11 +1,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2020 Sacha Delanoue
+# Copyright 2018-2022 Sacha Delanoue
 """Generate a Scheme parser"""
 
 import textwrap
 from typing import List
 
-from iorgen.types import Input, Struct, Type, TypeEnum
+from iorgen.types import FormatStyle, Input, Struct, Type, TypeEnum
 
 INDENTATION = "  "
 
@@ -42,12 +42,18 @@ def var_name(name: str) -> str:
     return candidate
 
 
-def print_var_content(name: str, type_: Type, structs: List[Struct]) -> str:
+def print_var_content(
+    name: str,
+    type_: Type,
+    structs: List[Struct],
+    style: FormatStyle = FormatStyle.DEFAULT,
+) -> str:
     """Return Scheme function to print a variable of given type"""
     if type_.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.STR):
-        return "(display {}) (newline)".format(name)
+        endline = 'display " "' if style == FormatStyle.NO_ENDLINE else "newline"
+        return f"(display {name}) ({endline})"
     if type_.main == TypeEnum.STRUCT:
-        if type_.fits_in_one_line(structs):
+        if type_.fits_in_one_line(structs, style):
             return (
                 "(let print_OnelineAssoc ((x {})) (if (null? x) (newline) "
                 "(begin (display (cdr (car x))) (if (not (null? (cdr x))) "
@@ -66,7 +72,7 @@ def print_var_content(name: str, type_: Type, structs: List[Struct]) -> str:
         )
     assert type_.main == TypeEnum.LIST
     assert type_.encapsulated
-    if type_.fits_in_one_line(structs):
+    if type_.fits_in_one_line(structs, style):
         if type_.encapsulated.main == TypeEnum.INT:
             return (
                 "(let print_IntList ((x {})) (if (null? x) (newline) "
@@ -126,11 +132,13 @@ class ParserScheme:
         self.make_assoc_list = False
         self.make_assoc_list_oneline = False
 
-    def read_line(self, type_: Type) -> str:
+    def read_line(self, type_: Type, style: FormatStyle) -> str:
         """Read an entire line and parse it"""
         # pylint: disable=too-many-return-statements
-        assert type_.fits_in_one_line(self.input.structs)
+        assert type_.fits_in_one_line(self.input.structs, style)
         if type_.main == TypeEnum.INT:
+            if style == FormatStyle.NO_ENDLINE:
+                return "let ((i (read))) (begin (read-char) i)"
             return "string->number (read-line)"
         if type_.main == TypeEnum.CHAR:
             return "string-ref (read-line) 0"
@@ -164,10 +172,12 @@ class ParserScheme:
             ),
         )
 
-    def read_lines(self, type_: Type, size: str) -> str:
+    def read_lines(
+        self, type_: Type, size: str, style: FormatStyle = FormatStyle.DEFAULT
+    ) -> str:
         """Read one or several lines and parse them"""
-        if type_.fits_in_one_line(self.input.structs):
-            return self.read_line(type_)
+        if type_.fits_in_one_line(self.input.structs, style):
+            return self.read_line(type_, style)
         if type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)
             if struct.is_sized_struct():
@@ -213,7 +223,10 @@ class ParserScheme:
                 lines.append(
                     INDENTATION
                     + print_var_content(
-                        var_name(var.name), var.type, self.input.structs
+                        var_name(var.name),
+                        var.type,
+                        self.input.structs,
+                        var.format_style,
                     )
                 )
         else:
@@ -233,7 +246,8 @@ class ParserScheme:
         """Return the parser content"""
         main = [
             "({} ({}))".format(
-                var_name(var.name), self.read_lines(var.type, var_name(var.type.size))
+                var_name(var.name),
+                self.read_lines(var.type, var_name(var.type.size), var.format_style),
             )
             for var in self.input.input
         ]

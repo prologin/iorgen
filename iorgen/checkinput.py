@@ -7,7 +7,7 @@ from typing import Any, Dict, List, TextIO, Union
 
 import yaml
 
-from iorgen.types import Input, Struct, Type, Variable
+from iorgen.types import Input, Struct, Type, TypeEnum, Variable
 
 
 def error_parse_type(string: str) -> str:
@@ -50,6 +50,7 @@ def error_parse_type(string: str) -> str:
 
 def error_parse_variable(dic: Dict[str, str]) -> str:
     """Explain why we a variable fails to parse"""
+    # pylint: disable=too-many-return-statements
     assert Variable.from_dict(dic) is None
     if "name" not in dic:
         return "missing name field"
@@ -60,9 +61,21 @@ def error_parse_variable(dic: Dict[str, str]) -> str:
             return "missing {} field for {}".format(field, dic["name"])
         if not isinstance(dic[field], str):
             return "{} field for {} is not a string".format(field, dic["name"])
-    if Type.from_string(dic["type"]) is None:
+    type_ = Type.from_string(dic["type"])
+    if type_ is None:
         return "unable to parse type {} for {}: {}".format(
             dic["type"], dic["name"], error_parse_type(dic["type"])
+        )
+    if dic.get("format", "") == "no_endline" and type_.main != TypeEnum.INT:
+        return f'{dic["name"]} has format "no_endline" but is {dic["type"]}, not int'
+    if dic.get("format", "") == "force_newlines" and (
+        type_.main != TypeEnum.LIST
+        or type_.encapsulated is None
+        or type_.encapsulated.main != TypeEnum.INT
+    ):
+        return (
+            f'{dic["name"]} has format "force_newlines" but is {dic["type"]}'
+            ", not List[int]"
         )
     return "unknown error"
 

@@ -4,7 +4,7 @@
 
 import textwrap
 from typing import List, Set
-from iorgen.types import Input, Type, TypeEnum, Variable
+from iorgen.types import FormatStyle, Input, Type, TypeEnum, Variable
 from iorgen.utils import pascal_case, snake_case, IteratorName
 
 
@@ -171,7 +171,7 @@ class ParserCpp:
         self.method.append("void {}({}) {{".format(name, ", ".join(arguments)))
         if reprint:
             for var in self.input.input:
-                self.print_lines(var_name(var.name), var.type, 1)
+                self.print_lines(var_name(var.name), var.type, 1, var.format_style)
         else:
             self.method.extend(
                 [
@@ -183,12 +183,15 @@ class ParserCpp:
             )
         self.method.append("}")
 
-    def print_line(self, name: str, type_: Type, indent_lvl: int) -> None:
+    def print_line(
+        self, name: str, type_: Type, indent_lvl: int, style: FormatStyle
+    ) -> None:
         """Print the content of a var that holds in one line"""
-        assert type_.fits_in_one_line(self.input.structs)
+        assert type_.fits_in_one_line(self.input.structs, style)
         indent = " " * (self.indentation * indent_lvl)
+        endl = '" "' if style == FormatStyle.NO_ENDLINE else "std::endl"
         if type_.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.STR):
-            self.method.append(indent + "std::cout << {} << std::endl;".format(name))
+            self.method.append(f"{indent}std::cout << {name} << {endl};")
         elif type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
             inner_name = self.iterator.new_it()
@@ -224,10 +227,16 @@ class ParserCpp:
                 )
             )
 
-    def print_lines(self, name: str, type_: Type, indent_lvl: int = 0) -> None:
+    def print_lines(
+        self,
+        name: str,
+        type_: Type,
+        indent_lvl: int,
+        style: FormatStyle = FormatStyle.DEFAULT,
+    ) -> None:
         """Print the content of a var that holds in one or more lines"""
-        if type_.fits_in_one_line(self.input.structs):
-            self.print_line(name, type_, indent_lvl)
+        if type_.fits_in_one_line(self.input.structs, style):
+            self.print_line(name, type_, indent_lvl, style)
         else:
             if type_.main == TypeEnum.STRUCT:
                 for field in self.input.get_struct(type_.struct_name).fields:

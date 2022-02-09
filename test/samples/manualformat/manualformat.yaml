@@ -1,0 +1,22 @@
+function_name: manual format
+subject: Here we will have several integers read on the same line
+input:
+    - type: int
+      name: A
+      comment: a first number
+      format: no_endline
+    - type: int
+      name: B
+      comment: a second number
+      format: no_endline
+    - type: int
+      name: C
+      comment: a third number
+    - type: int
+      name: N
+      comment: This one on a new line
+    - type: List[int](3)
+      name: one per line
+      comment: an integer list, one per line
+      format: force_newlines
+output: From the function perspective, this is just 4 integers

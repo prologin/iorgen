@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2019-2020 Sacha Delanoue
+# Copyright 2019-2022 Sacha Delanoue
 """Generate a D parser"""
 
 import textwrap
 
 from typing import List
 
-from iorgen.types import Input, Type, TypeEnum, Variable
+from iorgen.types import FormatStyle, Input, Type, TypeEnum, Variable
 from iorgen.utils import camel_case, pascal_case, IteratorName
 
 INDENTATION = "    "  # https://dlang.org/dstyle.html#whitespace
@@ -87,9 +87,15 @@ class ParserD:
             ", ".join("&" + name + "." + var_name(i.name) for i in struct.fields),
         )
 
-    def read_lines(self, name: str, type_: Type, size: str) -> List[str]:
+    def read_lines(
+        self,
+        name: str,
+        type_: Type,
+        size: str,
+        style: FormatStyle = FormatStyle.DEFAULT,
+    ) -> List[str]:
         """Read a variable in one line or several lines of stdin"""
-        if type_.fits_in_one_line(self.input.structs):
+        if type_.fits_in_one_line(self.input.structs, style):
             return [self.read_line(name, type_)]
         if type_.main == TypeEnum.LIST:
             assert type_.encapsulated
@@ -124,17 +130,26 @@ class ParserD:
         """Read a variable from stdin"""
         return [
             "{} {};".format(type_str(var.type), var_name(var.name))
-        ] + self.read_lines(var_name(var.name), var.type, var_name(var.type.size))
+        ] + self.read_lines(
+            var_name(var.name), var.type, var_name(var.type.size), var.format_style
+        )
 
-    def print_lines(self, name: str, type_: Type) -> List[str]:
+    def print_lines(
+        self, name: str, type_: Type, style: FormatStyle = FormatStyle.DEFAULT
+    ) -> List[str]:
         """Print a D variable"""
         if type_.main in (TypeEnum.INT, TypeEnum.STR, TypeEnum.CHAR):
             self.add_import("std.stdio", "writeln")
             return ["writeln({});".format(name)]
         if type_.main == TypeEnum.LIST:
             assert type_.encapsulated
-            if type_.encapsulated.main == TypeEnum.INT:
+            if (
+                type_.encapsulated.main == TypeEnum.INT
+                and style != FormatStyle.FORCE_NEWLINES
+            ):
                 self.add_import("std.array", "join")
+                self.add_import("std.algorithm.iteration", "map")
+                self.add_import("std.conv", "to")
                 return ['writeln(join({}.map!(to!string), " "));'.format(name)]
             if type_.encapsulated.main == TypeEnum.CHAR:
                 return ["writeln({});".format(name)]
@@ -155,7 +170,7 @@ class ParserD:
             return lines + ["}"]
         assert type_.main == TypeEnum.STRUCT
         struct = self.input.get_struct(type_.struct_name)
-        if type_.fits_in_one_line(self.input.structs):
+        if type_.fits_in_one_line(self.input.structs, style):
             self.add_import("std.stdio", "writefln")
             return [
                 'writefln("{}", {});'.format(
@@ -194,11 +209,23 @@ class ParserD:
             ]
         )
         if reprint:
-            for var in self.input.input:
-                lines.extend(
-                    INDENTATION + i
-                    for i in self.print_lines(var_name(var.name), var.type)
-                )
+            for variables in self.input.get_all_vars():
+                if len(variables) == 1:
+                    var = variables[0]
+                    lines.extend(
+                        INDENTATION + i
+                        for i in self.print_lines(
+                            var_name(var.name), var.type, var.format_style
+                        )
+                    )
+                else:
+                    self.add_import("std.stdio", "writeln")
+                    lines.append(
+                        INDENTATION
+                        + "writeln("
+                        + ', " ", '.join(var_name(i.name) for i in variables)
+                        + ");"
+                    )
         else:
             lines.extend(
                 textwrap.wrap(
@@ -223,8 +250,22 @@ class ParserD:
             output += "}\n\n"
         output += "\n".join(self.function(reprint)) + "\n\n"
         output += "void main()\n{\n"
-        for var in self.input.input:
-            output += "\n".join(INDENTATION + i for i in self.read_var(var)) + "\n"
+        for variables in self.input.get_all_vars():
+            if len(variables) == 1:
+                var = variables[0]
+                for line in self.read_var(var):
+                    output += INDENTATION + line + "\n"
+            else:
+                assert all(var.type.main == TypeEnum.INT for var in variables)
+                output += (
+                    INDENTATION
+                    + f"int {', '.join(var_name(i.name) for i in variables)};\n"
+                )
+                output += (
+                    INDENTATION
+                    + f'stdin.readf("{" ".join(["%d"] * len(variables))}\\n", '
+                    + f"{', '.join('&' + var_name(i.name) for i in variables)});\n"
+                )
         args = (var_name(i.name) for i in self.input.input)
         output += "\n{}{}({});\n".format(
             INDENTATION, var_name(self.input.name), ", ".join(args)
