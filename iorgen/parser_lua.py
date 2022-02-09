@@ -167,7 +167,7 @@ def read_vars(input_data: Input, iterator: IteratorName) -> List[str]:
 
 def print_line(name: str, type_: Type, input_data: Input, style: FormatStyle) -> str:
     """Print the content of a var in one line"""
-    assert type_.fits_in_one_line(input_data.structs)
+    assert type_.fits_in_one_line(input_data.structs, style)
     if type_.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.STR):
         return (
             f"io.write({name}, ' ')"

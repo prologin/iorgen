@@ -168,7 +168,7 @@ def read_vars(input_data: Input, words: WordsName) -> List[str]:
 
 def print_line(varname: str, type_: Type, input_data: Input, style: FormatStyle) -> str:
     """Print the content of a var in one line"""
-    assert type_.fits_in_one_line(input_data.structs)
+    assert type_.fits_in_one_line(input_data.structs, style)
     name = "$" + varname[1:]
     if type_.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.STR):
         endline = " " if style == FormatStyle.NO_ENDLINE else r"\n"
