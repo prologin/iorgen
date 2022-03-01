@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2021 Sacha Delanoue
+# Copyright 2018-2022 Sacha Delanoue
 # Copyright 2021 Kenji Gaillac
 """Helpers used by several modules"""
 
@@ -24,11 +24,10 @@ def camel_case(name: str) -> str:
     return pascal[0].lower() + pascal[1:]
 
 
-def int_to_iterator_name(value: int, times: int = 1) -> str:
+def int_to_iterator_name(value: int) -> str:
     """Map a integer to a iterator name (1 -> i, 18 -> z, 19 -> ii, ...)"""
-    if value <= 18:
-        return chr(value + 104) * times
-    return int_to_iterator_name(value - 18, times + 1)
+    assert value > 0
+    return chr((value - 1) % 18 + 105) * int((value - 1) / 18 + 1)
 
 
 def str_int(value: int) -> str:
@@ -52,10 +51,12 @@ class IteratorName:
 
     def pop_it(self) -> None:
         """Signal that the scope of the last iterator ended"""
+        assert self.current >= 0
         self.current -= 1
-        while int_to_iterator_name(self.current) in self.existing_names:
-            if self.current == 0:
-                break
+        while (
+            self.current > 0
+            and int_to_iterator_name(self.current) in self.existing_names
+        ):
             self.current -= 1
 
 
@@ -64,7 +65,7 @@ class WordsName:
 
     def __init__(self, existing_names: List[str], cs_mode: bool = False) -> None:
         # In C# you can not name a variable if it was already declared in a
-        # nested scode, it would cause error CS0136
+        # nested scope, it would cause error CS0136
         self.existing_names = [i.strip().lower() for i in existing_names]
         self.current = -1
         self.current_nested = -1
