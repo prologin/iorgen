@@ -176,7 +176,7 @@ def print_line(varname: str, type_: Type, input_data: Input, style: FormatStyle)
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
         if type_.encapsulated.main == TypeEnum.CHAR:
-            return 'print join("", {}) . "\\n";'.format("@" + name)
+            return f'print join("", @{{{name}}}) . "\\n";'
         assert type_.encapsulated.main == TypeEnum.INT
         return 'print "{}\\n";'.format("@{" + name + "}")
     assert type_.main == TypeEnum.STRUCT
