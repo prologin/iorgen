@@ -329,7 +329,7 @@ class ParserRust:
                     'iter().map(|x| x.to_string()).collect::<Vec<_>>().join(" ")'
                 )
             elif type_.encapsulated.main == TypeEnum.CHAR:
-                to_string = "into_iter().collect::<String>()"
+                to_string = "iter().collect::<String>()"
             else:
                 raise Exception
 
