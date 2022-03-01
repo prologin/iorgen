@@ -3,7 +3,7 @@
 # Copyright 2021 Kenji Gaillac
 """Helpers used by several modules"""
 
-from typing import List
+from typing import List, Set
 
 
 def snake_case(name: str) -> str:
@@ -67,30 +67,45 @@ class WordsName:
         # In C# you can not name a variable if it was already declared in a
         # nested scope, it would cause error CS0136
         self.existing_names = [i.strip().lower() for i in existing_names]
-        self.current = -1
-        self.current_nested = -1
-        self.scopes = [-1]
-        self.nested_scopes = [-1]
+        self.current = -1  # number of the current 'words' variable
+        self.before_scopes = [-1]  # number of the last 'words' var before each scope
+
+        # For C# mode:
         self.cs_mode = cs_mode
+        self.above_scopes = [set()]  # type: List[Set[int]]
+        self.other_scopes = [set()]  # type: List[Set[int]]
 
     def next_name(self) -> str:
         """Give the next variable name"""
         self.current += 1
-        self.current_nested += 1
-        current = self.current_nested if self.cs_mode else self.current
-        self.nested_scopes = [max(i, current) for i in self.nested_scopes]
+        current = self.current
+        if self.cs_mode:
+            current = 0
+            while not self._is_possible_value(current):
+                current += 1
         candidate = f"words{current if current != 0 else ''}"
         if candidate in self.existing_names:
             return self.next_name()
+        self.above_scopes[-1].add(current)
         return candidate
+
+    def _is_possible_value(self, value: int) -> bool:
+        for scope in self.above_scopes:
+            if value in scope:
+                return False
+        if self.cs_mode and value in self.other_scopes[-1]:
+            return False
+        candidate = f"words{value if value != 0 else ''}"
+        return candidate not in self.existing_names
 
     def push_scope(self) -> None:
         """Declare a new scope"""
-        self.scopes.append(self.current)
-        self.nested_scopes.append(self.current)
-        self.current_nested = self.current
+        self.before_scopes.append(self.current)
+        self.above_scopes.append(set())
+        self.other_scopes.append(set())
 
     def pop_scope(self) -> None:
         """Declare a scope's end"""
-        self.current = self.scopes.pop()
-        self.current_nested = self.nested_scopes.pop()
+        self.current = self.before_scopes.pop()
+        self.other_scopes[-2].update(self.other_scopes.pop())
+        self.other_scopes[-1].update(self.above_scopes.pop())
