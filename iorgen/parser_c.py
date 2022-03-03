@@ -63,7 +63,8 @@ class ParserC:
             self.endlines = []
         else:
             if self.endlines[-1][2] == IntegerOrString.STRING:
-                self.endlines[-1][1].pop()  # Need to keep this one
+                if self.endlines[-1][1]:
+                    self.endlines[-1][1].pop()  # Need to keep this one
             self.endlines[-2][1].extend(self.endlines[-1][1])
             self.endlines.pop()
 
