@@ -66,7 +66,9 @@ class WordsName:
     def __init__(self, existing_names: List[str], cs_mode: bool = False) -> None:
         # In C# you can not name a variable if it was already declared in a
         # nested scope, it would cause error CS0136
-        self.existing_names = [i.strip().lower() for i in existing_names]
+        self.existing_names = [
+            "".join(i.strip().lower().split()) for i in existing_names
+        ]
         self.current = -1  # number of the current 'words' variable
         self.before_scopes = [-1]  # number of the last 'words' var before each scope
 
