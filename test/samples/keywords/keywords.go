@@ -30,7 +30,8 @@ type Main struct {
 // in: not in
 // for_: not a loop
 // words: contains lots of things
-func keywords(if_ int, class byte, i string, in Console, for_ []int, words []Main) {
+// words1: an integer
+func keywords(if_ int, class byte, i string, in Console, for_ []int, words []Main, words1 int) {
     /* TODO If this compiles, it is already a good step! */
 }
 
@@ -66,5 +67,8 @@ func main() {
         scanner.Scan()
         words[j].ifTrue, _ = strconv.Atoi(scanner.Text())
     }
-    keywords(if_, class, i, in, for_, words);
+    var words1 int
+    scanner.Scan()
+    words1, _ = strconv.Atoi(scanner.Text())
+    keywords(if_, class, i, in, for_, words, words1);
 }

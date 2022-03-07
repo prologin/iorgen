@@ -31,7 +31,8 @@ struct Main {
 /// * `in_` - not in
 /// * `for_` - not a loop
 /// * `words` - contains lots of things
-fn keywords(if_: i32, class: char, i: String, in_: Console, for_: Vec<i32>, words: Vec<Main>) {
+/// * `words_1` - an integer
+fn keywords(if_: i32, class: char, i: String, in_: Console, for_: Vec<i32>, words: Vec<Main>, words_1: i32) {
     /* TODO If this compiles, it is already a good step! */
 }
 
@@ -63,7 +64,11 @@ fn main() {
         .collect::<Result<_, _>>()
         .expect("invalid `words` parameter");
 
-    keywords(if_, class, i, in_, for_, words);
+    let words_1 = read_line(&mut buffer)
+        .parse()
+        .expect("invalid `words 1` parameter");
+
+    keywords(if_, class, i, in_, for_, words, words_1);
 }
 
 fn read_line(buffer: &mut String) -> &str {

@@ -55,8 +55,9 @@ class Main {
      * @param in not in
      * @param for_ not a loop
      * @param words contains lots of things
+     * @param words1 an integer
      */
-    static void keywords(int if_, char class_, String i, Console in, int[] for_, Main_[] words) {
+    static void keywords(int if_, char class_, String i, Console in, int[] for_, Main_[] words, int words1) {
         /* TODO If this compiles, it is already a good step! */
     }
 
@@ -65,10 +66,10 @@ class Main {
         int if_ = Integer.parseInt(reader.readLine());
         char class_ = reader.readLine().charAt(0);
         String i = reader.readLine();
-        String[] words1 = reader.readLine().split(" ");
+        String[] words2 = reader.readLine().split(" ");
         Console in = new Console();
-        in.a = Integer.parseInt(words1[0]);
-        in.static_ = Integer.parseInt(words1[1]);
+        in.a = Integer.parseInt(words2[0]);
+        in.static_ = Integer.parseInt(words2[1]);
         int[] for_ = Arrays.stream(reader.readLine().split(" ")).filter(x -> !x.isEmpty()).mapToInt(Integer::parseInt).toArray();
         Main_[] words = new Main_[2];
         for (int j = 0; j < 2; ++j) {
@@ -78,7 +79,8 @@ class Main {
             words[j].int_.void_ = Arrays.stream(reader.readLine().split(" ")).mapToInt(Integer::parseInt).toArray();
             words[j].ifTrue = Integer.parseInt(reader.readLine());
         }
+        int words1 = Integer.parseInt(reader.readLine());
 
-        keywords(if_, class_, i, in, for_, words);
+        keywords(if_, class_, i, in, for_, words, words1);
     }
 }

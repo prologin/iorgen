@@ -48,4 +48,7 @@ input:
     - type: List[@main](2)
       name: words
       comment: contains lots of things
+    - type: int
+      name: words 1
+      comment: an integer
 output: If this compiles, it is already a good step!

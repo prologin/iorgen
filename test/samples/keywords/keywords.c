@@ -25,7 +25,8 @@ struct main {
 /// \param in not in
 /// \param for_ not a loop
 /// \param words contains lots of things
-void keywords(int if_, char class, char* i, struct console in, int* for_, struct main* words) {
+/// \param words_1 an integer
+void keywords(int if_, char class, char* i, struct console in, int* for_, struct main* words, int words_1) {
     /* TODO If this compiles, it is already a good step! */
 }
 
@@ -50,7 +51,9 @@ int main() {
             scanf("%d", &words[j].int_.void_[k]);
         scanf("%d", &words[j].if_true);
     }
-    keywords(if_, class, i, in, for_, words);
+    int words_1;
+    scanf("%d", &words_1);
+    keywords(if_, class, i, in, for_, words, words_1);
 
     return 0;
 }

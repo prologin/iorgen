@@ -4,7 +4,8 @@
 ;;; in: not in
 ;;; for: not a loop
 ;;; words: contains lots of things
-(define (keywords if_ class i in for words)
+;;; words-1: an integer
+(define (keywords if_ class i in for words words-1)
   ;;; TODO If this compiles, it is already a good step!
   (newline))
 
@@ -43,5 +44,6 @@
                      (list
                        (lambda () (string->number (read-line)))
                        (lambda () (parse-int-list (read-line))))))
-                 (lambda () (string->number (read-line)))))))))
-  (keywords if_ class i in for words))
+                 (lambda () (string->number (read-line))))))))
+       (words-1 (string->number (read-line))))
+  (keywords if_ class i in for words words-1))

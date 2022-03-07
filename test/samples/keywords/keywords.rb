@@ -4,7 +4,8 @@
 # +in_+:: not in
 # +for_+:: not a loop
 # +words+:: contains lots of things
-def keywords(if_, class_, i, in_, for_, words)
+# +words_1+:: an integer
+def keywords(if_, class_, i, in_, for_, words, words_1)
     # TODO If this compiles, it is already a good step!
 end
 
@@ -20,5 +21,6 @@ words = Array.new(2) { {
     },
     "if true" => STDIN.gets.to_i
 } }
+words_1 = STDIN.gets.to_i
 
-keywords(if_, class_, i, in_, for_, words)
+keywords(if_, class_, i, in_, for_, words, words_1)

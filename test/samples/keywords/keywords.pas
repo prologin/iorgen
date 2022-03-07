@@ -28,7 +28,8 @@ type
 { @param In_ not in }
 { @param For_ not a loop }
 { @param Words contains lots of things }
-procedure Keywords(If_: longint; Class: char; const I: AnsiString; const In_: Console; const For_: T_For_; const Words: T_Words);
+{ @param Words1 an integer }
+procedure Keywords(If_: longint; Class: char; const I: AnsiString; const In_: Console; const For_: T_For_; const Words: T_Words; Words1: longint);
 begin
     {* TODO If this compiles, it is already a good step! *}
 end;
@@ -40,6 +41,7 @@ var
     In_: Console; { not in }
     For_: T_For_; { not a loop }
     Words: T_Words; { contains lots of things }
+    Words1: longint; { an integer }
     j, k: longint;
 begin
     readln(If_);
@@ -60,5 +62,6 @@ begin
         readln();
         readln(Words[j].IfTrue);
     end;
-    Keywords(If_, Class, I, In_, For_, Words);
+    readln(Words1);
+    Keywords(If_, Class, I, In_, For_, Words, Words1);
 end.

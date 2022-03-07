@@ -26,6 +26,7 @@ L’entrée contiendra :
               espaces : **void**, not nothing.
         - Sur la ligne suivante, un entier : **if true**, should not cause
           conflict.
+- Sur la ligne suivante, un entier : **words 1**, an integer.
 
 ### Sortie
 

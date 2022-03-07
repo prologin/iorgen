@@ -4,7 +4,8 @@
 % In: not in
 % For: not a loop
 % Words: contains lots of things
-keywords(If, Class, I, In, For, Words) :-
+% Words1: an integer
+keywords(If, Class, I, In, For, Words, Words1) :-
     % TODO If this compiles, it is already a good step!
     nl.
 
@@ -33,4 +34,5 @@ read_assoc_main(X) :-
     read_assoc_console(In),
     read_int_list(For),
     read_list(read_assoc_main, 2, Words),
-    keywords(If, Class, I, In, For, Words).
+    read_int(Words1),
+    keywords(If, Class, I, In, For, Words, Words1).

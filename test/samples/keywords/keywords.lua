@@ -4,7 +4,8 @@
 -- in_ (table: {"a": number, "static": number}): not in
 -- for_ (table: array[number]): not a loop
 -- words (table: array[{"int": {"return": number, "void": array[number]}, "if true": number}]): contains lots of things
-function keywords(if_, class, i, in_, for_, words)
+-- words_1 (number): an integer
+function keywords(if_, class, i, in_, for_, words, words_1)
     -- TODO If this compiles, it is already a good step!
 end
 
@@ -28,5 +29,6 @@ for j = 1, 2 do
     end
     words[j]["if true"] = tonumber(io.read())
 end
+local words_1 = tonumber(io.read())
 
-keywords(if_, class, i, in_, for_, words)
+keywords(if_, class, i, in_, for_, words, words_1)

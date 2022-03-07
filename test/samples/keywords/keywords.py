@@ -27,7 +27,13 @@ class Main:
 
 
 def keywords(
-    if_: int, class_: str, i: str, in_: Console, for_: List[int], words: List[Main]
+    if_: int,
+    class_: str,
+    i: str,
+    in_: Console,
+    for_: List[int],
+    words: List[Main],
+    words_1: int,
 ) -> None:
     """
     :param if_: not a condition
@@ -36,6 +42,7 @@ def keywords(
     :param in_: not in
     :param for_: not a loop
     :param words: contains lots of things
+    :param words_1: an integer
     """
     # TODO If this compiles, it is already a good step!
     pass
@@ -57,4 +64,5 @@ if __name__ == "__main__":
         )
         for _ in range(2)
     ]
-    keywords(if_, class_, i, in_, for_, words)
+    words_1 = int(input())
+    keywords(if_, class_, i, in_, for_, words, words_1)

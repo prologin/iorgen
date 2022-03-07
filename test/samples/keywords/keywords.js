@@ -7,9 +7,10 @@
  * @param {{a: number, static: number}} in_ not in
  * @param {Array.<number>} for_ not a loop
  * @param {Array.<{int: {return: number, void: Array.<number>}, 'if true': number}>} words contains lots of things
+ * @param {number} words1 an integer
  * @returns {void}
  */
-function keywords(if_, class_, i, in_, for_, words) {
+function keywords(if_, class_, i, in_, for_, words, words1) {
     /* TODO If this compiles, it is already a good step! */
 }
 
@@ -19,10 +20,10 @@ function main(stdin) {
     const if_ = Number(stdin[line++]);
     const class_ = stdin[line++];
     const i = stdin[line++];
-    const words1 = stdin[line++].split(" ");
+    const words2 = stdin[line++].split(" ");
     const in_ = {
-        a: Number(words1[0]),
-        static_: Number(words1[1])
+        a: Number(words2[0]),
+        static_: Number(words2[1])
     };
     const for_ = stdin[line++].split(" ", if_).map(Number);
     const words = [];
@@ -34,7 +35,8 @@ function main(stdin) {
         k.ifTrue = Number(stdin[line++]);
         words.push(k);
     }
-    keywords(if_, class_, i, in_, for_, words);
+    const words1 = Number(stdin[line++]);
+    keywords(if_, class_, i, in_, for_, words, words1);
 }
 
 let stdin = "";

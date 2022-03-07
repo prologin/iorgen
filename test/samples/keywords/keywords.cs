@@ -29,7 +29,8 @@ class Program
     /// \param @in not in
     /// \param @for not a loop
     /// \param words contains lots of things
-    static void Keywords(int @if, char @class, string i, Console_ @in, int[] @for, Main_[] words)
+    /// \param words1 an integer
+    static void Keywords(int @if, char @class, string i, Console_ @in, int[] @for, Main_[] words, int words1)
     {
         /* TODO If this compiles, it is already a good step! */
     }
@@ -39,8 +40,8 @@ class Program
         int @if = int.Parse(Console.ReadLine());
         char @class = Console.ReadLine()[0];
         string i = Console.ReadLine();
-        string[] words1 = Console.ReadLine().Split(' ');
-        Console_ @in = new Console_ {a = int.Parse(words1[0]), @static = int.Parse(words1[1])};
+        string[] words2 = Console.ReadLine().Split(' ');
+        Console_ @in = new Console_ {a = int.Parse(words2[0]), @static = int.Parse(words2[1])};
         int[] @for = Array.ConvertAll(Console.ReadLine().Split(new char[] {' '}, StringSplitOptions.RemoveEmptyEntries), int.Parse);
         Main_[] words = new Main_[2];
         for (int j = 0; j < 2; ++j)
@@ -49,7 +50,8 @@ class Program
             words[j].@int.@void = Array.ConvertAll(Console.ReadLine().Split(' '), int.Parse);
             words[j].ifTrue = int.Parse(Console.ReadLine());
         }
+        int words1 = int.Parse(Console.ReadLine());
 
-        Keywords(@if, @class, i, @in, @for, words);
+        Keywords(@if, @class, i, @in, @for, words, words1);
     }
 }

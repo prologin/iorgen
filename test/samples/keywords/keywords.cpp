@@ -27,7 +27,8 @@ struct Main {
 /// \param in not in
 /// \param for_ not a loop
 /// \param words contains lots of things
-void keywords(int if_, char class_, const std::string& i, const Console& in, const std::vector<int>& for_, const std::vector<Main>& words) {
+/// \param words_1 an integer
+void keywords(int if_, char class_, const std::string& i, const Console& in, const std::vector<int>& for_, const std::vector<Main>& words, int words_1) {
     /* TODO If this compiles, it is already a good step! */
 }
 
@@ -51,5 +52,7 @@ int main() {
             std::cin >> k;
         std::cin >> j.if_true;
     }
-    keywords(if_, class_, i, in, for_, words);
+    int words_1; ///< an integer
+    std::cin >> words_1;
+    keywords(if_, class_, i, in, for_, words, words_1);
 }

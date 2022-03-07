@@ -24,9 +24,10 @@ keywords :: Int      -- ^ not a condition
          -> Console  -- ^ not in
          -> [Int]    -- ^ not a loop
          -> [Main]   -- ^ contains lots of things
+         -> Int      -- ^ an integer
          -> String   -- ^ TODO
 -- If this compiles, it is already a good step!
-keywords if' class' i in' for words' = "TODO"
+keywords if' class' i in' for words' words1 = "TODO"
 
 main :: IO ()
 main = do
@@ -36,7 +37,8 @@ main = do
   in' <- readConsole
   for <- fmap (map read . words) getLine
   words' <- replicateM 2 readMain
-  putStrLn $ keywords if' class' i in' for words'
+  words1 <- fmap read getLine
+  putStrLn $ keywords if' class' i in' for words' words1
   where
     readConsole = fmap ((\[a, b] -> Console (read a) (read b)) . words) getLine
     readMain = Main <$> readSystem <*> fmap read getLine

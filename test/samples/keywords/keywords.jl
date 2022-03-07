@@ -40,8 +40,9 @@ end
 - `in::Console`: not in
 - `for_::Vector{Int}`: not a loop
 - `words::Vector{Main_}`: contains lots of things
+- `words_1::Int`: an integer
 """
-function keywords(if_::Int, class::Char, i::String, in::Console, for_::Vector{Int}, words::Vector{Main_})
+function keywords(if_::Int, class::Char, i::String, in::Console, for_::Vector{Int}, words::Vector{Main_}, words_1::Int)
     # TODO If this compiles, it is already a good step!
 end
 
@@ -68,4 +69,5 @@ i = readline()
 in = parse(Console, readline())
 for_ = map(s -> parse(Int, s), split(readline()))
 words = [ read_struct_main() for _=1:2 ]
-keywords(if_, class, i, in, for_, words)
+words_1 = parse(Int, readline())
+keywords(if_, class, i, in, for_, words, words_1)

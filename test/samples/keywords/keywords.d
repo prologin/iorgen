@@ -34,8 +34,9 @@ Params:
     in_ = not in
     for_ = not a loop
     words = contains lots of things
+    words1 = an integer
 */
-void keywords(int if_, char class_, string i, Console in_, int[] for_, Main[] words)
+void keywords(int if_, char class_, string i, Console in_, int[] for_, Main[] words, int words1)
 {
     // TODO If this compiles, it is already a good step!
 }
@@ -60,6 +61,8 @@ void main()
         words[j].int_.void_ = stdin.readln.split.map!(to!int).array;
         stdin.readf("%d\n", &words[j].ifTrue);
     }
+    int words1;
+    stdin.readf("%d\n", &words1);
 
-    keywords(if_, class_, i, in_, for_, words);
+    keywords(if_, class_, i, in_, for_, words, words1);
 }

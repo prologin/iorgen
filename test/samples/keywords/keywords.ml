@@ -23,8 +23,9 @@ type main = {
    @param in_ not in
    @param for_ not a loop
    @param words contains lots of things
+   @param words1 an integer
 *)
-let keywords if_ class_ i in_ for_ words =
+let keywords if_ class_ i in_ for_ words words1 =
   (** TODO If this compiles, it is already a good step! *)
   ()
 
@@ -35,4 +36,5 @@ let () =
   let in_ = Scanf.sscanf (read_line ()) "%d %d" (fun a static -> {a; static}) in
   let for_ = read_line () |> fun x -> if x = "" then [] else String.split_on_char ' ' x |> List.rev_map int_of_string |> List.rev in
   let words = List.init 2 (fun _ -> let int = let return = read_int () in let void = read_line () |> fun x -> if x = "" then [] else String.split_on_char ' ' x |> List.rev_map int_of_string |> List.rev in {return; void} in let ifTrue = read_int () in {int; ifTrue}) in
-  keywords if_ class_ i in_ for_ words
+  let words1 = read_int () in
+  keywords if_ class_ i in_ for_ words words1

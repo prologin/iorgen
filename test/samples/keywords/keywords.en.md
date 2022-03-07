@@ -22,6 +22,7 @@ The input will contain:
             - On the next line, a list of **3** integers separated by spaces:
               **void**, not nothing.
         - On the next line, an integer: **if true**, should not cause conflict.
+- On the next line, an integer: **words 1**, an integer.
 
 ### Output
 
