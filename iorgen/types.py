@@ -107,7 +107,8 @@ class Type:
         self: Type, structs: List[Struct], style: FormatStyle = FormatStyle.DEFAULT
     ) -> bool:
         """Return False if more than one line is needed for this type"""
-        if self.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.STR):
+        if self.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.STR,
+                TypeEnum.FLOAT):
             return True
         if self.main == TypeEnum.LIST:
             assert self.encapsulated is not None
