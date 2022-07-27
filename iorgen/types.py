@@ -95,6 +95,8 @@ class Type:
             return f"List[{self.encapsulated}]({self.size})"
         if self.main == TypeEnum.STRUCT:
             return f"@{self.struct_name}"
+        if self.main == TypeEnum.FLOAT:
+            return "float"
         raise Exception
 
     def can_be_inlined(self: Type) -> bool:
