@@ -21,8 +21,11 @@ LANG = {
         "input": "Input",
         "input decl": "The input will contain:",
         "int": "an integer",
+        "float": "a floating number",
         "int list": "a list of **{}** integers separated by spaces",
+        "float list": "a list of **{}** floating numbers separated by spaces",
         "int sameline": "some integers separated by spaces",
+        "float sameline": "some floating numbers separated by spaces",
         "list": "a list of **{}** elements",
         "list line": "One line per list element:",
         "list lines": "Each list element is on several lines:",
@@ -47,8 +50,11 @@ LANG = {
         "input": "Entrée",
         "input decl": "L’entrée contiendra :",
         "int": "un entier",
+        "float": "un nombre à virgule",
         "int list": "une liste de **{}** entiers séparés par des espaces",
+        "float list": "une liste de **{}** nombres à virgules séparés par des espaces",
         "int sameline": "des entiers séparés par des espaces",
+        "float sameline": "des nombres à virgules séparés par des espaces",
         "list": "une liste de **{}** éléments",
         "list line": "Une ligne par élément de la liste :",
         "list lines": "Chaque élément de la liste est sur plusieurs lignes :",
@@ -106,15 +112,23 @@ class Markdown:
         type_str = ""
         if type_.main == TypeEnum.INT:
             type_str = self.lang["int"]
+        elif type_.main == TypeEnum.FLOAT:
+            type_str = self.lang["float"]
         elif type_.main == TypeEnum.CHAR:
             type_str = self.lang["char"]
         elif type_.main == TypeEnum.STR:
             type_str = self.lang["str"].format(type_.size)
         elif type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
-            assert type_.encapsulated.main in (TypeEnum.INT, TypeEnum.CHAR)
+            assert type_.encapsulated.main in (
+                TypeEnum.INT,
+                TypeEnum.CHAR,
+                TypeEnum.FLOAT,
+            )
             if type_.encapsulated.main == TypeEnum.INT:
                 type_str = self.lang["int list"]
+            elif type_.encapsulated.main == TypeEnum.FLOAT:
+                type_str = self.lang["float list"]
             else:
                 assert type_.encapsulated.main == TypeEnum.CHAR
                 type_str = self.lang["char list"]
@@ -127,7 +141,13 @@ class Markdown:
                 ", ".join(
                     "{}{} **{}** ({})".format(
                         "" if i != len(struct.fields) - 1 else self.lang["and"],
-                        self.lang["int" if field.type.main == TypeEnum.INT else "char"],
+                        self.lang[
+                            "int"
+                            if field.type.main == TypeEnum.INT
+                            else "float"
+                            if field.type.main == TypeEnum.FLOAT
+                            else "char"
+                        ],
                         field.name,
                         field.comment,
                     )
@@ -198,11 +218,22 @@ class Markdown:
                     )
                 )
             else:
-                assert all(var.type.main == TypeEnum.INT for var in variables)
-                line = self.line_description()
-                output.extend(
-                    wrap_item(f"{line} {self.lang['int sameline']}{self.lang[':']}", 0)
+                assert all(var.type.main == TypeEnum.INT for var in variables) or all(
+                    var.type.main == TypeEnum.FLOAT for var in variables
                 )
+                line = self.line_description()
+                if variables[0].type.main == TypeEnum.INT:
+                    output.extend(
+                        wrap_item(
+                            f"{line} {self.lang['int sameline']}{self.lang[':']}", 0
+                        )
+                    )
+                else:
+                    output.extend(
+                        wrap_item(
+                            f"{line} {self.lang['float sameline']}{self.lang[':']}", 0
+                        )
+                    )
                 for var in variables:
                     output.extend(wrap_item(f"**{var.name}**, {var.comment}.", 1))
         return "\n".join(output) + "\n"

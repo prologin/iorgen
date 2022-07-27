@@ -22,6 +22,7 @@ class TypeEnum(Enum):
     STR = 3
     LIST = 4
     STRUCT = 5
+    FLOAT = 6
 
 
 @unique
@@ -52,10 +53,12 @@ class Type:
     @classmethod
     def from_string(cls: T[Type], string: str) -> Optional[Type]:
         """Create a Type from a string"""
-        if string == "int":
-            return cls(TypeEnum.INT)
-        if string == "char":
-            return cls(TypeEnum.CHAR)
+        if string in ("int", "char", "float"):
+            return {
+                "int": cls(TypeEnum.INT),
+                "char": cls(TypeEnum.CHAR),
+                "float": cls(TypeEnum.FLOAT),
+            }[string]
         if string[0] == "@":
             return cls(TypeEnum.STRUCT, struct_name=string[1:])
         prog = re.compile(
@@ -92,17 +95,19 @@ class Type:
             return f"List[{self.encapsulated}]({self.size})"
         if self.main == TypeEnum.STRUCT:
             return f"@{self.struct_name}"
+        if self.main == TypeEnum.FLOAT:
+            return "float"
         raise Exception
 
     def can_be_inlined(self: Type) -> bool:
         """Can we parse several of this type on a single line"""
-        return self.main in (TypeEnum.INT, TypeEnum.CHAR)
+        return self.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.FLOAT)
 
     def fits_in_one_line(
         self: Type, structs: List[Struct], style: FormatStyle = FormatStyle.DEFAULT
     ) -> bool:
         """Return False if more than one line is needed for this type"""
-        if self.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.STR):
+        if self.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.STR, TypeEnum.FLOAT):
             return True
         if self.main == TypeEnum.LIST:
             assert self.encapsulated is not None
@@ -279,14 +284,14 @@ class Variable:
         style = FormatStyle.DEFAULT
         if "format" in dic:
             if dic["format"] == "no_endline":
-                if type_.main != TypeEnum.INT:
+                if type_.main not in (TypeEnum.INT, TypeEnum.FLOAT):
                     return None
                 style = FormatStyle.NO_ENDLINE
             elif dic["format"] == "force_newlines":
                 if (
                     type_.main != TypeEnum.LIST
                     or type_.encapsulated is None
-                    or type_.encapsulated.main != TypeEnum.INT
+                    or type_.encapsulated.main not in (TypeEnum.INT, TypeEnum.FLOAT)
                 ):
                     return None
                 style = FormatStyle.FORCE_NEWLINES
@@ -313,7 +318,7 @@ class Variable:
                     break
                 loop = loop.list_contained()
 
-        if type_ == TypeEnum.INT:
+        if type_ in (TypeEnum.INT, TypeEnum.FLOAT):
             return (
                 self.constraints.perf_repr(name)
                 if perf
