@@ -22,6 +22,7 @@ class TypeEnum(Enum):
     STR = 3
     LIST = 4
     STRUCT = 5
+    FLOAT = 6
 
 
 @unique
