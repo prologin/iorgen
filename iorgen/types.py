@@ -320,7 +320,7 @@ class Variable:
                     break
                 loop = loop.list_contained()
 
-        if type_ == TypeEnum.INT:
+        if type_ == TypeEnum.INT or type_ == TypeEnum.FLOAT:
             return (
                 self.constraints.perf_repr(name)
                 if perf
