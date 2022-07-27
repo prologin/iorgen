@@ -285,14 +285,15 @@ class Variable:
         style = FormatStyle.DEFAULT
         if "format" in dic:
             if dic["format"] == "no_endline":
-                if type_.main != TypeEnum.INT:
+                if type_.main != TypeEnum.INT and type_.main != TypeEnum.FLOAT:
                     return None
                 style = FormatStyle.NO_ENDLINE
             elif dic["format"] == "force_newlines":
                 if (
                     type_.main != TypeEnum.LIST
                     or type_.encapsulated is None
-                    or type_.encapsulated.main != TypeEnum.INT
+                    or (type_.encapsulated.main != TypeEnum.INT 
+                        and type_.encapsulated.main != TypeEnum.FLOAT)
                 ):
                     return None
                 style = FormatStyle.FORCE_NEWLINES
