@@ -59,6 +59,8 @@ class Type:
             return cls(TypeEnum.CHAR)
         if string[0] == "@":
             return cls(TypeEnum.STRUCT, struct_name=string[1:])
+        if string == "float":
+            return cls(TypeEnum.FLOAT)
         prog = re.compile(
             r"""^(str|List)
                 (\[([A-Za-z@][A-Za-z0-9\[\]\(\)@ ]*)\])?
