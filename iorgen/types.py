@@ -101,7 +101,7 @@ class Type:
 
     def can_be_inlined(self: Type) -> bool:
         """Can we parse several of this type on a single line"""
-        return self.main in (TypeEnum.INT, TypeEnum.CHAR)
+        return self.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.FLOAT)
 
     def fits_in_one_line(
         self: Type, structs: List[Struct], style: FormatStyle = FormatStyle.DEFAULT
