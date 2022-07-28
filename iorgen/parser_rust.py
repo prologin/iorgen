@@ -37,6 +37,8 @@ def type_str(type_: Type) -> str:
     """Return the Rust name for a type"""
     if type_.main == TypeEnum.INT:
         return "i32"
+    if type_.main == TypeEnum.FLOAT:
+        return "f32"
     if type_.main == TypeEnum.CHAR:
         return "char"
     if type_.main == TypeEnum.STR:
@@ -82,7 +84,7 @@ class ParserRust:
         """
         type_ = var.type.main
 
-        if type_ in [TypeEnum.CHAR, TypeEnum.INT]:
+        if type_ in [TypeEnum.CHAR, TypeEnum.INT, TypeEnum.FLOAT]:
             return True
 
         if type_ in [TypeEnum.LIST, TypeEnum.STR]:
@@ -169,7 +171,7 @@ class ParserRust:
             else:
                 unwrap_method = ".unwrap()"
 
-        if type_.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.STRUCT):
+        if type_.main in (TypeEnum.INT, TypeEnum.FLOAT, TypeEnum.CHAR, TypeEnum.STRUCT):
             code = [
                 "read_line(&mut buffer)",
                 ".parse()",
@@ -316,7 +318,7 @@ class ParserRust:
         """Print the content of a var that holds in one line"""
         assert type_.fits_in_one_line(self.input.structs, style)
 
-        if type_.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.STR):
+        if type_.main in (TypeEnum.INT, TypeEnum.FLOAT, TypeEnum.CHAR, TypeEnum.STR):
             endline = " " if style == FormatStyle.NO_ENDLINE else r"\n"
             return f'print!("{{}}{endline}", {name});'
 
