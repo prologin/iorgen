@@ -32,6 +32,8 @@ def type_str(type_: Type) -> str:
     """Return a description for a type"""
     if type_.main == TypeEnum.INT:
         return "int"
+    if type_.main == TypeEnum.FLOAT:
+        return "float"
     if type_.main == TypeEnum.STR:
         return "str"
     if type_.main == TypeEnum.CHAR:
