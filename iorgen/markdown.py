@@ -112,6 +112,8 @@ class Markdown:
         type_str = ""
         if type_.main == TypeEnum.INT:
             type_str = self.lang["int"]
+        elif type_.main == TypeEnum.FLOAT:
+            type_str = self.lang["float"]
         elif type_.main == TypeEnum.CHAR:
             type_str = self.lang["char"]
         elif type_.main == TypeEnum.STR:
@@ -121,6 +123,8 @@ class Markdown:
             assert type_.encapsulated.main in (TypeEnum.INT, TypeEnum.CHAR)
             if type_.encapsulated.main == TypeEnum.INT:
                 type_str = self.lang["int list"]
+            elif type_.encapsulated.main == TypeEnum.FLOAT:
+                type_str = self.lang["float list"]
             else:
                 assert type_.encapsulated.main == TypeEnum.CHAR
                 type_str = self.lang["char list"]
