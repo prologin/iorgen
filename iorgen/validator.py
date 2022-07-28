@@ -9,7 +9,7 @@ import re
 from iorgen.types import Constraints, FormatStyle, Input, Type, TypeEnum, Variable
 
 INTEGER_REGEX = re.compile("^-?[0-9]+$")
-FLOAT_REGEX = re.compile("^-?[0-9]+(\\.[0-9]+)?$")
+FLOAT_REGEX = re.compile("^-?[0-9]+\\.[0-9]+$")
 
 
 class ValidatorException(Exception):
@@ -322,7 +322,8 @@ class Validator:
                     )
                 else:
                     #TODO: support float / mix ?
-                    self.read_ints(variables)
+                    if all(var.type.main == TypeEnum.INT for var in variables):
+                        self.read_ints(variables)
         except ValidatorException as exception:
             return exception.message
         if self.current_line != len(self.lines):
