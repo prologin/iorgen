@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright 2018-2021 Sacha Delanoue
+# Copyright 2022 Quentin Rataud
 """Check that parsers are the same as before, and parse correctly"""
 
 import argparse
@@ -73,19 +74,19 @@ def test_samples() -> None:
         assert not sample_errors, sample_errors
 
         for language in ALL_LANGUAGES:
-            assert gen_is_same_as_sample(input_data, prefix, language)
-            if (
-                not args.no_compilation
-                and language.extension in selected_languages
-                and language.extension not in skipped_languages
-            ):
-                assert gen_compile_run_and_compare(
-                    input_data,
-                    name,
-                    language,
-                    "tests",
-                    [prefix + "sample_input"],
-                )
+            if language.extension in selected_languages:
+                assert gen_is_same_as_sample(input_data, prefix, language)
+                if (
+                    not args.no_compilation
+                    and language.extension not in skipped_languages
+                ):
+                    assert gen_compile_run_and_compare(
+                        input_data,
+                        name,
+                        language,
+                        "tests",
+                        [prefix + "sample_input"],
+                    )
 
         for language in ALL_MARKDOWN:
             assert gen_is_same_as_sample(input_data, prefix, language)
