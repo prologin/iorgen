@@ -53,14 +53,14 @@ class Type:
     @classmethod
     def from_string(cls: T[Type], string: str) -> Optional[Type]:
         """Create a Type from a string"""
-        if string == "int":
-            return cls(TypeEnum.INT)
-        if string == "char":
-            return cls(TypeEnum.CHAR)
+        if string in ("int", "char", "float"):
+            return {
+                "str": cls(TypeEnum.STR),
+                "char": cls(TypeEnum.CHAR),
+                "float": cls(TypeEnum.FLOAT),
+            }[string]
         if string[0] == "@":
             return cls(TypeEnum.STRUCT, struct_name=string[1:])
-        if string == "float":
-            return cls(TypeEnum.FLOAT)
         prog = re.compile(
             r"""^(str|List)
                 (\[([A-Za-z@][A-Za-z0-9\[\]\(\)@ ]*)\])?
@@ -284,17 +284,14 @@ class Variable:
         style = FormatStyle.DEFAULT
         if "format" in dic:
             if dic["format"] == "no_endline":
-                if type_.main != TypeEnum.INT and type_.main != TypeEnum.FLOAT:
+                if type_.main not in (TypeEnum.INT, TypeEnum.FLOAT):
                     return None
                 style = FormatStyle.NO_ENDLINE
             elif dic["format"] == "force_newlines":
                 if (
                     type_.main != TypeEnum.LIST
                     or type_.encapsulated is None
-                    or (
-                        type_.encapsulated.main != TypeEnum.INT
-                        and type_.encapsulated.main != TypeEnum.FLOAT
-                    )
+                    or type_.encapsulated.main not in (TypeEnum.INT, TypeEnum.FLOAT)
                 ):
                     return None
                 style = FormatStyle.FORCE_NEWLINES
@@ -321,7 +318,7 @@ class Variable:
                     break
                 loop = loop.list_contained()
 
-        if type_ == TypeEnum.INT or type_ == TypeEnum.FLOAT:
+        if type_ in (TypeEnum.INT, TypeEnum.FLOAT):
             return (
                 self.constraints.perf_repr(name)
                 if perf
