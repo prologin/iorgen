@@ -208,9 +208,9 @@ class Markdown:
                     )
                 )
             else:
-                assert all(var.type.main == TypeEnum.INT or var.type.main == TypeEnum.FLOAT for var in variables)
+                assert all(var.type.main == TypeEnum.INT for var in variables) or all(var.type.main == TypeEnum.FLOAT for var in variables)
                 line = self.line_description()
-                if var.type.main == TypeEnum.INT:
+                if variables[0].type.main == TypeEnum.INT:
                     output.extend(
                         wrap_item(f"{line} {self.lang['int sameline']}{self.lang[':']}", 0)
                     )
