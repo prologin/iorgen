@@ -120,7 +120,7 @@ class Markdown:
             type_str = self.lang["str"].format(type_.size)
         elif type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
-            assert type_.encapsulated.main in (TypeEnum.INT, TypeEnum.CHAR)
+            assert type_.encapsulated.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.FLOAT)
             if type_.encapsulated.main == TypeEnum.INT:
                 type_str = self.lang["int list"]
             elif type_.encapsulated.main == TypeEnum.FLOAT:
@@ -137,7 +137,8 @@ class Markdown:
                 ", ".join(
                     "{}{} **{}** ({})".format(
                         "" if i != len(struct.fields) - 1 else self.lang["and"],
-                        self.lang["int" if field.type.main == TypeEnum.INT else "char"],
+                        self.lang["int" if field.type.main == TypeEnum.INT else
+                            "float" if field.type.main == TypeEnum.FLOAT else "char"],
                         field.name,
                         field.comment,
                     )
