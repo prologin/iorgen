@@ -126,6 +126,7 @@ def read_line(type_: Type, input_data: Input) -> str:
         )
     return {
         TypeEnum.INT: "int(input())",
+        TypeEnum.FLOAT: "float(input())",
         TypeEnum.CHAR: "input()[0]",
         TypeEnum.STR: "input()",
     }[type_.main]
