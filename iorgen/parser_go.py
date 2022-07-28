@@ -46,6 +46,8 @@ def type_str(type_: Type) -> str:
     """Return the Go name for a type"""
     if type_.main == TypeEnum.INT:
         return "int"
+    if type_.main == TypeEnum.FLOAT:
+        return "float32"
     if type_.main == TypeEnum.STR:
         return "string"
     if type_.main == TypeEnum.CHAR:
@@ -69,6 +71,11 @@ def max_size(
         return max(
             len(str(constraints.min_possible())), len(str(constraints.max_possible()))
         )
+    if type_.main == TypeEnum.FLOAT:
+        assert constraints
+        return max(
+            len(str(constraints.min_possible())), len(str(constraints.max_possible()))
+        ) + 1
     if type_.main == TypeEnum.CHAR:
         return 1
     if type_.main == TypeEnum.STRUCT:
@@ -122,6 +129,12 @@ class ParserGo:
                 "scanner.Scan()",
                 f"{name}, _ = strconv.Atoi(scanner.Text())",
             ]
+        if type_.main == TypeEnum.FLOAT:
+            self.imports.add("strconv")
+            return [
+                "scanner.Scan()",
+                f"{name}, _ = strconv.ParseFloat(scanner.Text(), 64)",
+            ]
         if type_.main == TypeEnum.CHAR:
             return ["scanner.Scan()", f"{name} = scanner.Text()[0]"]
         if type_.main == TypeEnum.STR:
@@ -157,7 +170,7 @@ class ParserGo:
             "scanner.Scan()",
             'fmt.Sscanf(scanner.Text(), "{}", {})'.format(
                 " ".join(
-                    "%d" if f.type.main == TypeEnum.INT else "%c" for f in struct.fields
+                    "%d" if f.type.main == TypeEnum.INT else "%g" if f.type.main == TypeEnum.FLOAT else "%c" for f in struct.fields
                 ),
                 ", ".join(
                     "&{}.{}".format(name, var_name(f.name)) for f in struct.fields
@@ -257,7 +270,7 @@ class ParserGo:
         assert type_.fits_in_one_line(self.input.structs, style)
         indent = INDENTATION * indent_lvl
         self.imports.add("fmt")
-        if type_.main in (TypeEnum.INT, TypeEnum.STR):
+        if type_.main in (TypeEnum.INT, TypeEnum.FLOAT, TypeEnum.STR):
             return [
                 indent
                 + (
@@ -292,7 +305,7 @@ class ParserGo:
             indent
             + 'fmt.Printf("{}\\n", {})'.format(
                 " ".join(
-                    "%d" if x.type.main == TypeEnum.INT else "%c" for x in struct.fields
+                    "%d" if x.type.main == TypeEnum.INT else "%g" if x.type.main == TypeEnum.FLOAT else "%c" for x in struct.fields
                 ),
                 ", ".join(
                     "{}.{}".format(name, var_name(x.name)) for x in struct.fields
