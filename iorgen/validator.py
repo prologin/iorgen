@@ -9,6 +9,7 @@ import re
 from iorgen.types import Constraints, FormatStyle, Input, Type, TypeEnum, Variable
 
 INTEGER_REGEX = re.compile("^-?[0-9]+$")
+FLOAT_REGEX = re.compile("^-?[0-9]+(\\.[0-9]+)?$")
 
 
 class ValidatorException(Exception):
@@ -84,6 +85,37 @@ class Validator:
                 f"Line {self.current_line}: {value} is negative but used as a size"
             )
 
+    def check_float(self, string: str, constraints: Constraints) -> None:
+        """Check that the input is a correct floating number"""
+        if not FLOAT_REGEX.match(string):
+            raise ValidatorException(
+                "Line {}: '{}' is not a float".format(self.current_line, string)
+            )
+        value = float(string)
+
+        min_value = self.eval_var(constraints.min)
+        if value < min_value:
+            if value < self.eval_var(constraints.min_perf):
+                raise ValidatorException(
+                    f"Line {self.current_line}: {value} < {min_value} (the min value)"
+                )
+            self.valid_for_perf_only = True
+        max_value = self.eval_var(constraints.max)
+        if value > max_value:
+            if value > self.eval_var(constraints.max_perf):
+                raise ValidatorException(
+                    f"Line {self.current_line}: {value} > {max_value} (the max value)"
+                )
+            self.valid_for_perf_only = True
+        if constraints.choices and value not in constraints.choices:
+            raise ValidatorException(
+                "Line {}: {} not in {{{}}}".format(
+                    self.current_line,
+                    value,
+                    ", ".join(str(i) for i in sorted(constraints.choices)),
+                )
+            )
+
     def check_char(self, string: str, constraints: Constraints, use_ws: bool) -> None:
         """Check that the input is a correct string"""
         if len(string) != 1 or string not in printable:
@@ -131,6 +163,9 @@ class Validator:
         if type_.main == TypeEnum.INT:
             assert constraints is not None
             self.check_integer(self.next_line(), constraints, name)
+        elif type_.main == TypeEnum.FLOAT:
+            assert constraints is not None
+            self.check_float(self.next_line(), constraints)
         elif type_.main == TypeEnum.CHAR:
             assert constraints is not None
             self.check_char(self.next_line(), constraints, use_ws=False)
@@ -190,6 +225,25 @@ class Validator:
                     )
                 for i in words:
                     self.check_integer(i, constraints, "")
+            elif type_.encapsulated.main == TypeEnum.FLOAT:
+                assert constraints is not None
+                line = self.next_line()
+                words = line.split()
+                if len(words) != size:
+                    raise ValidatorException(
+                        "Line {}: '{}' should be {} words separated by spaces".format(
+                            self.current_line, line, size_desc
+                        )
+                    )
+                if " ".join(words) != line:
+                    raise ValidatorException(
+                        (
+                            "Line {}: '{}' should have whitespaces only "
+                            "between words, and only one"
+                        ).format(self.current_line, line)
+                    )
+                for i in words:
+                    self.check_float(i, constraints)
         elif type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)
             if not type_.fits_in_one_line(self.input.structs, style):
@@ -215,6 +269,8 @@ class Validator:
                     assert var.constraints is not None
                     if var.type.main == TypeEnum.INT:
                         self.check_integer(word, var.constraints, var.name)
+                    elif var.type.main == TypeEnum.FLOAT:
+                        self.check_float(word, var.constraints)
                     else:
                         assert var.type.main == TypeEnum.CHAR
                         self.check_char(word, var.constraints, use_ws=False)
@@ -237,6 +293,24 @@ class Validator:
             assert var.constraints is not None
             self.check_integer(i, var.constraints, var.name)
 
+    def read_floats(self, variables: List[Variable]) -> None:
+        """Read several ints on a line, or throw an exception if incorrect"""
+        line = self.next_line()
+        words = line.split()
+        if len(words) != len(variables):
+            raise ValidatorException(
+                f"Line {self.current_line}: '{line}' should be {len(variables)}"
+                " floats separated by spaces"
+            )
+        if " ".join(words) != line:
+            raise ValidatorException(
+                f"Line {self.current_line}: '{line}' should have whitespaces only "
+                "between floats, and only one"
+            )
+        for i, var in zip(words, variables):
+            assert var.constraints is not None
+            self.check_float(i, var.constraints)
+
     def read_all(self) -> str:
         """Parse the entire raw input and return an error if there was one"""
         try:
@@ -247,6 +321,7 @@ class Validator:
                         var.name, var.type, var.constraints, var.format_style
                     )
                 else:
+                    #TODO: support float / mix ?
                     self.read_ints(variables)
         except ValidatorException as exception:
             return exception.message
