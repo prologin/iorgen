@@ -55,7 +55,7 @@ class Type:
         """Create a Type from a string"""
         if string in ("int", "char", "float"):
             return {
-                "str": cls(TypeEnum.STR),
+                "int": cls(TypeEnum.INT),
                 "char": cls(TypeEnum.CHAR),
                 "float": cls(TypeEnum.FLOAT),
             }[string]
