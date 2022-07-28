@@ -63,11 +63,11 @@ if __name__ == "__main__":
     empty_in_sample = list(map(int, input().split()))
     empty_string = input()
     main = input()
-    empty_char_list = list(input())
-    non_empty_char_list = list(input())
+    empty_char_list = list(map(str, input().split()))
+    non_empty_char_list = list(map(str, input().split()))
     struct_with_empty_line = A(
         list(map(int, input().split())),
-        StructWithAChar(*map(lambda x, y: int(y) if x else y, (0, 1), input().split())),
+        StructWithAChar(*map(lambda x, y: [str, int, float][x](y), (0, 1), input().split())),
     )
     a_sized_struct = (lambda i: SizedStruct(
         i,
