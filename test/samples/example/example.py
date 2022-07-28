@@ -23,7 +23,7 @@ def example(n: int, list: List[AStruct]) -> None:
 if __name__ == "__main__":
     n = int(input())
     list = [
-        AStruct(*map(lambda x, y: int(y) if x else y, (1, 0), input().split()))
+        AStruct(*map(lambda x, y: [str, int, float][x](y), (1, 0), input().split()))
         for _ in range(n)
     ]
     example(n, list)

@@ -32,6 +32,8 @@ def type_str(type_: Type) -> str:
     """Return a description for a type"""
     if type_.main == TypeEnum.INT:
         return "int"
+    if type_.main == TypeEnum.FLOAT:
+        return "float"
     if type_.main == TypeEnum.STR:
         return "str"
     if type_.main == TypeEnum.CHAR:
@@ -105,25 +107,31 @@ def read_line(type_: Type, input_data: Input) -> str:
     assert type_.fits_in_one_line(input_data.structs)
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
-        if type_.encapsulated.main == TypeEnum.CHAR:
-            return "list(input())"
-        assert type_.encapsulated.main == TypeEnum.INT
-        return "list(map(int, input().split()))"
+        assert type_.encapsulated.main in (TypeEnum.INT, TypeEnum.FLOAT, TypeEnum.CHAR)
+        return f"list(map({type_str(type_.encapsulated)}, input().split()))"
     if type_.main == TypeEnum.STRUCT:
         struct = input_data.get_struct(type_.struct_name)
         if all(i.type.main == TypeEnum.INT for i in struct.fields):
             return f"{class_name(struct.name)}(*map(int, input().split()))"
         if all(i.type.main == TypeEnum.CHAR for i in struct.fields):
             return f"{class_name(struct.name)}(*input().split())"
+        if all(i.type.main == TypeEnum.FLOAT for i in struct.fields):
+            return f"{class_name(struct.name)}(*map(float, input().split()))"
         return "{}(*map({}, ({}), input().split()))".format(
             class_name(struct.name),
-            "lambda x, y: int(y) if x else y",
+            "lambda x, y: [str, int, float][x](y)",
             ", ".join(
-                "1" if i.type.main == TypeEnum.INT else "0" for i in struct.fields
+                "1"
+                if i.type.main == TypeEnum.INT
+                else "2"
+                if i.type.main == TypeEnum.FLOAT
+                else "0"
+                for i in struct.fields
             ),
         )
     return {
         TypeEnum.INT: "int(input())",
+        TypeEnum.FLOAT: "float(input())",
         TypeEnum.CHAR: "input()[0]",
         TypeEnum.STR: "input()",
     }[type_.main]
