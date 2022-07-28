@@ -66,16 +66,15 @@ def max_size(
     style: FormatStyle = FormatStyle.DEFAULT,
 ) -> int:
     """Computes the maximum number of bytes the type can take on stdin"""
-    if type_.main == TypeEnum.INT:
+    if type_.main in (TypeEnum.INT, TypeEnum.FLOAT):
         assert constraints
-        return max(
-            len(str(constraints.min_possible())), len(str(constraints.max_possible()))
+        size = max(
+            len(str(constraints.min_possible())),
+            len(str(constraints.max_possible())),
         )
-    if type_.main == TypeEnum.FLOAT:
-        assert constraints
-        return max(
-            len(str(constraints.min_possible())), len(str(constraints.max_possible()))
-        ) + 1
+        if type_.main == TypeEnum.FLOAT:
+            size += 1
+        return size
     if type_.main == TypeEnum.CHAR:
         return 1
     if type_.main == TypeEnum.STRUCT:
@@ -170,7 +169,12 @@ class ParserGo:
             "scanner.Scan()",
             'fmt.Sscanf(scanner.Text(), "{}", {})'.format(
                 " ".join(
-                    "%d" if f.type.main == TypeEnum.INT else "%g" if f.type.main == TypeEnum.FLOAT else "%c" for f in struct.fields
+                    "%d"
+                    if f.type.main == TypeEnum.INT
+                    else "%g"
+                    if f.type.main == TypeEnum.FLOAT
+                    else "%c"
+                    for f in struct.fields
                 ),
                 ", ".join(
                     "&{}.{}".format(name, var_name(f.name)) for f in struct.fields
@@ -305,7 +309,12 @@ class ParserGo:
             indent
             + 'fmt.Printf("{}\\n", {})'.format(
                 " ".join(
-                    "%d" if x.type.main == TypeEnum.INT else "%g" if x.type.main == TypeEnum.FLOAT else "%c" for x in struct.fields
+                    "%d"
+                    if x.type.main == TypeEnum.INT
+                    else "%g"
+                    if x.type.main == TypeEnum.FLOAT
+                    else "%c"
+                    for x in struct.fields
                 ),
                 ", ".join(
                     "{}.{}".format(name, var_name(x.name)) for x in struct.fields
