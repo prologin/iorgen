@@ -16,13 +16,13 @@ structs:
     - name: position
       comment: Represents a position
       fields:
-          - type: int
+          - type: float
             name: x
             comment: X
-          - type: int
+          - type: float
             name: y
             comment: Y
-          - type: int
+          - type: float
             name: z
             comment: Z
     - name: point

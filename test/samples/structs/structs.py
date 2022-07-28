@@ -14,9 +14,9 @@ class Struct1:
 class Position:
     """Represents a position"""
 
-    x: int  # X
-    y: int  # Y
-    z: int  # Z
+    x: float  # X
+    y: float  # Y
+    z: float  # Z
 
 
 @dataclass
@@ -73,7 +73,7 @@ if __name__ == "__main__":
         Point(
             input()[0],
             input(),
-            Position(*map(int, input().split())),
+            Position(*map(float, input().split())),
         )
         for _ in range(3)
     ]

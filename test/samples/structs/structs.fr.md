@@ -21,9 +21,9 @@ L’entrée contiendra :
           (single character).
         - Sur la ligne suivante, une chaine de **12** caractères ou moins :
           **description**, the point's description.
-        - Sur la ligne suivante, séparés par des espaces, un entier **x** (X),
-          un entier **y** (Y), et un entier **z** (Z) : **pos**, the point's
-          position.
+        - Sur la ligne suivante, séparés par des espaces, un nombre à virgule
+          **x** (X), un nombre à virgule **y** (Y), et un nombre à virgule
+          **z** (Z) : **pos**, the point's position.
 - Sur la ligne suivante, séparés par des espaces, un caractère **first char**
   (a first char), un caractère **second char** (a second char), et un caractère
   **third char** (a third char) : **struct chars**, a struct of chars.
