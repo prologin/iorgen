@@ -1,0 +1,38 @@
+[tool.poetry]
+name = "iorgen"
+version = "0.0.1"
+description = "Iorgen is a multi languages code generator to parse a predefined input template"
+authors = ["Association Prologin <info@prologin.org>", "Sacha 'Shaac' Delanoue <shaac@prologin.org>"]
+license = "GPL-3.0-or-later"
+
+readme = "README.md"
+repository = "https://gitlab.com/prologin/tech/tools/iorgen"
+
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Operating System :: OS Independent",
+    "Topic :: Software Development :: Code Generators",
+    "Typing :: Typed",
+]
+
+[tool.poetry.dependencies]
+python = ">=3.7"
+pyyaml = "^6"
+
+[tool.poetry.dev-dependencies]
+black = "^22"
+mypy = "^0.971"
+pre-commit = "^2"
+pylint = "^2"
+types-pyyaml = "^6"
+
+[tool.poetry.scripts]
+iorgen = "iorgen.__main__:main"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 88
