@@ -1,0 +1,28 @@
+---
+repos:
+  - repo: https://github.com/python/black
+    rev: 22.6.0
+    hooks:
+      - id: black
+        language_version: python3.10
+        exclude: ^test/samples/
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v0.971
+    hooks:
+      - id: mypy
+        args:
+          - --strict
+        additional_dependencies:
+          - types-pyyaml
+        exclude: ^test/
+  - repo: https://github.com/pre-commit/mirrors-pylint
+    rev: v2.7.4
+    hooks:
+      - id: pylint
+        args:
+          - --jobs=0
+          - --disable=R0801
+          - --disable=C0209
+        additional_dependencies:
+          - pyyaml
+        exclude: ^test/samples/

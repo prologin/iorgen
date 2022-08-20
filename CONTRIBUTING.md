@@ -22,13 +22,13 @@ need to install:
   [in the README](README.md#testing-the-languages). If you are working only on
   one language, and do not touch the others, you may only install a subset of
   the compilers.
-- The tools to check the code quality: black, mypy and pylint. Be sure to have
-  the latest version of them. You can install them through you package manager
-  **if you have an up-to-date** distribution (like Archlinux), or else install
-  them with `pip3 install -U pyyaml mypy types-PyYAML pylint black`. The CI
-  build use fixed versions of these tools to prevent the build failing
-  unexpectedly with new changing releasing of the tools, but these version are
-  meant to be kept up to date.
+- The tools to check the code quality: black, mypy, pylint and pre-commit. Be
+  sure to have the latest version of them. You can install them through you
+  package manager **if you have an up-to-date** distribution (like Archlinux),
+  or else install them with `pip3 install -U pyyaml mypy types-PyYAML pylint
+  black pre-commit`. The CI build use fixed versions of these tools to prevent
+  the build failing unexpectedly with new changing releasing of the tools, but
+  these version are meant to be kept up to date.
 
 Coding style
 ------------
@@ -41,8 +41,8 @@ Also, all code uses [type
 hints](https://docs.python.org/3/library/typing.html). This helps tools to
 check the code better.
 
-To ensure your code follow the coding style, please run the `./check_code.sh`
-script.
+To ensure your code follow the coding style, please run `pre-commit run
+--all-files`.
 
 Architecture
 ------------
