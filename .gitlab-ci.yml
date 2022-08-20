@@ -46,17 +46,24 @@ container build:
           --frontend=dockerfile.v0 \
           --local context=. \
           --local dockerfile=. \
+          --opt build-arg:PYTHON_IMAGE=$PYTHON_IMAGE \
           --opt build-arg:PYTHON_VERSION=$PYTHON_VERSION \
-          --output type=image,\"name=$CI_REGISTRY_IMAGE/python-$PYTHON_VERSION/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHA,$CI_REGISTRY_IMAGE:${CI_COMMIT_TAG:-latest}\",push=true \
-          --import-cache type=registry,ref=$CI_REGISTRY_IMAGE:buildcache-python-$PYTHON_VERSION \
-          --export-cache type=registry,ref=$CI_REGISTRY_IMAGE:buildcache-python-$PYTHON_VERSION,mode=max
+          --output type=image,\"name=$CI_REGISTRY_IMAGE/$PYTHON_IMAGE-$PYTHON_VERSION/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHA,$CI_REGISTRY_IMAGE:${CI_COMMIT_TAG:-latest}\",push=true \
+          --import-cache type=registry,ref=$CI_REGISTRY_IMAGE:buildcache-$PYTHON_IMAGE-$PYTHON_VERSION \
+          --export-cache type=registry,ref=$CI_REGISTRY_IMAGE:buildcache-$PYTHON_IMAGE-$PYTHON_VERSION,mode=max
   parallel:
     matrix:
-      - PYTHON_VERSION:
+      - PYTHON_IMAGE: python
+        PYTHON_VERSION:
           - "3.7"
           - "3.8"
           - "3.9"
           - "3.10"
+      - PYTHON_IMAGE: pypy
+        PYTHON_VERSION:
+          - "3.7"
+          - "3.8"
+          - "3.9"
 
 container build ci:
   stage: container build
@@ -104,7 +111,7 @@ compile:
 
 test:
   stage: test
-  image: $CI_REGISTRY_IMAGE/python-$PYTHON_VERSION/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHA
+  image: $CI_REGISTRY_IMAGE/$PYTHON_IMAGE-$PYTHON_VERSION/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHA
   needs:
     - container build
     - build
@@ -116,11 +123,17 @@ test:
     - ./test/test.py --no_compilation
   parallel:
     matrix:
-      - PYTHON_VERSION:
+      - PYTHON_IMAGE: python
+        PYTHON_VERSION:
           - "3.7"
           - "3.8"
           - "3.9"
           - "3.10"
+      - PYTHON_IMAGE: pypy
+        PYTHON_VERSION:
+          - "3.7"
+          - "3.8"
+          - "3.9"
 
 lint:
   stage: qa

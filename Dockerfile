@@ -1,8 +1,9 @@
 # syntax = docker/dockerfile:experimental
 
+ARG PYTHON_IMAGE=python
 ARG PYTHON_VERSION=3.10
 
-FROM python:${PYTHON_VERSION}-slim as base
+FROM $PYTHON_IMAGE:$PYTHON_VERSION-slim as base
 
 ENV DEBIAN_FRONTEND=noninteractive \
     LC_ALL=C.UTF-8 \
