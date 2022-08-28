@@ -9,7 +9,7 @@ generate the code to read this input from stdin, in all supported languages.
 
 The list of currently supported languages is: C, C++, C#, D, Go, Haskell, Java,
 Javascript, Julia, Lua, Ocaml, Pascal, Perl, PHP, Prolog, Python, Ruby, Rust,
-Scheme. A markdown description of the input in English and French can also be
+Scheme. A Markdown description of the input in English and French can also be
 generated.
 
 ## Installation
@@ -124,7 +124,7 @@ format:
     - An optional `"min"` field, if the variable is a integer, or a list (or
       list or list, or list of list of list, etc) of integers. This will be
       the minimal value possible for this variable. This is used in the
-      markdown generator to show the constraints, and in some langages
+      Markdown generator to show the constraints, and in some langages
       generators to check if the size of a list or a string is garantied to be
       not null. The `"min"` field can either be an integer, or a variable name.
     - An optional `"max"` field (similar to the `"min"` one).
@@ -229,7 +229,7 @@ If you want to generate the C code for parsing this kind of input, run
 `python3 -m iorgen -l c example.yaml`, and you will get the following
 `skeleton/example.c`:
 
-```C
+```c
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -262,4 +262,4 @@ int main() {
 You can see every other thing that _Iorgen_ can generate in the
 [test samples](test/samples/example/); you can find parsers for lots of
 languages, and also a [generated description of the input in
-YAML](test/samples/example/example.en.md).
+Markdown](test/samples/example/example.en.md).
