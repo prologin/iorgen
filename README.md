@@ -17,11 +17,12 @@ generated.
 You can install `iorgen` in a virtual environment like this:
 
 ```
-git clone git@github.com:prologin/iorgen.git
+git clone git@gitlab.com:prologin/tech/tools/iorgen.git
 cd iorgen
 python3 -m venv .venv
 source .venv/bin/activate
-pip3 install -e .
+pip3 install poetry
+poetry install
 ```
 
 You can then run it with the `iorgen` command.
