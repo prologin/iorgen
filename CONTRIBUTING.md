@@ -110,7 +110,8 @@ pull request:
 
 - You have ran the tests with success (`cd test && ./test.py`).
 - Your code respects the coding style
-  (`pip3 install -U mypy types-PyYAML pylint pyyaml`, then `./check_code.py`).
+  (`pip3 install -U mypy types-PyYAML pylint pyyaml pre-commit`, then
+  `pre-commit run --all-files`).
 - You agree to publish your code under the
   [GNU General Public License v3, or later](COPYING). Place a line on top of
   the files you have modified with `# Copyright YYYY Name` (under the other
