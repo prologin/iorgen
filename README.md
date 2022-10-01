@@ -53,45 +53,113 @@ and Debian 10.
 ## Usage
 
 Make sure python (version 3.7 and above) and python-yaml are installed on your
-computer and run `python3 -m iorgen input.yaml`. This will generate all
-languages parsers in a `skeleton` folder, and a `subject-io-stub.md` describing
-the input (in French by default).
+computer and run `python3 -m iorgen gen-stubs input.yaml`. This will generate
+all languages parsers in a `skeleton` folder, and a `input-subject-io-stub.md`
+describing the input (in French by default).
 
-Several options are available:
+*Iorgen* functionalities are separated in the following subcommands:
 
-- The `--output_dir` option specify the path and name of the directory holding
-  the generated codes. The filenames will be the same as the input yaml, with
-  the extensions replaced by the canonical extension of each language.
-- The `--languages` option can generate a subselections of languages.
-- The `--markdown` option specify the language (not programming language) in
-  which the `subject-io-stub.md` will be written. The `subject-io-stub.md` is a
-  file generated next to the output directory, and not inside.
-- The `--validate` option, changes completly *Iorgen* behavior. Instead of
-  generating parsers reading some raw input, *Iorgen* will here directly read
-  a file containing such a raw input, and check that it is valid, that is,
-  that it matches the format described in the input YAML.
-- The `--generate_random` also changes the behavior. It will not generate a
-  parser, but a valid possible raw input.
-- The `--specify` is to be used with `--generate_random`, it allows the user
-  to specify the value, the min value or the max value of a variable for this
-  output. `NAME VALUE` set the value. `NAME_max VALUE` (or `NAME_min VALUE`)
-  set the maximum value (or the minimum).
-  ```shell
-  $ iorgen -g -s N_max 10 integer 42 -- example.yaml
-  ```
-- The `perf_mode` option is used with the `--validate` or `--generate_random`
-  mode. This means that the raw input will be treated as in performance mode.
-  The performance mode is a mode where the constraints are differents, usually
-  the integers are bigger.
-- The `--run` option changes the behavior of *Iorgen*: generated parsers are
-  written in a temporary folder, and *Iorgen* will compile those parsers and
-  run them with the input given in arguments to the `run` option (a single
-  path that can represent many input files thanks to a wildcard support).
-  It will check that the parser is able to recreate exactly the input, and can
-  be used as a proof that the generated parser is working. Using this option
-  requires compilers of all tested languages to be installed (see
-  [this section](#testing-the-languages) to know more).
+### `gen-stubs` (Stubs generation)
 
+This subcommand allows you to generate languages parsers (skeletons) and a
+markdown subject stub.
+
+You are able to generate these for a single YAML input file or multiple files at once.
+
+By default, the languages parsers will be generated in the `skeleton` directory. However, you can change the output directory with the `--output_dir` option.
+
+You can also chose to generate all files in the parent directory of the YAML input file with the `--same_dir` flag, by default it will generate the files in the current working directory.
+Note that the generated markdown stub will be named `subject-io-stub.md` when using `--same_dir` flag, otherwise it will be prefixed with the YAML input file name like this: `<prefix>-subject-io-stub.md`.
+
+#### Examples
+
+1. Generate problem stubs in the current working directory
+
+```shell
+iorgen gen-stubs 42.yaml
+```
+
+2. Generate multiple problem stubs at once
+
+```shell
+iorgen gen-stubs 42/42.iorgen loueur/loueur.yaml
+```
+
+You can also use your shell globs!
+
+```shell
+iorgen gen-stubs **/*.yaml
+```
+
+3. Generate all stubs next to their YAML input file
+
+```shell
+iorgen gen-stubs --same_dir **/*.yaml
+```
+
+### `gen-input` (Random input generation)
+
+This subcommand allows you to generate a valid raw input based on your YAML input file.
+
+You can specify a value, the minimum value or the maximum value of a variable
+for the generated raw input with the `--specify` option.
+`NAME VALUE` will set the value. `NAME_max VALUE` the maximum value and
+`NAME_min VALUE` the minimum value.
+
+You can also treat raw input as in performance mode by using the `--perf_mode` flag.
+The performance mode is a mode where the constraints are different, usually the
+integers are bigger.
+
+#### Example
+
+```shell
+iorgen gen-input -s N_max 10 i 42 -- example.yaml
+```
+
+### `validate` (Raw input file validation)
+
+This subcommand allows you to check raw input files against a YAML input file.
+
+You can also check raw inputs made generated for performance tests by using the `--perf_mode` flag.
+
+1. Validate a single file
+
+```shell
+iorgen validate 42.iorgen test/01.in
+```
+
+2. Validate multiple files
+
+```shell
+iorgen validate 42.iorgen test/01.in test/02.in test/03.in
+```
+
+or using globs
+
+```shell
+iorgen validate 42.iorgen 'test/*.in'
+```
+
+or using shell globs
+
+```shell
+iorgen validate 42.iorgen test/*.in
+```
+
+### `run` (Parsers check)
+
+This subcommand allows you to check that the parsers generated by iorgen
+properly parse and print the input they are fed with.
+
+You may want to use the `--languages` option to specify the list of tested
+languages if you don't have all of them installed. See [this section](#testing-the-languages)
+to know how to test against all languages.
+
+#### Example
+
+```shell
+iorgen run 42.iorgen test/test01.in
+```
 
 ## Input format
 
@@ -227,7 +295,7 @@ output: In a real life scenario, you will describe here what you want the end
 ```
 
 If you want to generate the C code for parsing this kind of input, run
-`python3 -m iorgen -l c example.yaml`, and you will get the following
+`python3 -m iorgen gen-stubs -l c example.yaml`, and you will get the following
 `skeleton/example.c`:
 
 ```c
