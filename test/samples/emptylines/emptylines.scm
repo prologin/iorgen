@@ -28,9 +28,10 @@
 
 (define (make-assoc-list-oneline k b)
   (let loop ((l (string->list (read-line))) (k k) (b b) (c '()))
-    (let ((conv (lambda () (if (car b)
-                             (string->number (list->string (reverse c)))
-                             (car c)))))
+    (let ((conv (lambda () (if (eq? 'char (car b))
+                             (car c)
+                             ((if (eq? 'int (car b)) values exact->inexact)
+                              (string->number (list->string (reverse c))))))))
       (cond
         ((null? l) (list (cons (car k) (conv))))
         ((char=? #\space (car l)) (cons (cons (car k) (conv))
@@ -50,7 +51,7 @@
            '(list-in-struct struct-in-struct)
            (list
              (lambda () (parse-int-list (read-line)))
-             (lambda () (make-assoc-list-oneline '(char1 int2) '(#f #t))))))
+             (lambda () (make-assoc-list-oneline '(char1 int2) '(char int))))))
        (a-sized-struct
          (let
            ((size (string->number (read-line))))

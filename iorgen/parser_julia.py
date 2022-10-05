@@ -31,10 +31,12 @@ def type_str(type_: Type, input_data: Input) -> str:
     """Return a description for a type"""
     if type_.main == TypeEnum.INT:
         return "Int"
-    if type_.main == TypeEnum.STR:
-        return "String"
+    if type_.main == TypeEnum.FLOAT:
+        return "Float64"
     if type_.main == TypeEnum.CHAR:
         return "Char"
+    if type_.main == TypeEnum.STR:
+        return "String"
     if type_.main == TypeEnum.STRUCT:
         return struct_name(type_.struct_name)
     assert type_.encapsulated
@@ -54,12 +56,15 @@ def read_line(type_: Type, input_data: Input, input_str: str = "readline()") -> 
         assert type_.encapsulated is not None
         if type_.encapsulated.main == TypeEnum.CHAR:
             return f"collect({input_str})"
-        assert type_.encapsulated.main == TypeEnum.INT
-        return f"map(s -> parse(Int, s), split({input_str}))"
+        if type_.encapsulated.main == TypeEnum.INT:
+            return f"map(s -> parse(Int, s), split({input_str}))"
+        assert type_.encapsulated.main == TypeEnum.FLOAT
+        return f"map(s -> parse(Float64, s), split({input_str}))"
     if type_.main == TypeEnum.STRUCT:
         return f"parse({struct_name(type_.struct_name)}, {input_str})"
     return {
         TypeEnum.INT: f"parse(Int, {input_str})",
+        TypeEnum.FLOAT: f"parse(Float64, {input_str})",
         TypeEnum.CHAR: f"{input_str}[1]",
         TypeEnum.STR: input_str,
     }[type_.main]
@@ -97,22 +102,33 @@ def read_lines(
 def print_line(name: str, type_: Type, input_data: Input, style: FormatStyle) -> str:
     """Print the content of a var in one line"""
     assert type_.fits_in_one_line(input_data.structs, style)
-    if type_.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.STR):
+
+    def format_type(name: str, type_: Type) -> str:
+        if type_.main == TypeEnum.FLOAT:
+            return f'@sprintf("%.15g", {name})'
+        return name
+
+    if type_.main in (TypeEnum.INT, TypeEnum.FLOAT, TypeEnum.CHAR, TypeEnum.STR):
         return (
-            f'print({name}, " ")'
+            f'print({format_type(name, type_)}, " ")'
             if style == FormatStyle.NO_ENDLINE
-            else f"println({name})"
+            else f"println({format_type(name, type_)})"
         )
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
         if type_.encapsulated.main == TypeEnum.CHAR:
-            return "println(join({}))".format(name)
-        assert type_.encapsulated.main == TypeEnum.INT
-        return "println(join({}, ' '))".format(name)
+            return f"println(join({name}))"
+        if type_.encapsulated.main == TypeEnum.INT:
+            return f"println(join({name}, ' '))"
+        assert type_.encapsulated.main == TypeEnum.FLOAT
+        return f"println(join(map(s -> @sprintf(\"%.15g\", s), {name}), ' '))"
+
     assert type_.main == TypeEnum.STRUCT
     struct = input_data.get_struct(type_.struct_name)
     return "println({})".format(
-        ", ' ', ".join("{}.{}".format(name, var_name(i.name)) for i in struct.fields)
+        ", ' ', ".join(
+            format_type(f"{name}.{var_name(i.name)}", i.type) for i in struct.fields
+        )
     )
 
 
@@ -276,6 +292,8 @@ class ParserJulia:
         struct_parsers = [self.def_read_struct(struct) for struct in self.input.structs]
         if self.import_parse:
             output += "import Base: parse\n\n"
+        if reprint and self.input.contains_float():
+            output += "import Printf: @sprintf\n\n"
         for struct in self.input.structs:
             for line in self.decl_struct(struct):
                 output += line + "\n"

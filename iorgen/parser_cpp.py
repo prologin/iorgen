@@ -39,11 +39,13 @@ class ParserCpp:
         """Return the C++ name for a type"""
         if type_.main == TypeEnum.INT:
             return "int"
+        if type_.main == TypeEnum.FLOAT:
+            return "double"
+        if type_.main == TypeEnum.CHAR:
+            return "char"
         if type_.main == TypeEnum.STR:
             self.includes.add("string")
             return "std::string"
-        if type_.main == TypeEnum.CHAR:
-            return "char"
         if type_.main == TypeEnum.STRUCT:
             return struct_name(type_.struct_name)
         assert type_.encapsulated
@@ -56,7 +58,7 @@ class ParserCpp:
         assert type_.fits_in_one_line(self.input.structs)
         indent = " " * (self.indentation * self.indent_lvl)
         self.includes.add("iostream")
-        if type_.main in (TypeEnum.INT, TypeEnum.CHAR):
+        if type_.main in (TypeEnum.INT, TypeEnum.FLOAT, TypeEnum.CHAR):
             self.main.append(indent + "std::cin >> {};".format(name))
         elif type_.main == TypeEnum.STR:
             self.includes.add("string")
@@ -170,6 +172,11 @@ class ParserCpp:
                 arguments.append("{} {}".format(self.type_str(arg.type), arg_name))
         self.method.append("void {}({}) {{".format(name, ", ".join(arguments)))
         if reprint:
+            if self.input.contains_float():
+                self.includes.add("iomanip")
+                self.method.append(
+                    " " * self.indentation + "std::cout << std::setprecision(15);"
+                )
             for var in self.input.input:
                 self.print_lines(var_name(var.name), var.type, 1, var.format_style)
         else:
@@ -190,7 +197,7 @@ class ParserCpp:
         assert type_.fits_in_one_line(self.input.structs, style)
         indent = " " * (self.indentation * indent_lvl)
         endl = '" "' if style == FormatStyle.NO_ENDLINE else "std::endl"
-        if type_.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.STR):
+        if type_.main in (TypeEnum.INT, TypeEnum.FLOAT, TypeEnum.CHAR, TypeEnum.STR):
             self.method.append(f"{indent}std::cout << {name} << {endl};")
         elif type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None

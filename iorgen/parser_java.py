@@ -30,15 +30,27 @@ def type_str(type_: Type) -> str:
     """Return the Java name for a type"""
     if type_.main == TypeEnum.INT:
         return "int"
-    if type_.main == TypeEnum.STR:
-        return "String"
+    if type_.main == TypeEnum.FLOAT:
+        return "double"
     if type_.main == TypeEnum.CHAR:
         return "char"
+    if type_.main == TypeEnum.STR:
+        return "String"
     if type_.main == TypeEnum.STRUCT:
         return class_name(type_.struct_name)
     assert type_.main == TypeEnum.LIST
     assert type_.encapsulated
     return type_str(type_.encapsulated) + "[]"
+
+
+def parse_type(type_: Type, name: str) -> str:
+    """Return java code to parse a type."""
+    return {
+        TypeEnum.INT: f"Integer.parseInt({name})",
+        TypeEnum.FLOAT: f"Double.parseDouble({name})",
+        TypeEnum.CHAR: f"{name}.charAt(0)",
+        TypeEnum.STR: name,
+    }[type_.main]
 
 
 class ParserJava:
@@ -73,39 +85,33 @@ class ParserJava:
                 )
             )
             lines.extend(
-                "{}{}.{} = {};".format(
-                    indent,
-                    name,
-                    var_name(f.name),
-                    f"Integer.parseInt({words}[{i}])"
-                    if f.type.main == TypeEnum.INT
-                    else f"{words}[{i}].charAt(0)",
-                )
+                f"{indent}{name}.{var_name(f.name)} = "
+                f"{parse_type(f.type, f'{words}[{i}]')};"
                 for i, f in enumerate(struct.fields)
             )
             return lines
         type_decl = (type_str(type_) + " ") if decl else ""
         command = ""
-        if type_.main == TypeEnum.INT:
-            command = "Integer.parseInt(reader.readLine())"
-        elif type_.main == TypeEnum.CHAR:
-            command = "reader.readLine().charAt(0)"
-        elif type_.main == TypeEnum.STR:
-            command = "reader.readLine()"
+        if type_.main in (TypeEnum.INT, TypeEnum.FLOAT, TypeEnum.CHAR, TypeEnum.STR):
+            command = parse_type(type_, "reader.readLine()")
         else:
             assert type_.main == TypeEnum.LIST
             assert type_.encapsulated is not None
             if type_.encapsulated.main == TypeEnum.CHAR:
                 command = "reader.readLine().toCharArray()"
             else:
-                assert type_.encapsulated.main == TypeEnum.INT
+                assert type_.encapsulated.main in (TypeEnum.INT, TypeEnum.FLOAT)
                 self.imports.add("java.util.Arrays")
                 command = (
-                    'Arrays.stream(reader.readLine().split(" ")).{}'
-                    "mapToInt(Integer::parseInt).toArray()"
-                ).format("filter(x -> !x.isEmpty())." if type_.can_be_empty else "")
+                    'Arrays.stream(reader.readLine().split(" ")).{}{}.toArray()'
+                ).format(
+                    "filter(x -> !x.isEmpty())." if type_.can_be_empty else "",
+                    "mapToInt(Integer::parseInt)"
+                    if type_.encapsulated.main == TypeEnum.INT
+                    else "mapToDouble(Double::parseDouble)",
+                )
         assert command
-        return ["{}{}{} = {};".format(indent, type_decl, name, command)]
+        return [f"{indent}{type_decl}{name} = {command};"]
 
     def read_lines(
         self, decl: bool, var: Variable, size: str, indent_lvl: int
@@ -222,21 +228,33 @@ class ParserJava:
         assert type_.fits_in_one_line(self.input.structs)
         if type_.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.STR):
             return f"System.out.println({name});"
+        if type_.main == TypeEnum.FLOAT:
+            return f"System.out.println(iorgen_float({name}));"
         if type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
             if type_.encapsulated.main == TypeEnum.CHAR:
                 return f"System.out.println(new String({name}));"
-            assert type_.encapsulated.main == TypeEnum.INT
+            assert type_.encapsulated.main in (TypeEnum.INT, TypeEnum.FLOAT)
             self.imports.add("java.util.Arrays")
             self.imports.add("java.util.stream.Collectors")
-            return "System.out.println(Arrays.stream({}).mapToObj({}".format(
-                name, 'String::valueOf).collect(Collectors.joining(" ")));'
+            conv = (
+                "String::valueOf"
+                if type_.encapsulated.main == TypeEnum.INT
+                else "Main::iorgen_float"
+            )
+            return (
+                f"System.out.println(Arrays.stream({name}).mapToObj({conv})"
+                '.collect(Collectors.joining(" ")));'
             )
         assert type_.main == TypeEnum.STRUCT
         fields = self.input.get_struct(type_.struct_name).fields
         return 'System.out.printf("{}\\n", {});'.format(
-            " ".join("%d" if f.type.main == TypeEnum.INT else "%c" for f in fields),
-            ", ".join("{}.{}".format(name, var_name(f.name)) for f in fields),
+            " ".join("%s" for _ in fields),
+            ", ".join(
+                ("iorgen_float" if f.type.main == TypeEnum.FLOAT else "String.valueOf")
+                + f"({name}.{var_name(f.name)})"
+                for f in fields
+            ),
         )
 
     def print_lines(
@@ -295,6 +313,20 @@ class ParserJava:
                 )
             output += "}\n\n"
         output += "class Main {\n"
+        if reprint and self.input.contains_float():
+            # Since Java does not conform to the C-like behavior of format("%.15g"),
+            # we need to reimplement this behavior.
+            output += """
+    public static String iorgen_float(double x) {
+        java.text.DecimalFormatSymbols symbols =
+            new java.text.DecimalFormatSymbols(java.util.Locale.ROOT);
+        String a = new java.text.DecimalFormat("#.###############E00", symbols)
+            .format(x).replace("E-", "e-").replace("E", "e+");
+        String b = new java.text.DecimalFormat("###############.###############",
+            symbols).format(x);
+        return a.length() < b.length() ? a : b;
+    }
+            """
         output += "\n".join(self.call(reprint)) + "\n\n"
         output += (
             INDENTATION

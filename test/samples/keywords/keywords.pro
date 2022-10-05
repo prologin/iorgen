@@ -11,28 +11,28 @@ keywords(If, Class, I, In, For, Words, Words1) :-
 
 read_line(X) :- read_string(user_input, "\n", "\r", _, X).
 read_char(X) :- read_line(S), string_chars(S, C), nth0(0, C, X).
-read_int(X) :- read_line(S), number_string(X, S).
+read_number(X) :- read_line(S), number_string(X, S).
 string_number(X, Y) :- number_string(Y, X).
-read_int_list(X) :- read_line_to_codes(user_input, C), (C == [] -> X = []
+read_number_list(X) :- read_line_to_codes(user_input, C), (C == [] -> X = []
     ; split_string(C, " ", "", L), maplist(string_number, L, X)).
 read_list(_, 0, []) :- !.
 read_list(Goal, N, [H|T]) :- call(Goal, H), M is N - 1, read_list(Goal, M, T).
-read_assoc_console(X) :- read_int_list(L), pairs_keys_values(P, ["a", "static"], L), list_to_assoc(P, X).
+read_assoc_console(X) :- read_number_list(L), pairs_keys_values(P, ["a", "static"], L), list_to_assoc(P, X).
 read_assoc_system(X) :-
-    read_int(Return),
-    read_int_list(Void),
+    read_number(Return),
+    read_number_list(Void),
     pairs_keys_values(P, ["return", "void"], [Return, Void]), list_to_assoc(P, X).
 read_assoc_main(X) :-
     read_assoc_system(Int),
-    read_int(IfTrue),
+    read_number(IfTrue),
     pairs_keys_values(P, ["int", "if true"], [Int, IfTrue]), list_to_assoc(P, X).
 :-
     prompt(_, ''),
-    read_int(If),
+    read_number(If),
     read_char(Class),
     read_line(I),
     read_assoc_console(In),
-    read_int_list(For),
+    read_number_list(For),
     read_list(read_assoc_main, 2, Words),
-    read_int(Words1),
+    read_number(Words1),
     keywords(If, Class, I, In, For, Words, Words1).

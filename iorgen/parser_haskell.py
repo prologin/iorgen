@@ -34,6 +34,8 @@ def type_str(type_: Type) -> str:
     """Return the Haskell name for a type"""
     if type_.main == TypeEnum.INT:
         return "Int"
+    if type_.main == TypeEnum.FLOAT:
+        return "Double"
     if type_.main == TypeEnum.CHAR:
         return "Char"
     if type_.main == TypeEnum.STR:
@@ -47,24 +49,17 @@ def type_str(type_: Type) -> str:
 
 def print_var_content(type_: Type, structs: List[Struct], style: FormatStyle) -> str:
     """Return Haskell function to print a variable of given type"""
-    # pylint: disable=too-many-return-statements
-    newline = '" "' if style == FormatStyle.NO_ENDLINE else r'"\n"'
-    if type_.main == TypeEnum.INT:
-        return f"(++ {newline}) . show"
-    if type_.main == TypeEnum.CHAR:
-        return f"(: {newline})"
-    if type_.main == TypeEnum.STR:
-        return f"(++ {newline})"
     if type_.main == TypeEnum.STRUCT:
         struct = next(x for x in structs if x.name == type_.struct_name)
         if type_.fits_in_one_line(structs, style):
             fields = []
             for i in struct.fields:
-                if i.type.main == TypeEnum.INT:
-                    fields.append("(show $ {} r')".format(var_name(i.name)))
+                if i.type.main in (TypeEnum.INT, TypeEnum.FLOAT):
+                    show = "show" if i.type.main == TypeEnum.INT else "iorgen_float"
+                    fields.append(f"({show} $ {var_name(i.name)} r')")
                 else:
                     assert i.type.main == TypeEnum.CHAR
-                    fields.append('((: "") $ {} r\')'.format(var_name(i.name)))
+                    fields.append(f"((: []) $ {var_name(i.name)} r')")
             return '(\\r\' -> {} ++ "\\n")'.format(' ++ " " ++ '.join(fields))
         return "(\\r' -> {})".format(
             " ++ ".join(
@@ -75,15 +70,26 @@ def print_var_content(type_: Type, structs: List[Struct], style: FormatStyle) ->
                 for i in struct.fields
             )
         )
-    assert type_.main == TypeEnum.LIST
-    assert type_.encapsulated
-    if type_.encapsulated.main == TypeEnum.INT and style != FormatStyle.FORCE_NEWLINES:
-        return '(++ "\\n") . unwords . (map show)'
-    if type_.encapsulated.main == TypeEnum.CHAR:
-        return '(++ "\\n")'
-    return 'foldr (++) "" . (map $ {})'.format(
-        print_var_content(type_.encapsulated, structs, FormatStyle.DEFAULT)
-    )
+    if type_.main == TypeEnum.LIST:
+        assert type_.encapsulated
+        if (
+            type_.encapsulated.main in (TypeEnum.INT, TypeEnum.FLOAT)
+            and style != FormatStyle.FORCE_NEWLINES
+        ):
+            show = "show" if type_.encapsulated.main == TypeEnum.INT else "iorgen_float"
+            return f'(++ "\\n") . unwords . (map {show})'
+        if type_.encapsulated.main == TypeEnum.CHAR:
+            return '(++ "\\n")'
+        return 'foldr (++) "" . (map $ {})'.format(
+            print_var_content(type_.encapsulated, structs, FormatStyle.DEFAULT)
+        )
+    newline = '" "' if style == FormatStyle.NO_ENDLINE else r'"\n"'
+    return {
+        TypeEnum.INT: f"(++ {newline}) . show",
+        TypeEnum.FLOAT: f"(++ {newline}) . iorgen_float",
+        TypeEnum.CHAR: f"(: {newline})",
+        TypeEnum.STR: f"(++ {newline})",
+    }[type_.main]
 
 
 class ParserHaskell:
@@ -123,7 +129,7 @@ class ParserHaskell:
     def read_line(self, type_: Type) -> str:
         """Read an entire line and parse it"""
         assert type_.fits_in_one_line(self.input.structs)
-        if type_.main == TypeEnum.INT:
+        if type_.main in (TypeEnum.INT, TypeEnum.FLOAT):
             return "fmap read getLine"
         if type_.main == TypeEnum.CHAR:
             return "fmap head getLine"
@@ -131,7 +137,7 @@ class ParserHaskell:
             return "getLine"
         if type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
-            if type_.encapsulated.main == TypeEnum.INT:
+            if type_.encapsulated.main in (TypeEnum.INT, TypeEnum.FLOAT):
                 return "fmap (map read . words) getLine"
             assert type_.encapsulated.main == TypeEnum.CHAR
             return "getLine"
@@ -231,7 +237,7 @@ class ParserHaskell:
             args = ", ".join(chr(97 + i) for i in range(len(struct.fields)))
             parse = []
             for i, field in enumerate(struct.fields):
-                if field.type.main == TypeEnum.INT:
+                if field.type.main in (TypeEnum.INT, TypeEnum.FLOAT):
                     parse.append("(read {})".format(chr(97 + i)))
                 else:
                     assert field.type.main == TypeEnum.CHAR
@@ -278,6 +284,27 @@ class ParserHaskell:
         output = "".join("import {}\n".format(i) for i in sorted(self.imports))
         if self.imports:
             output += "\n"
+        if reprint and self.input.contains_float():
+            # Since Haskell does not conform to the C-like behavior of format("%.15g"),
+            # we need to reimplement this behavior.
+            # The spec is: use scietific notation if exposant is < -4 or >= 15
+            output += """import qualified Numeric as Iorgen_Num (floatToDigits)
+
+iorgen_float :: RealFloat p => p -> String
+iorgen_float x = if x == 0 then "0" else if x < 0 then '-' : (f $ -x) else f x
+  where
+      f x =
+        let (l, e) = Iorgen_Num.floatToDigits 10 x in
+        if e - 1 < (-4) || e - 1 >= 15 then
+          g l 1 ++ ('e' : (if e < 0 then (if e > -9 then ("-0" ++) . tail else id)
+            else ('+' :)) (show (e - 1)))
+        else
+          g (replicate (1 - e) 0 ++ l) (max 1 e)
+      g [] e = replicate e '0'
+      g (h:t) e = show h !! 0 : (if e /= 1 || null t then id else ('.' :)) (g t (e - 1))
+
+"""
+
         output += self.declare_data()
         for line in self.method:
             output += line + "\n"

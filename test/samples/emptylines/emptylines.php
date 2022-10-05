@@ -26,7 +26,7 @@ $empty_char_list = preg_split('//', trim(fgets(STDIN)), -1, PREG_SPLIT_NO_EMPTY)
 $non_empty_char_list = preg_split('//', trim(fgets(STDIN)), -1, PREG_SPLIT_NO_EMPTY);
 $struct_with_empty_line = [];
 $struct_with_empty_line["list in struct"] = array_map('intval', preg_split('/ /', trim(fgets(STDIN)), -1, PREG_SPLIT_NO_EMPTY));
-$struct_with_empty_line["struct in struct"] = array_combine(["char1", "int2"], explode(' ', trim(fgets(STDIN))));
+$struct_with_empty_line["struct in struct"] = array_combine(["char1", "int2"], array_map(fn($f, $x) => $f($x), ['strval', 'intval'], explode(' ', trim(fgets(STDIN)))));
 $a_sized_struct = [];
 $a_sized_struct["size"] = intval(trim(fgets(STDIN)));
 $a_sized_struct["string in struct"] = trim(fgets(STDIN));

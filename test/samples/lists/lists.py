@@ -29,7 +29,7 @@ if __name__ == "__main__":
     n = int(input())
     list_int = list(map(int, input().split()))
     size = int(input())
-    list_char = list(map(str, input().split()))
+    list_char = list(input())
     string = input()
     list_string4 = [input() for _ in range(size)]
     list_list_string2 = [[input() for _ in range(2)] for _ in range(2)]

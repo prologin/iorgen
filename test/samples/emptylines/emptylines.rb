@@ -23,7 +23,7 @@ empty_char_list = STDIN.gets.chomp.split("")
 non_empty_char_list = STDIN.gets.chomp.split("")
 struct_with_empty_line = {
     "list in struct" => STDIN.gets.split.map(&:to_i),
-    "struct in struct" => Hash[["char1", "int2"].zip([0, 1], STDIN.gets.split).map{ |x,y,z| [x, y == 1 ? z.to_i : z] }]
+    "struct in struct" => Hash[["char1", "int2"].zip(STDIN.gets.split, [:to_s, :to_i]).map{ |k,v,s| [k, v.send(s)] }]
 }
 a_sized_struct = (lambda { |i| {
     "size" => i,

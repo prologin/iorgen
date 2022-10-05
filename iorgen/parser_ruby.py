@@ -18,6 +18,15 @@ def var_name(name: str) -> str:
     return candidate + "_" if candidate in KEYWORDS else candidate
 
 
+def parse_type(type_: Type) -> str:
+    """Return ruby method to parse a type."""
+    if type_.main == TypeEnum.INT:
+        return ":to_i"
+    if type_.main == TypeEnum.FLOAT:
+        return ":to_f"
+    return ":to_s"
+
+
 def read_line(type_: Type, input_data: Input) -> str:
     """Generate the Ruby code to read a line of given type"""
     assert type_.fits_in_one_line(input_data.structs)
@@ -25,24 +34,24 @@ def read_line(type_: Type, input_data: Input) -> str:
         assert type_.encapsulated is not None
         if type_.encapsulated.main == TypeEnum.CHAR:
             return 'STDIN.gets.chomp.split("")'
-        assert type_.encapsulated.main == TypeEnum.INT
-        return "STDIN.gets.split.map(&:to_i)"
+        assert type_.encapsulated.main in (TypeEnum.INT, TypeEnum.FLOAT)
+        return f"STDIN.gets.split.map(&{parse_type(type_.encapsulated)})"
     if type_.main == TypeEnum.STRUCT:
         struct = input_data.get_struct(type_.struct_name)
         keys = ", ".join('"{}"'.format(i.name) for i in struct.fields)
-        if all(i.type.main == TypeEnum.INT for i in struct.fields):
-            return "Hash[[{}].zip(STDIN.gets.split.map(&:to_i))]".format(keys)
-        if all(i.type.main == TypeEnum.CHAR for i in struct.fields):
-            return 'Hash[[{}].zip(STDIN.gets.chomp.split(" "))]'.format(keys)
-        return "Hash[[{}].zip([{}], STDIN.gets.split).map{{ {} }}]".format(
-            keys,
-            ", ".join(
-                "1" if i.type.main == TypeEnum.INT else "0" for i in struct.fields
-            ),
-            "|x,y,z| [x, y == 1 ? z.to_i : z]",
-        )
+        for inner_type, parse in (
+            (TypeEnum.INT, "split.map(&:to_i)"),
+            (TypeEnum.FLOAT, "split.map(&:to_f)"),
+            (TypeEnum.CHAR, 'chomp.split(" ")'),
+        ):
+            if all(i.type.main == inner_type for i in struct.fields):
+                return f"Hash[[{keys}].zip(STDIN.gets.{parse})]"
+        fields = ", ".join(parse_type(i.type) for i in struct.fields)
+        block = "|k,v,s| [k, v.send(s)]"
+        return f"Hash[[{keys}].zip(STDIN.gets.split, [{fields}]).map{{ {block} }}]"
     return {
         TypeEnum.INT: "STDIN.gets.to_i",
+        TypeEnum.FLOAT: "STDIN.gets.to_f",
         TypeEnum.CHAR: "STDIN.gets[0]",
         TypeEnum.STR: "STDIN.gets.chomp",
     }[type_.main]
@@ -128,19 +137,28 @@ def read_vars(input_data: Input, iterator: IteratorName) -> List[str]:
 
 def print_line(name: str, type_: Type, input_data: Input) -> str:
     """Print the content of a var in one line"""
+
+    def print_type(name: str, type_: Type) -> str:
+        """Print the content of a variable (with a special case for float)"""
+        if type_.main != TypeEnum.FLOAT:
+            return name
+        return f"sprintf('%.15g', {name})"
+
     assert type_.fits_in_one_line(input_data.structs)
-    if type_.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.STR):
-        return "puts {}".format(name)
+    if type_.main in (TypeEnum.INT, TypeEnum.FLOAT, TypeEnum.CHAR, TypeEnum.STR):
+        return f"puts {print_type(name, type_)}"
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
         if type_.encapsulated.main == TypeEnum.CHAR:
-            return 'puts {}.join("")'.format(name)
-        assert type_.encapsulated.main == TypeEnum.INT
-        return 'puts {}.join(" ")'.format(name)
+            return f'puts {name}.join("")'
+        if type_.encapsulated.main == TypeEnum.INT:
+            return f'puts {name}.join(" ")'
+        assert type_.encapsulated.main == TypeEnum.FLOAT
+        return f'puts {name}.map{{ |x| sprintf("%.15g", x) }}.join(" ")'
     assert type_.main == TypeEnum.STRUCT
     struct = input_data.get_struct(type_.struct_name)
     return "print {}".format(
-        ', " ", '.join('{}["{}"]'.format(name, i.name) for i in struct.fields)
+        ', " ", '.join(print_type(f'{name}["{i.name}"]', i.type) for i in struct.fields)
     )
 
 

@@ -32,15 +32,31 @@ def type_str(type_: Type) -> str:
     """Return the D name for a type"""
     if type_.main == TypeEnum.INT:
         return "int"
-    if type_.main == TypeEnum.STR:
-        return "string"
+    if type_.main == TypeEnum.FLOAT:
+        return "double"
     if type_.main == TypeEnum.CHAR:
         return "char"
+    if type_.main == TypeEnum.STR:
+        return "string"
     if type_.main == TypeEnum.STRUCT:
         return struct_name(type_.struct_name)
     assert type_.main == TypeEnum.LIST
     assert type_.encapsulated
     return "{}[]".format(type_str(type_.encapsulated))
+
+
+def format_specifier(type_: Type, read: bool = True) -> str:
+    """Return D print format specifier for a type"""
+    if type_.main == TypeEnum.INT:
+        return "%d"
+    if type_.main == TypeEnum.CHAR:
+        return "%c"
+    if type_.main == TypeEnum.STR:
+        return "%s"
+    if type_.main == TypeEnum.FLOAT:
+        return "%g" if read else "%.15g"
+    assert False
+    return "%s"
 
 
 class ParserD:
@@ -61,29 +77,24 @@ class ParserD:
     def read_line(self, name: str, type_: Type) -> str:
         """Read a variable in one line of stdin"""
         assert type_.fits_in_one_line(self.input.structs)
-        if type_.main == TypeEnum.INT:
-            return 'stdin.readf("%d\\n", &{});'.format(name)
-        if type_.main == TypeEnum.STR:
-            return 'stdin.readf("%s\\n", &{});'.format(name)
-        if type_.main == TypeEnum.CHAR:
-            return 'stdin.readf("%c\\n", &{});'.format(name)
+        if type_.main in (TypeEnum.INT, TypeEnum.FLOAT, TypeEnum.CHAR, TypeEnum.STR):
+            return f'stdin.readf("{format_specifier(type_)}\\n", &{name});'
         if type_.main == TypeEnum.LIST:
             assert type_.encapsulated
             self.add_import("std.array", "split")
             self.add_import("std.conv", "to")
-            if type_.encapsulated.main == TypeEnum.INT:
+            if type_.encapsulated.main in (TypeEnum.INT, TypeEnum.FLOAT):
                 self.add_import("std.array", "array")
                 self.add_import("std.algorithm.iteration", "map")
-                return name + " = stdin.readln.split.map!(to!int).array;"
+                cast = type_str(type_.encapsulated)
+                return f"{name} = stdin.readln.split.map!(to!{cast}).array;"
             assert type_.encapsulated.main == TypeEnum.CHAR
             self.add_import("std.string", "chop")
             return name + " = stdin.readln.chop.to!(char[]);"
         assert type_.main == TypeEnum.STRUCT
         struct = self.input.get_struct(type_.struct_name)
         return 'stdin.readf("{}\\n", {});'.format(
-            " ".join(
-                "%c" if i.type.main == TypeEnum.CHAR else "%d" for i in struct.fields
-            ),
+            " ".join(format_specifier(i.type) for i in struct.fields),
             ", ".join("&" + name + "." + var_name(i.name) for i in struct.fields),
         )
 
@@ -140,17 +151,26 @@ class ParserD:
         """Print a D variable"""
         if type_.main in (TypeEnum.INT, TypeEnum.STR, TypeEnum.CHAR):
             self.add_import("std.stdio", "writeln")
-            return ["writeln({});".format(name)]
+            return [f"writeln({name});"]
+        if type_.main == TypeEnum.FLOAT:
+            self.add_import("std.stdio", "writeln")
+            self.add_import("std.format", "format")
+            return [f'writeln(format("%.15g", {name}));']
         if type_.main == TypeEnum.LIST:
             assert type_.encapsulated
             if (
-                type_.encapsulated.main == TypeEnum.INT
+                type_.encapsulated.main in (TypeEnum.INT, TypeEnum.FLOAT)
                 and style != FormatStyle.FORCE_NEWLINES
             ):
                 self.add_import("std.array", "join")
                 self.add_import("std.algorithm.iteration", "map")
-                self.add_import("std.conv", "to")
-                return ['writeln(join({}.map!(to!string), " "));'.format(name)]
+                if type_.encapsulated.main == TypeEnum.INT:
+                    self.add_import("std.conv", "to")
+                    convert = "to!string"
+                else:
+                    self.add_import("std.format", "format")
+                    convert = '(x) => format("%.15g", x)'
+                return [f'writeln(join({name}.map!({convert}), " "));']
             if type_.encapsulated.main == TypeEnum.CHAR:
                 return ["writeln({});".format(name)]
             index = self.iterator.new_it()
@@ -170,22 +190,20 @@ class ParserD:
             return lines + ["}"]
         assert type_.main == TypeEnum.STRUCT
         struct = self.input.get_struct(type_.struct_name)
+        lines = []
         if type_.fits_in_one_line(self.input.structs, style):
             self.add_import("std.stdio", "writefln")
-            return [
+            lines = [
                 'writefln("{}", {});'.format(
-                    " ".join(
-                        "%c" if i.type.main == TypeEnum.CHAR else "%d"
-                        for i in struct.fields
-                    ),
+                    " ".join(format_specifier(i.type, False) for i in struct.fields),
                     ", ".join(name + "." + var_name(i.name) for i in struct.fields),
                 )
             ]
-        lines = []
-        for field in struct.fields:
-            lines.extend(
-                self.print_lines("{}.{}".format(name, var_name(field.name)), field.type)
-            )
+        else:
+            for field in struct.fields:
+                lines.extend(
+                    self.print_lines(f"{name}.{var_name(field.name)}", field.type)
+                )
         return lines
 
     def function(self, reprint: bool) -> List[str]:
@@ -394,6 +412,7 @@ USED_SYMBOLS = [
     "array",
     "char",
     "chop",
+    "format",
     "int",
     "join",
     "main",

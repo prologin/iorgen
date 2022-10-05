@@ -37,6 +37,8 @@ def type_str(type_: Type) -> str:
     """Return the Rust name for a type"""
     if type_.main == TypeEnum.INT:
         return "i32"
+    if type_.main == TypeEnum.FLOAT:
+        return "f64"
     if type_.main == TypeEnum.CHAR:
         return "char"
     if type_.main == TypeEnum.STR:
@@ -63,6 +65,61 @@ def parse_without_error(type_: Type) -> bool:
     return False
 
 
+def read_line(
+    type_: Type,
+    indent_lvl: int,
+    name: Optional[str] = None,
+    unwrap_method: Optional[str] = None,
+) -> str:
+    """Return a Rust command for parsing a line into a given type"""
+    if unwrap_method is None:
+        if name:
+            unwrap_method = f'.expect("invalid `{name}` parameter")'
+        else:
+            unwrap_method = ".unwrap()"
+
+    if type_.main in (TypeEnum.INT, TypeEnum.FLOAT, TypeEnum.CHAR, TypeEnum.STRUCT):
+        code = [
+            "read_line(&mut buffer)",
+            ".parse()",
+            unwrap_method,
+        ]
+
+        if len(unwrap_method) < 10:
+            separator = ""
+        else:
+            separator = "\n" + (indent_lvl + 1) * INDENTATION
+
+        return separator.join(code)
+
+    if type_.main == TypeEnum.STR:
+        return "read_line(&mut buffer).to_string()"
+
+    if type_.main == TypeEnum.LIST:
+        assert type_.encapsulated is not None
+
+        if type_.encapsulated.main in (TypeEnum.INT, TypeEnum.FLOAT):
+            idt = (indent_lvl + 1) * INDENTATION
+            lines = [
+                "read_line(&mut buffer)",
+                f"{idt}.split_whitespace()",
+                f"{idt}.map(str::parse)",
+                f"{idt}.collect::<Result<_, _>>()",
+            ]
+
+            if unwrap_method == "?":
+                lines[-1] += "?"
+            elif unwrap_method:
+                lines.append(f"{idt}{unwrap_method}")
+
+            return "\n".join(lines)
+
+        if type_.encapsulated.main == TypeEnum.CHAR:
+            return "read_line(&mut buffer).chars().collect()"
+
+    raise Exception
+
+
 class ParserRust:
     """Create the Rust code to parse an input"""
 
@@ -70,7 +127,6 @@ class ParserRust:
         self.input = input_data
 
         self.call_site = []  # type: List[str]
-        self.read_vec_int = False
 
     def struct_is_copy(self, struct: Struct) -> bool:
         """Check if the generated Rust structure can be marked as Copy"""
@@ -82,10 +138,10 @@ class ParserRust:
         """
         type_ = var.type.main
 
-        if type_ in [TypeEnum.CHAR, TypeEnum.INT]:
+        if type_ in (TypeEnum.INT, TypeEnum.FLOAT, TypeEnum.CHAR):
             return True
 
-        if type_ in [TypeEnum.LIST, TypeEnum.STR]:
+        if type_ in (TypeEnum.STR, TypeEnum.LIST):
             return False
 
         if type_ == TypeEnum.STRUCT:
@@ -95,11 +151,17 @@ class ParserRust:
 
     def decl_struct(self, struct: Struct) -> List[str]:
         """Return the Rust code for declaring a struct"""
-        copy = " Copy," if self.struct_is_copy(struct) else ""
+        derive = ["Clone", "Debug", "PartialEq", "PartialOrd"]
+        if self.struct_is_copy(struct):
+            derive.append("Copy")
+        if not self.input.type_contains_float(
+            Type(TypeEnum.STRUCT, struct_name=struct.name)
+        ):
+            derive.extend(["Eq", "Hash", "Ord"])
 
         lines = [
             f"/// {struct.comment}",
-            f"#[derive(Clone,{copy} Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]",
+            f"#[derive({', '.join(sorted(derive))})]",
             f"struct {struct_name(struct.name)} {{",
         ]
 
@@ -155,62 +217,6 @@ class ParserRust:
             "}",
         ]
 
-    def read_line(
-        self,
-        type_: Type,
-        indent_lvl: int,
-        name: Optional[str] = None,
-        unwrap_method: Optional[str] = None,
-    ) -> str:
-        """Return a Rust command for parsing a line into a given type"""
-        if unwrap_method is None:
-            if name:
-                unwrap_method = f'.expect("invalid `{name}` parameter")'
-            else:
-                unwrap_method = ".unwrap()"
-
-        if type_.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.STRUCT):
-            code = [
-                "read_line(&mut buffer)",
-                ".parse()",
-                unwrap_method,
-            ]
-
-            if len(unwrap_method) < 10:
-                separator = ""
-            else:
-                separator = "\n" + (indent_lvl + 1) * INDENTATION
-
-            return separator.join(code)
-
-        if type_.main == TypeEnum.STR:
-            return "read_line(&mut buffer).to_string()"
-
-        if type_.main == TypeEnum.LIST:
-            assert type_.encapsulated is not None
-
-            if type_.encapsulated.main == TypeEnum.INT:
-                self.read_vec_int = True
-                idt = (indent_lvl + 1) * INDENTATION
-                lines = [
-                    "read_line(&mut buffer)",
-                    f"{idt}.split_whitespace()",
-                    f"{idt}.map(str::parse)",
-                    f"{idt}.collect::<Result<_, _>>()",
-                ]
-
-                if unwrap_method == "?":
-                    lines[-1] += "?"
-                elif unwrap_method:
-                    lines.append(f"{idt}{unwrap_method}")
-
-                return "\n".join(lines)
-
-            if type_.encapsulated.main == TypeEnum.CHAR:
-                return "read_line(&mut buffer).chars().collect()"
-
-        raise Exception
-
     def read_lines(
         self,
         name: str,
@@ -231,7 +237,7 @@ class ParserRust:
             assert type_.encapsulated is not None
 
             if type_.encapsulated.fits_in_one_line(self.input.structs):
-                line_read = self.read_line(
+                line_read = read_line(
                     type_.encapsulated,
                     indent_lvl + 2,
                     name.replace(".", "_") + "_elem",
@@ -280,7 +286,7 @@ class ParserRust:
         unwrap_method = "?" if in_error_context else None
 
         if var.fits_in_one_line(self.input.structs):
-            read_method = self.read_line(var.type, 1, var.name, unwrap_method)
+            read_method = read_line(var.type, 1, var.name, unwrap_method)
         else:
             read_method = "\n".join(self.read_lines(name, var.type, 1, unwrap_method))
 
@@ -298,6 +304,17 @@ class ParserRust:
         lines.append(f"fn {var_name(self.input.name)}({args_decl}) {{")
 
         if reprint:
+            if self.input.contains_float():
+                # Since Rust does not conform to the C-like behavior of format("%.15g"),
+                # we need to reimplement this behavior.
+                print_float = """
+    fn _iorgen_float(x: &f64) -> String {
+        let mut a = format!("{:e}", x).replace("e", "e+").replace("e+-", "e-");
+        if a.as_bytes()[a.len() - 2] as char == '-' { a = a.replace("e-", "e-0"); }
+        let b = x.to_string();
+        if a.len() < b.len() { a } else { b }
+    }"""
+                lines.extend(print_float.split("\n"))
             for var in self.input.input:
                 lines.extend(
                     self.print_lines(var_name(var.name), var.type, 1, var.format_style)
@@ -316,8 +333,10 @@ class ParserRust:
         """Print the content of a var that holds in one line"""
         assert type_.fits_in_one_line(self.input.structs, style)
 
-        if type_.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.STR):
+        if type_.main in (TypeEnum.INT, TypeEnum.FLOAT, TypeEnum.CHAR, TypeEnum.STR):
             endline = " " if style == FormatStyle.NO_ENDLINE else r"\n"
+            if type_.main == TypeEnum.FLOAT:
+                return f'print!("{{}}{endline}", _iorgen_float(&{name}));'
             return f'print!("{{}}{endline}", {name});'
 
         if type_.main == TypeEnum.LIST:
@@ -328,6 +347,8 @@ class ParserRust:
                 to_string = (
                     'iter().map(|x| x.to_string()).collect::<Vec<_>>().join(" ")'
                 )
+            elif type_.encapsulated.main == TypeEnum.FLOAT:
+                to_string = 'iter().map(_iorgen_float).collect::<Vec<_>>().join(" ")'
             elif type_.encapsulated.main == TypeEnum.CHAR:
                 to_string = "iter().collect::<String>()"
             else:
@@ -337,8 +358,13 @@ class ParserRust:
 
         if type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)
-            template = " ".join(["{}"] * len(struct.fields))
-            fields = ", ".join(f"{name}.{var_name(f.name)}" for f in struct.fields)
+            template = " ".join("{}" * len(struct.fields))
+            fields = ", ".join(
+                f"_iorgen_float(&{name}.{var_name(f.name)})"
+                if f.type.main == TypeEnum.FLOAT
+                else f"{name}.{var_name(f.name)}"
+                for f in struct.fields
+            )
             return f'print!("{template}\\n", {fields});'
 
         raise Exception

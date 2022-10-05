@@ -31,6 +31,8 @@ def type_str(type_: Type) -> str:
     """Return the OCaml name for a type"""
     if type_.main == TypeEnum.INT:
         return "int"
+    if type_.main == TypeEnum.FLOAT:
+        return "float"
     if type_.main == TypeEnum.CHAR:
         return "char"
     if type_.main == TypeEnum.STR:
@@ -58,38 +60,49 @@ def declare_record(struct: Struct) -> List[str]:
     return out + ["}"]
 
 
+def format_specifier(type_: Type, read: bool = True) -> str:
+    """Return Ocaml print format specifier for a type"""
+    return {
+        TypeEnum.INT: "%d",
+        TypeEnum.FLOAT: "%g" if read else "%.15g",
+        TypeEnum.CHAR: "%c",
+        TypeEnum.STR: "%s",
+    }[type_.main]
+
+
 def read_line(type_: Type, input_data: Input) -> str:
     """Read an entire line into the correct type"""
     assert type_.fits_in_one_line(input_data.structs)
-    if type_.main == TypeEnum.INT:
-        return "read_int ()"
-    if type_.main == TypeEnum.CHAR:
-        return "(read_line ()).[0]"
-    if type_.main == TypeEnum.STR:
-        return "read_line ()"
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
-        if type_.encapsulated.main == TypeEnum.INT:
+        if type_.encapsulated.main in (TypeEnum.INT, TypeEnum.FLOAT):
             # Note: here we have to use List.rev_map |> List.rev, because
             # List.map is not tail-recursive, and will trigger a stack overflow
             # if the list is big (size bigger than 1024).
             # We could check if the constraints specify a small list, and use
             # only List.map for those cases.
+            cast = "int" if type_.encapsulated.main == TypeEnum.INT else "float"
             return (
                 'read_line () |> fun x -> if x = "" then [] else '
                 "String.split_on_char ' ' x |> "
-                "List.rev_map int_of_string |> List.rev"
+                f"List.rev_map {cast}_of_string |> List.rev"
             )
         assert type_.encapsulated.main == TypeEnum.CHAR
-        return "List.init {} (String.get (read_line ()))".format(var_name(type_.size))
-    assert type_.main == TypeEnum.STRUCT
-    struct = input_data.get_struct(type_.struct_name)
-    args = [var_name(field.name) for field in struct.fields]
-    return 'Scanf.sscanf (read_line ()) "{}" (fun {} -> {{{}}})'.format(
-        " ".join("%d" if f.type.main == TypeEnum.INT else "%c" for f in struct.fields),
-        " ".join(args),
-        "; ".join("{0}".format(i) for i in args),
-    )
+        return f"List.init {var_name(type_.size)} (String.get (read_line ()))"
+    if type_.main == TypeEnum.STRUCT:
+        struct = input_data.get_struct(type_.struct_name)
+        args = [var_name(field.name) for field in struct.fields]
+        return 'Scanf.sscanf (read_line ()) "{}" (fun {} -> {{{}}})'.format(
+            " ".join(format_specifier(f.type) for f in struct.fields),
+            " ".join(args),
+            "; ".join(args),
+        )
+    return {
+        TypeEnum.INT: "read_int ()",
+        TypeEnum.FLOAT: "read_float ()",
+        TypeEnum.CHAR: "(read_line ()).[0]",
+        TypeEnum.STR: "read_line ()",
+    }[type_.main]
 
 
 def read_lines(
@@ -120,26 +133,27 @@ def print_line(name: str, type_: Type, input_data: Input, style: FormatStyle) ->
     """Print a variable on one line"""
     assert type_.fits_in_one_line(input_data.structs, style)
     newline = " " if style == FormatStyle.NO_ENDLINE else r"\n"
-    if type_.main == TypeEnum.INT:
-        return f'Printf.printf "%d{newline}" {name}'
-    if type_.main == TypeEnum.CHAR:
-        return f'Printf.printf "%c{newline}" {name}'
-    if type_.main == TypeEnum.STR:
-        return f'Printf.printf "%s{newline}" {name}'
+    if type_.main in (TypeEnum.INT, TypeEnum.FLOAT, TypeEnum.CHAR, TypeEnum.STR):
+        return f'Printf.printf "{format_specifier(type_, read=False)}{newline}" {name}'
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
         concat = ""
-        if type_.encapsulated.main == TypeEnum.INT:
-            concat = '" " (List.rev (List.rev_map string_of_int {}))'.format(name)
+        if type_.encapsulated.main in (TypeEnum.INT, TypeEnum.FLOAT):
+            cast = (
+                "string_of_int"
+                if type_.encapsulated.main == TypeEnum.INT
+                else '(Printf.sprintf "%.15g")'
+            )
+            concat = f'" " (List.rev (List.rev_map {cast} {name}))'
         else:
             assert type_.encapsulated.main == TypeEnum.CHAR
-            concat = '"" (List.rev (List.rev_map (String.make 1) {}))'.format(name)
-        return 'Printf.printf "%s\\n" (String.concat {})'.format(concat)
+            concat = f'"" (List.rev (List.rev_map (String.make 1) {name}))'
+        return f'Printf.printf "%s\\n" (String.concat {concat})'
     assert type_.main == TypeEnum.STRUCT
     struct = input_data.get_struct(type_.struct_name)
     return 'Printf.printf "{}\\n" {}'.format(
-        " ".join("%d" if f.type.main == TypeEnum.INT else "%c" for f in struct.fields),
-        " ".join("{}.{}".format(name, var_name(f.name)) for f in struct.fields),
+        " ".join(format_specifier(f.type, read=False) for f in struct.fields),
+        " ".join(f"{name}.{var_name(f.name)}" for f in struct.fields),
     )
 
 

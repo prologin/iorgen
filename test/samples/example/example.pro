@@ -6,7 +6,7 @@ example(N, List) :-
     nl.
 
 read_line(X) :- read_string(user_input, "\n", "\r", _, X).
-read_int(X) :- read_line(S), number_string(X, S).
+read_number(X) :- read_line(S), number_string(X, S).
 read_list(_, 0, []) :- !.
 read_list(Goal, N, [H|T]) :- call(Goal, H), M is N - 1, read_list(Goal, M, T).
 read_assoc_a_struct(X) :-
@@ -16,6 +16,6 @@ read_assoc_a_struct(X) :-
     X = A2.
 :-
     prompt(_, ''),
-    read_int(N),
+    read_number(N),
     read_list(read_assoc_a_struct, N, List),
     example(N, List).

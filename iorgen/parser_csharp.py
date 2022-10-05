@@ -21,7 +21,15 @@ def var_name(name: str) -> str:
 def pascal_name(name: str) -> str:
     """Transform a method, or class name into a valid one for C#"""
     candidate = pascal_case(name)
-    if candidate in ("Main", "Program", "System", "Console", "Array", "String"):
+    if candidate in (
+        "Array",
+        "Console",
+        "CultureInfo",
+        "Main",
+        "Program",
+        "String",
+        "System",
+    ):
         return candidate + "_"
     return candidate
 
@@ -30,15 +38,27 @@ def type_str(type_: Type) -> str:
     """Return the C# name for a type"""
     if type_.main == TypeEnum.INT:
         return "int"
-    if type_.main == TypeEnum.STR:
-        return "string"
+    if type_.main == TypeEnum.FLOAT:
+        return "double"
     if type_.main == TypeEnum.CHAR:
         return "char"
+    if type_.main == TypeEnum.STR:
+        return "string"
     if type_.main == TypeEnum.STRUCT:
         return pascal_name(type_.struct_name)
     assert type_.main == TypeEnum.LIST
     assert type_.encapsulated
     return type_str(type_.encapsulated) + "[]"
+
+
+def parse_type(type_: Type, name: str) -> str:
+    """Return C# code to parse a type from a string"""
+    return {
+        TypeEnum.INT: "int.Parse({})",
+        TypeEnum.FLOAT: "double.Parse({}, CultureInfo.InvariantCulture)",
+        TypeEnum.CHAR: "{}[0]",
+        TypeEnum.STR: "{}",
+    }[type_.main].format(name)
 
 
 class ParserCS:
@@ -57,55 +77,46 @@ class ParserCS:
         """Read an entire line and store it into the right place(s)"""
         assert type_.fits_in_one_line(self.input.structs)
         indent = INDENTATION * indent_lvl
+        type_decl = (type_str(type_) + " ") if decl else ""
         if type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)
-            s_name = pascal_name(struct.name) + " "
+            s_name = pascal_name(struct.name)
             words = self.words.next_name()
-            lines = [
-                indent + "string[] {} = Console.ReadLine().Split(' ');".format(words)
+            fields = ", ".join(
+                f"{var_name(f.name)} = {parse_type(f.type, f'{words}[{i}]')}"
+                for i, f in enumerate(struct.fields)
+            )
+            return [
+                f"{indent}string[] {words} = Console.ReadLine().Split(' ');",
+                f"{indent}{type_decl}{name} = new {s_name} {{{fields}}};",
             ]
-            return lines + [
-                "{}{}{} = new {}{{{}}};".format(
-                    indent,
-                    s_name if decl else "",
-                    name,
-                    s_name,
-                    ", ".join(
-                        "{} = {}".format(
-                            var_name(f.name),
-                            "int.Parse({}[{}])".format(words, i)
-                            if f.type.main == TypeEnum.INT
-                            else "{}[{}][0]".format(words, i),
-                        )
-                        for i, f in enumerate(struct.fields)
-                    ),
-                )
-            ]
-        type_decl = (type_str(type_) + " ") if decl else ""
         command = ""
-        if type_.main == TypeEnum.INT:
-            command = "int.Parse(Console.ReadLine())"
-        elif type_.main == TypeEnum.CHAR:
-            command = "Console.ReadLine()[0]"
-        elif type_.main == TypeEnum.STR:
-            command = "Console.ReadLine()"
+        if type_.main in (TypeEnum.INT, TypeEnum.FLOAT, TypeEnum.CHAR, TypeEnum.STR):
+            command = parse_type(type_, "Console.ReadLine()")
         else:
             assert type_.main == TypeEnum.LIST
             assert type_.encapsulated is not None
             if type_.encapsulated.main == TypeEnum.CHAR:
                 command = "Console.ReadLine().ToCharArray()"
             else:
-                assert type_.encapsulated.main == TypeEnum.INT
-                command = (
-                    "Array.ConvertAll(Console.ReadLine().Split({}), " "int.Parse)"
-                ).format(
+                assert type_.encapsulated.main in (TypeEnum.INT, TypeEnum.FLOAT)
+                split_option = (
                     "new char[] {' '}, StringSplitOptions.RemoveEmptyEntries"
                     if type_.can_be_empty
                     else "' '"
                 )
+                parse = (
+                    "int.Parse"
+                    if type_.encapsulated.main == TypeEnum.INT
+                    else "x => double.Parse(x, CultureInfo.InvariantCulture)"
+                )
+                command = (
+                    "Array.ConvertAll(Console.ReadLine()"
+                    f".Split({split_option}), {parse})"
+                )
 
         assert command
-        return ["{}{}{} = {};".format(indent, type_decl, name, command)]
+        return [f"{indent}{type_decl}{name} = {command};"]
 
     def read_lines(
         self,
@@ -217,19 +228,30 @@ class ParserCS:
     def print_line(self, name: str, type_: Type) -> str:
         """Print the content of a var that holds in one line"""
         assert type_.fits_in_one_line(self.input.structs)
-        if type_.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.STR):
-            return "Console.WriteLine({});".format(name)
+
+        def print_type(name: str, type_: Type) -> str:
+            if type_.main == TypeEnum.FLOAT:
+                return f'String.Format(CultureInfo.InvariantCulture, "{{0:g}}", {name})'
+            return name
+
+        if type_.main in (TypeEnum.INT, TypeEnum.FLOAT, TypeEnum.CHAR, TypeEnum.STR):
+            return f"Console.WriteLine({print_type(name, type_)});"
         if type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
             if type_.encapsulated.main == TypeEnum.CHAR:
-                return "Console.WriteLine(new string({}));".format(name)
-            assert type_.encapsulated.main == TypeEnum.INT
-            return 'Console.WriteLine(String.Join(" ", {}));'.format(name)
+                return f"Console.WriteLine(new string({name}));"
+            if type_.encapsulated.main == TypeEnum.INT:
+                return f'Console.WriteLine(String.Join(" ", {name}));'
+            assert type_.encapsulated.main == TypeEnum.FLOAT
+            return (
+                'Console.WriteLine(String.Join(" ", Array.ConvertAll('
+                + f'{name}, x => {print_type("x", type_.encapsulated)})));'
+            )
         assert type_.main == TypeEnum.STRUCT
         fields = self.input.get_struct(type_.struct_name).fields
         return 'Console.WriteLine("{}", {});'.format(
-            " ".join("{{{}}}".format(i) for i in range(len(fields))),
-            ", ".join("{}.{}".format(name, var_name(f.name)) for f in fields),
+            " ".join(f"{{{i}}}" for i in range(len(fields))),
+            ", ".join(print_type(f"{name}.{var_name(f.name)}", f.type) for f in fields),
         )
 
     def print_lines(
@@ -273,6 +295,8 @@ class ParserCS:
     def content(self, reprint: bool) -> str:
         """Return the parser content"""
         output = "using System;\n\n"
+        if self.input.contains_float():
+            output = "using System;\nusing System.Globalization;\n\n"
         for struct in self.input.structs:
             output += "/// {}\n".format(struct.comment)
             output += "struct {}\n{{\n".format(pascal_name(struct.name))

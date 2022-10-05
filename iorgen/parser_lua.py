@@ -19,7 +19,7 @@ def var_name(name: str) -> str:
 
 def type_str(type_: Type, input_data: Input, show_table: bool = True) -> str:
     """Transform a type into a string description for documentation"""
-    if type_.main == TypeEnum.INT:
+    if type_.main in (TypeEnum.INT, TypeEnum.FLOAT):
         return "number"
     if type_.main == TypeEnum.CHAR:
         return "string"
@@ -42,6 +42,15 @@ def type_str(type_: Type, input_data: Input, show_table: bool = True) -> str:
     )
 
 
+def format_specifier(type_: Type, read: bool = True) -> str:
+    """Return lua print format specifier for a type"""
+    if type_.main == TypeEnum.INT:
+        return "-?%d+" if read else "%s"
+    if type_.main == TypeEnum.FLOAT:
+        return "-?%g+" if read else "%.15g"
+    return "%S" if read else "%s"
+
+
 def read_line(
     name: str, type_: Type, input_data: Input, iterator: IteratorName
 ) -> List[str]:
@@ -58,10 +67,11 @@ def read_line(
                     inner, name
                 ),
             ]
-        assert type_.encapsulated.main == TypeEnum.INT
+        assert type_.encapsulated.main in (TypeEnum.INT, TypeEnum.FLOAT)
+        specifier = format_specifier(type_.encapsulated)
         return [
-            "{} = {{}}".format(name),
-            'for {} in string.gmatch(io.read(), "-?%d+") do'.format(inner),
+            f"{name} = {{}}",
+            f'for {inner} in string.gmatch(io.read(), "{specifier}") do',
             INDENTATION + "table.insert({}, tonumber({}))".format(name, inner),
             "end",
         ]
@@ -69,15 +79,13 @@ def read_line(
         struct = input_data.get_struct(type_.struct_name)
         words = iterator.new_it()
         iterator.pop_it()
-        pattern = " ".join(
-            "(-?%d+)" if i.type.main == TypeEnum.INT else "(%S)" for i in struct.fields
-        )
+        pattern = " ".join(f"({format_specifier(i.type)})" for i in struct.fields)
         keys = (
             '["{}"]'.format(i.name) if " " in i.name else i.name for i in struct.fields
         )
         values = (
             "tonumber({}[{}])".format(words, i + 1)
-            if f.type.main == TypeEnum.INT
+            if f.type.main in (TypeEnum.INT, TypeEnum.FLOAT)
             else "{}[{}]".format(words, i + 1)
             for (i, f) in enumerate(struct.fields)
         )
@@ -92,6 +100,7 @@ def read_line(
         + " = "
         + {
             TypeEnum.INT: "tonumber(io.read())",
+            TypeEnum.FLOAT: "tonumber(io.read())",
             TypeEnum.CHAR: "io.read()",
             TypeEnum.STR: "io.read()",
         }[type_.main]
@@ -174,17 +183,25 @@ def print_line(name: str, type_: Type, input_data: Input, style: FormatStyle) ->
             if style == FormatStyle.NO_ENDLINE
             else f"print({name})"
         )
+    if type_.main == TypeEnum.FLOAT:
+        return f'print(string.format("%.15g", {name}))'
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
         if type_.encapsulated.main == TypeEnum.CHAR:
             return 'print(table.concat({}, ""))'.format(name)
-        assert type_.encapsulated.main == TypeEnum.INT
-        return 'print(table.concat({}, " "))'.format(name)
+        if type_.encapsulated.main == TypeEnum.INT:
+            return f'print(table.concat({name}, " "))'
+        assert type_.encapsulated.main == TypeEnum.FLOAT
+        return (
+            f"for __i, __f in ipairs({name}) do "
+            'if __i == 1 then io.write(string.format("%.15g", __f)) else '
+            'io.write(string.format(" %.15g", __f)) end end print()'
+        )
     assert type_.main == TypeEnum.STRUCT
     struct = input_data.get_struct(type_.struct_name)
     return 'print(string.format("{}", {}))'.format(
-        " ".join("%s" for _ in struct.fields),
-        ", ".join('{}["{}"]'.format(name, i.name) for i in struct.fields),
+        " ".join(format_specifier(f.type, read=False) for f in struct.fields),
+        ", ".join(f'{name}["{i.name}"]' for i in struct.fields),
     )
 
 

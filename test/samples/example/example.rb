@@ -7,7 +7,7 @@ end
 
 n = STDIN.gets.to_i
 list = Array.new(n) {
-    Hash[["integer", "character"].zip([1, 0], STDIN.gets.split).map{ |x,y,z| [x, y == 1 ? z.to_i : z] }]
+    Hash[["integer", "character"].zip(STDIN.gets.split, [:to_i, :to_s]).map{ |k,v,s| [k, v.send(s)] }]
 }
 
 example(n, list)

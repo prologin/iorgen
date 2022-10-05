@@ -25,12 +25,26 @@ def struct_name(name: str) -> str:
     return candidate
 
 
+def format_specifier(type_: Type, read: bool = True) -> str:
+    """Return C print format specifier for a type"""
+    if type_.main == TypeEnum.INT:
+        return "%d"
+    if type_.main == TypeEnum.CHAR:
+        return "%c"
+    if type_.main == TypeEnum.STR:
+        return "%s"
+    if type_.main == TypeEnum.FLOAT:
+        return "%lf" if read else "%.15g"
+    assert False
+    return "%s"
+
+
 @unique
 class IntegerOrString(Enum):
-    """Will we read an integer, a string, or we do not know?"""
+    """Will we read an integer (could be a float), a string, or we do not know?"""
 
     UNKNOWN = 1
-    INTEGER = 2
+    INTEGER = 2  # INTEGER is used for both int and double
     STRING = 3
 
 
@@ -102,10 +116,12 @@ class ParserC:
         """Return the C name for a type"""
         if type_.main == TypeEnum.INT:
             return "int"
-        if type_.main == TypeEnum.STR:
-            return "char*"
+        if type_.main == TypeEnum.FLOAT:
+            return "double"
         if type_.main == TypeEnum.CHAR:
             return "char"
+        if type_.main == TypeEnum.STR:
+            return "char*"
         if type_.main == TypeEnum.STRUCT:
             return "struct " + struct_name(type_.struct_name)
         assert type_.main == TypeEnum.LIST
@@ -117,8 +133,8 @@ class ParserC:
         assert type_.fits_in_one_line(self.input.structs)
         indent = " " * (self.indentation * indent_lvl)
         self.includes.add("stdio.h")
-        if type_.main == TypeEnum.INT:
-            self.main.append(indent + 'scanf("%d", &{});'.format(name))
+        if type_.main in (TypeEnum.INT, TypeEnum.FLOAT):
+            self.main.append(indent + f'scanf("{format_specifier(type_)}", &{name});')
             self.decl_new_read_line(IntegerOrString.INTEGER, indent)
         elif type_.main == TypeEnum.CHAR:
             if "." in name or "[" in name:
@@ -135,7 +151,7 @@ class ParserC:
                 )
                 self.decl_new_read_line(IntegerOrString.STRING, indent)
             else:
-                assert type_.encapsulated.main == TypeEnum.INT
+                assert type_.encapsulated.main in (TypeEnum.INT, TypeEnum.FLOAT)
                 index = self.iterator.new_it()
                 self.main.append(
                     indent + "for (int {0} = 0; {0} < {1}; ++{0})".format(index, size)
@@ -143,7 +159,8 @@ class ParserC:
                 self.main.append(
                     " " * self.indentation
                     + indent
-                    + 'scanf("%d", &{}[{}]);'.format(name, index)
+                    + "scanf"
+                    + f'("{format_specifier(type_.encapsulated)}", &{name}[{index}]);'
                 )
                 self.decl_new_read_line(
                     IntegerOrString.UNKNOWN
@@ -156,15 +173,10 @@ class ParserC:
             assert type_.main == TypeEnum.STRUCT
             struct = self.input.get_struct(type_.struct_name)
             self.main.append(
-                indent
-                + 'scanf("{}", {});'.format(
-                    " ".join(
-                        "%c" if i.type.main == TypeEnum.CHAR else "%d"
-                        for i in struct.fields
-                    ),
-                    ", ".join(
-                        "&" + name + "." + var_name(i.name) for i in struct.fields
-                    ),
+                '{}scanf("{}", {});'.format(
+                    indent,
+                    " ".join(format_specifier(i.type) for i in struct.fields),
+                    ", ".join(f"&{name}.{var_name(i.name)}" for i in struct.fields),
                 )
             )
             self.decl_new_read_line(
@@ -292,12 +304,11 @@ class ParserC:
         assert var.type.fits_in_one_line(self.input.structs)
         indent = " " * (self.indentation * indent_lvl)
         newline = " " if var.format_style == FormatStyle.NO_ENDLINE else r"\n"
-        if var.type.main == TypeEnum.INT:
-            self.method.append(indent + f'printf("%d{newline}", {var.name});')
-        elif var.type.main == TypeEnum.CHAR:
-            self.method.append(indent + f'printf("%c{newline}", {var.name});')
-        elif var.type.main == TypeEnum.STR:
-            self.method.append(indent + f'printf("%s{newline}", {var.name});')
+        if var.type.main in (TypeEnum.INT, TypeEnum.FLOAT, TypeEnum.CHAR, TypeEnum.STR):
+            self.method.append(
+                indent
+                + f'printf("{format_specifier(var.type, False)}{newline}", {var.name});'
+            )
         elif var.type.main == TypeEnum.LIST:
             assert var.type.encapsulated is not None
             if var.type.encapsulated.main == TypeEnum.CHAR:
@@ -310,8 +321,11 @@ class ParserC:
                 self.method.append(
                     " " * self.indentation
                     + indent
-                    + "printf(\"%d%c\", {0}[{1}], {1} < {2} - 1 ? ' ' : '\\n');".format(
-                        var.name, index, size
+                    + "printf(\"{3}%c\", {0}[{1}], {1} < {2} - 1 ? ' ' : '\\n');".format(
+                        var.name,
+                        index,
+                        size,
+                        format_specifier(var.type.encapsulated, False),
                     )
                 )
                 self.method.append(indent + "if ({} == 0) putchar('\\n');".format(size))
@@ -322,10 +336,7 @@ class ParserC:
             self.method.append(
                 indent
                 + 'printf("{}\\n", {});'.format(
-                    " ".join(
-                        "%c" if i.type.main == TypeEnum.CHAR else "%d"
-                        for i in struct.fields
-                    ),
+                    " ".join(format_specifier(i.type, False) for i in struct.fields),
                     ", ".join(var.name + "." + var_name(i.name) for i in struct.fields),
                 )
             )

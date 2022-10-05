@@ -168,12 +168,34 @@ iorgen run 42.iorgen test/test01.in
 *Iorgen* can use the following types:
 
 - **Integer**: the default integer type for the language
+- **Float**: a double precision floating-point number, often called "double" in
+  languages; see below for more details about float support
 - **Char**: can be either a byte, or a string depending of the language
 - **String**: a string with a given maximum size
 - **List**: an array, list, vector… of a given size, containing one of the
   *Iorgen* supported types
 - **Struct**: a C like struct, or a map which have strings as keys; each field
   can have any of *Iorgen* supported types (except the exact same struct)
+
+#### Float support
+
+*Iorgen* supports floating-point numbers, but beware they are not as easy to
+use as integers. Here are the constrains when using floats:
+
+- A maximum of 15 digts can be used to write a float (in decimal notation).
+  This means that, with the minus and dot sign, a float can take up to 17
+  characters. Here are some example values: `123456789012345`,
+  `12345.6789012345`, `0.00123456789012`, but of course the number can take
+  less digits, like `3.5` or `0.03`.
+- When writing the floats in the input that will be fed in STDIN, a unique
+  format should be respected, and that is the `".15g"` format from C.
+  Concretly, combined with the first constraint, this means that any number
+  that starts with `0.0000` (or `-0.0000`), should be written in scientific
+  notation instead. For example, `1e-5`, `3.924e-07`. Also, no trailing dot, no
+  trailing 0, and no unnecessary 0 before the number, except in the exponent if
+  it smaller than 2 digits. Conforming to the `".15g"` C format in necessary
+  for _Iorgen_ to be able to test that the parser are working properly (the
+  `run` command).
 
 ### Format
 
@@ -190,24 +212,26 @@ format:
     - A `"type"` field, containing a string (see the type syntax below)
     - A `"name"` field, containing a string: the variable’s name
     - A `"comment"` field, containing a string: a description of the variable
-    - An optional `"min"` field, if the variable is a integer, or a list (or
-      list or list, or list of list of list, etc) of integers. This will be
-      the minimal value possible for this variable. This is used in the
-      Markdown generator to show the constraints, and in some langages
-      generators to check if the size of a list or a string is garantied to be
-      not null. The `"min"` field can either be an integer, or a variable name.
+    - An optional `"min"` field, if the variable is a integer, a float, or a
+      list (or list or list, or list of list of list, etc) of integers or
+      floats. This will be the minimal value possible for this variable. This
+      is used in the Markdown generator to show the constraints, and in some
+      langages generators to check if the size of a list or a string is
+      garantied to be not null. The `"min"` field can either be an integer, a
+      float (if the variable is of type float), or a variable name.
     - An optional `"max"` field (similar to the `"min"` one).
     - An optional `"min_perf"` field: like the `"min"` one, but only used in
       the case of _performance_ cases, often meaning that the variable will
       have a very big value.
     - An optional `"max_perf"` field (similar to the `"min_perf"` one).
-    - An optional `"choices"` field, if the variable is a char or a integer, or
-      a list (or list of list, etc) of chars or integers (for this definition
-      a string is considered as a list of chars). `"choices"` is a list of
-      values possible for this integer or char. If this list is not empty,
-      then the `"min"` fields and similar fields will be ignored.
-    - An optional `"format"` field, containing a string; see the
-      [manual formatting](#manual-formatting) section to know more.
+    - An optional `"choices"` field, if the variable is an integer, a float or
+      a char, or a list (or list of list, etc) of integers, floats or chars
+      (for this definition a string is considered as a list of chars).
+      `"choices"` is a list of values possible for this integer, float or char.
+      If this list is not empty, then the `"min"` fields and similar fields
+      will be ignored.
+    - An optional `"format"` field, containing a string; see the [manual
+      formatting](#manual-formatting) section to know more.
 - An optional `"structs"` field, if your input uses structs, a list of structs.
   Each struct is a map with the following fields:
     - A `"name"` field, containing a string: the struct’s name
@@ -227,7 +251,7 @@ A `"comment"` field can hold any character other than a newline. For now,
 strings that end comments in some languages, such as `*/` should be avoided. A
 protection against this will be added in a later version.
 
-A `"type"` field must have one of the following format `int`, `char`,
+A `"type"` field must have one of the following format `int`, `float`, `char`,
 `str(size)`, `List[type](size)`, `@structname`. You must replace `size`, `type`
 and `structname` following this guidelines:
 

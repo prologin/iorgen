@@ -18,9 +18,10 @@
 
 (define (make-assoc-list-oneline k b)
   (let loop ((l (string->list (read-line))) (k k) (b b) (c '()))
-    (let ((conv (lambda () (if (car b)
-                             (string->number (list->string (reverse c)))
-                             (car c)))))
+    (let ((conv (lambda () (if (eq? 'char (car b))
+                             (car c)
+                             ((if (eq? 'int (car b)) values exact->inexact)
+                              (string->number (list->string (reverse c))))))))
       (cond
         ((null? l) (list (cons (car k) (conv))))
         ((char=? #\space (car l)) (cons (cons (car k) (conv))
@@ -33,5 +34,5 @@
            n
            (lambda
              ()
-             (make-assoc-list-oneline '(integer character) '(#t #f))))))
+             (make-assoc-list-oneline '(integer character) '(int char))))))
   (example n list_))

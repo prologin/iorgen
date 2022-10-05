@@ -2,6 +2,7 @@
 # Copyright 2018-2022 Sacha Delanoue
 # Copyright 2019 Matthieu Moatti
 # Copyright 2021 Kenji Gaillac
+# Copyright 2022 Quentin Rataud
 """Generic types in a programming language"""
 
 from __future__ import annotations
@@ -10,7 +11,7 @@ from enum import Enum, unique
 from typing import Any, Callable, Dict, Iterator, List, Optional, Set, Tuple, Union
 from typing import Type as T
 
-from .utils import str_int
+from .utils import number_int
 
 
 @unique
@@ -18,11 +19,11 @@ class TypeEnum(Enum):
     """All supported variable types"""
 
     INT = 1
-    CHAR = 2
-    STR = 3
-    LIST = 4
-    STRUCT = 5
-    FLOAT = 6
+    FLOAT = 2
+    CHAR = 3
+    STR = 4
+    LIST = 5
+    STRUCT = 6
 
 
 @unique
@@ -53,11 +54,11 @@ class Type:
     @classmethod
     def from_string(cls: T[Type], string: str) -> Optional[Type]:
         """Create a Type from a string"""
-        if string in ("int", "char", "float"):
+        if string in ("int", "float", "char"):
             return {
                 "int": cls(TypeEnum.INT),
-                "char": cls(TypeEnum.CHAR),
                 "float": cls(TypeEnum.FLOAT),
+                "char": cls(TypeEnum.CHAR),
             }[string]
         if string[0] == "@":
             return cls(TypeEnum.STRUCT, struct_name=string[1:])
@@ -87,6 +88,8 @@ class Type:
     def __str__(self: Type) -> str:
         if self.main == TypeEnum.INT:
             return "int"
+        if self.main == TypeEnum.FLOAT:
+            return "float"
         if self.main == TypeEnum.CHAR:
             return "char"
         if self.main == TypeEnum.STR:
@@ -95,19 +98,17 @@ class Type:
             return f"List[{self.encapsulated}]({self.size})"
         if self.main == TypeEnum.STRUCT:
             return f"@{self.struct_name}"
-        if self.main == TypeEnum.FLOAT:
-            return "float"
         raise Exception
 
     def can_be_inlined(self: Type) -> bool:
         """Can we parse several of this type on a single line"""
-        return self.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.FLOAT)
+        return self.main in (TypeEnum.INT, TypeEnum.FLOAT, TypeEnum.CHAR)
 
     def fits_in_one_line(
         self: Type, structs: List[Struct], style: FormatStyle = FormatStyle.DEFAULT
     ) -> bool:
         """Return False if more than one line is needed for this type"""
-        if self.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.STR, TypeEnum.FLOAT):
+        if self.main in (TypeEnum.INT, TypeEnum.FLOAT, TypeEnum.CHAR, TypeEnum.STR):
             return True
         if self.main == TypeEnum.LIST:
             assert self.encapsulated is not None
@@ -129,55 +130,67 @@ class Type:
         return inner.list_contained()
 
 
-def get_min_value(var: Union[int, Variable]) -> int:
+def get_min_value(var: Union[int, float, Variable]) -> Union[int, float]:
     """Get min value of an integer or a variable"""
     if isinstance(var, Variable):
         assert var.constraints is not None
         return var.constraints.min_possible()
-    assert isinstance(var, int)
+    assert isinstance(var, (int, float))
     return var
 
 
-def get_max_value(var: Union[int, Variable]) -> int:
+def get_max_value(var: Union[int, float, Variable]) -> Union[int, float]:
     """Get min value of an integer or a variable"""
     if isinstance(var, Variable):
         assert var.constraints is not None
         return var.constraints.max_possible()
-    assert isinstance(var, int)
+    assert isinstance(var, (int, float))
     return var
 
 
-def get_int_or_var(
-    var_name: Union[str, int], variables: Dict[str, Variable]
-) -> Union[int, Variable]:
-    """From a string, return either the corresponding var or int"""
-    assert isinstance(var_name, (int, str))
+def get_number_or_var(
+    var_name: str, type_: TypeEnum, variables: Dict[str, Variable]
+) -> Union[int, float, Variable]:
+    """From a string, return either the corresponding var or number (int or float)"""
+    assert isinstance(var_name, str)
     if var_name in variables:
-        var = variables[str(var_name)]
-        assert var.type.main == TypeEnum.INT
+        var = variables[var_name]
+        assert var.type.main == type_
         return var
-    return int(var_name)
+    if type_ == TypeEnum.INT:
+        return int(var_name)
+    if type_ == TypeEnum.FLOAT:
+        return float(var_name)
+    print(f"WARNING: only int or floats can have min or max values, not {type_.name}")
+    return 0
 
 
 def integer_bounds(
-    name: str, min_: Union[int, Variable], max_: Union[int, Variable], is_size: bool
+    name: str,
+    min_: Union[int, float, Variable],
+    max_: Union[int, float, Variable],
+    is_size: bool,
 ) -> str:
     """Create a string to display an integer's bounds"""
     min_repr = ""
     if isinstance(min_, int):
         if min_ != Constraints.MIN_INT:
-            min_repr = str_int(max(0, min_) if is_size else min_)
+            min_repr = number_int(max(0, min_) if is_size else min_)
         elif is_size:
             min_repr = "0"
+    elif isinstance(min_, float) and min_ != Constraints.MIN_FLOAT:
+        min_repr = number_int(min_)
     elif isinstance(min_, Variable):
-        assert min_.type.main == TypeEnum.INT
+        assert min_.type.main in (TypeEnum.INT, TypeEnum.FLOAT)
         assert min_.constraints
         min_repr = min_.name
         if is_size and min_.constraints.min_possible() < 0:
             min_repr = "0, " + min_repr
     max_repr = ""
     if isinstance(max_, int) and max_ != Constraints.MAX_INT:
-        max_repr = str_int(max_)
+        max_repr = number_int(max_)
+    elif isinstance(max_, float) and max_ != Constraints.MAX_FLOAT:
+        max_repr = number_int(max_)
     elif isinstance(max_, Variable):
         max_repr = max_.name
 
@@ -192,50 +205,67 @@ def integer_bounds(
 
 
 class Constraints:
-    """Constraints values for an integer"""
+    """Constraints values for a variable"""
 
     # 32 bits signed integer. This should be supported by all generators.
     MAX_INT = 2147483647
     MIN_INT = -2147483648
 
-    def __init__(self, dic: Dict[str, Any], variables: Dict[str, Variable]) -> None:
-        self.min = self.MIN_INT  # type: Union[int, Variable]
-        self.max = self.MAX_INT  # type: Union[int, Variable]
-        self.min_perf = self.MIN_INT  # type: Union[int, Variable]
-        self.max_perf = self.MAX_INT  # type: Union[int, Variable]
-        self.choices = set()  # type: Set[Union[int, str]]
+    # We currently limit 15 maximum digits, plus "-" and "." chars
+    MAX_FLOAT = 1e15 - 1
+    MIN_FLOAT = -1e15 + 1
+
+    def __init__(
+        self, type_: TypeEnum, dic: Dict[str, Any], variables: Dict[str, Variable]
+    ) -> None:
+        self.type_bounds = (
+            (self.MIN_FLOAT, self.MAX_FLOAT)
+            if type_ == TypeEnum.FLOAT
+            else (self.MIN_INT, self.MAX_INT)
+        )
+        self.min = self.type_bounds[0]  # type: Union[int, float, Variable]
+        self.max = self.type_bounds[1]  # type: Union[int, float, Variable]
+        self.min_perf = self.type_bounds[0]  # type: Union[int, float, Variable]
+        self.max_perf = self.type_bounds[1]  # type: Union[int, float, Variable]
+        self.choices = set()  # type: Set[Union[int, float, str]]
         self.is_size = False
 
         if "min" in dic:
-            self.min = get_int_or_var(dic["min"], variables)
+            self.min = get_number_or_var(str(dic["min"]), type_, variables)
             self.min_perf = self.min
         if "min_perf" in dic:
-            self.min_perf = get_int_or_var(dic["min_perf"], variables)
+            self.min_perf = get_number_or_var(str(dic["min_perf"]), type_, variables)
         if "max" in dic:
-            self.max = get_int_or_var(dic["max"], variables)
+            self.max = get_number_or_var(str(dic["max"]), type_, variables)
             self.max_perf = self.max
         if "max_perf" in dic:
-            self.max_perf = get_int_or_var(dic["max_perf"], variables)
+            self.max_perf = get_number_or_var(str(dic["max_perf"]), type_, variables)
         if "choices" in dic:
-            if variables[dic["name"]].type.list_contained().main == TypeEnum.INT:
-                self.choices = set(int(i) for i in dic["choices"])
+            if type_ == TypeEnum.INT:
+                self.choices = set(map(int, dic["choices"]))
+            elif type_ == TypeEnum.FLOAT:
+                self.choices = set(map(float, dic["choices"]))
             else:
                 self.choices = set(i[0] for i in dic["choices"])
 
-    def min_possible(self) -> int:
+    def min_possible(self) -> Union[int, float]:
         """Return the minimal possible value for an integer"""
         if self.choices:
-            return int(min(self.choices))
-        value = self.MAX_INT
+            value = min(self.choices)
+            assert isinstance(value, (int, float))
+            return value
+        value = self.type_bounds[1]
         for min_ in (self.min, self.min_perf):
             value = min(value, get_min_value(min_))
         return max(0, value) if self.is_size else value
 
-    def max_possible(self) -> int:
+    def max_possible(self) -> Union[int, float]:
         """Return the maximal possible value for an integer"""
         if self.choices:
-            return int(max(self.choices))
-        value = self.MIN_INT
+            value = max(self.choices)
+            assert isinstance(value, (int, float))
+            return value
+        value = self.type_bounds[0]
         for max_ in (self.max, self.max_perf):
             value = max(value, get_max_value(max_))
         return value
@@ -398,7 +428,9 @@ def process_sized_type(type_: Type, variables: Dict[str, Variable]) -> None:
         constraints = variables[type_.size].constraints
         assert constraints
         constraints.is_size = True
-        min_ = constraints.min_possible()
+        min_possible = constraints.min_possible()
+        assert isinstance(min_possible, int)
+        min_ = min_possible
     else:
         min_ = int(type_.size)
     if min_ > 0:
@@ -418,7 +450,9 @@ def set_constraints(
         # Only structures do not have constraints, because their fields have
         # constraints of their own
         if var.type.list_contained().main != TypeEnum.STRUCT:
-            var.constraints = Constraints(dic, variables)
+            var.constraints = Constraints(
+                var.type.list_contained().main, dic, variables
+            )
     # Now let the variables used as size know there are
     for var in variables.values():
         process_sized_type(var.type, variables)
@@ -514,3 +548,22 @@ class Input:
                 ret.append(current)
                 current = []
         return ret
+
+    def type_contains_float(self: Input, type_: Type) -> bool:
+        """Does this type contains a float in any way (inside a list, a struct...)?"""
+        type_ = type_.list_contained()
+        if type_.main == TypeEnum.FLOAT:
+            return True
+        if type_.main == TypeEnum.STRUCT:
+            struct = self.get_struct(type_.struct_name)
+            for var in struct.fields:
+                if self.type_contains_float(var.type):
+                    return True
+        return False
+
+    def contains_float(self: Input) -> bool:
+        """Does this input contains a float in any way (inside a list, a struct...)?"""
+        for var in self.input:
+            if self.type_contains_float(var.type):
+                return True
+        return False

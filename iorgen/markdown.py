@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright 2018-2022 Sacha Delanoue
 # Copyright 2021 Kenji Gaillac
+# Copyright 2022 Quentin Rataud
 """Generate the markdown describing the subject"""
 
 import textwrap
@@ -21,11 +22,11 @@ LANG = {
         "input": "Input",
         "input decl": "The input will contain:",
         "int": "an integer",
-        "float": "a floating number",
+        "float": "a floating-point number",
         "int list": "a list of **{}** integers separated by spaces",
-        "float list": "a list of **{}** floating numbers separated by spaces",
+        "float list": "a list of **{}** floating-point numbers separated by spaces",
         "int sameline": "some integers separated by spaces",
-        "float sameline": "some floating numbers separated by spaces",
+        "float sameline": "some floating-point numbers separated by spaces",
         "list": "a list of **{}** elements",
         "list line": "One line per list element:",
         "list lines": "Each list element is on several lines:",
@@ -120,11 +121,6 @@ class Markdown:
             type_str = self.lang["str"].format(type_.size)
         elif type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
-            assert type_.encapsulated.main in (
-                TypeEnum.INT,
-                TypeEnum.CHAR,
-                TypeEnum.FLOAT,
-            )
             if type_.encapsulated.main == TypeEnum.INT:
                 type_str = self.lang["int list"]
             elif type_.encapsulated.main == TypeEnum.FLOAT:
@@ -142,11 +138,11 @@ class Markdown:
                     "{}{} **{}** ({})".format(
                         "" if i != len(struct.fields) - 1 else self.lang["and"],
                         self.lang[
-                            "int"
-                            if field.type.main == TypeEnum.INT
-                            else "float"
-                            if field.type.main == TypeEnum.FLOAT
-                            else "char"
+                            {
+                                TypeEnum.INT: "int",
+                                TypeEnum.FLOAT: "float",
+                                TypeEnum.CHAR: "char",
+                            }[field.type.main]
                         ],
                         field.name,
                         field.comment,

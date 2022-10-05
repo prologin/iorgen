@@ -24,14 +24,63 @@ MAKE_ASSOC_LIST = """(define (make-assoc-list k f)
 
 MAKE_ASSOC_LIST_ONELINE = """(define (make-assoc-list-oneline k b)
   (let loop ((l (string->list (read-line))) (k k) (b b) (c '()))
-    (let ((conv (lambda () (if (car b)
-                             (string->number (list->string (reverse c)))
-                             (car c)))))
+    (let ((conv (lambda () (if (eq? 'char (car b))
+                             (car c)
+                             ((if (eq? 'int (car b)) values exact->inexact)
+                              (string->number (list->string (reverse c))))))))
       (cond
         ((null? l) (list (cons (car k) (conv))))
         ((char=? #\\space (car l)) (cons (cons (car k) (conv))
                                         (loop (cdr l) (cdr k) (cdr b) '())))
         (else (loop (cdr l) k b (cons (car l) c)))))))"""
+
+# Since scheme does not have a format function without extensions,  we need to
+# reimplement the C-like behavior of format("%.15g")
+# The spec is: use scietific notation if exposant is < -4 or >= 15
+PRINT_FLOAT = r"""(define (iorgen--get-pos char-list char pos)
+  (cond ((null? char-list) #f)
+        ((char=? char (car char-list)) pos)
+        (else (iorgen--get-pos (cdr char-list) char (+ 1 pos)))))
+(define (iorgen--shift-dot l buffer e dot)
+  (cond ((null? l)
+         (if (>= 0 e) (get-output-string buffer)
+           (begin (display "0" buffer)
+                  (iorgen--shift-dot l buffer (- e 1) dot))))
+        ((char=? #\- (car l))
+         (begin (display #\- buffer) (iorgen--shift-dot (cdr l) buffer e dot)))
+        ((and (not dot) (>= 0 e) (not (null? l)))
+         (if (= 0 e)
+           (begin (display #\. buffer) (iorgen--shift-dot l buffer e #t))
+           (begin
+             (display "0." buffer)
+             (let loop ((n e))
+               (unless (zero? n) (display #\0 buffer) (loop (+ n 1))))
+             (iorgen--shift-dot l buffer e #t))))
+        ((char=? #\. (car l)) (iorgen--shift-dot (cdr l) buffer e dot))
+        (else (begin (display (car l) buffer)
+                     (iorgen--shift-dot (cdr l) buffer (- e 1) dot)))))
+(define (iorgen--float x)
+  (let* ((s (number->string x))
+         (e-pos (iorgen--get-pos (string->list s) #\e 0)))
+    (cond
+      ((char=? #\. (string-ref s (- (string-length s) 1)))
+       (substring s 0 (- (string-length s) 1)))
+      ((char=? #\. (string-ref s 0))
+       (string-append "0" s))
+      ((and (char=? #\- (string-ref s 0)) (char=? #\. (string-ref s 1)))
+       (string-append "-0" (substring s 1 (string-length s))))
+      (e-pos
+        (let ((e (string->number (substring s (+ 1 e-pos) (string-length s)))))
+          (if (or (< e (- 4)) (>= e 15))
+            (if (or (< e (- 9)) (> e 0))
+              s
+              (string-append (substring s 0 (- (string-length s) 1))
+                             "0" (number->string (- e))))
+            (iorgen--shift-dot (string->list (substring s 0 e-pos))
+                               (open-output-string) (+ 1 e) #f))))
+      (else s))))
+(define (iorgen--display x)
+  (display (if (and (number? x) (inexact? x)) (iorgen--float x) x)))"""
 
 
 def var_name(name: str) -> str:
@@ -49,14 +98,14 @@ def print_var_content(
     style: FormatStyle = FormatStyle.DEFAULT,
 ) -> str:
     """Return Scheme function to print a variable of given type"""
-    if type_.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.STR):
+    if type_.main in (TypeEnum.INT, TypeEnum.FLOAT, TypeEnum.CHAR, TypeEnum.STR):
         endline = 'display " "' if style == FormatStyle.NO_ENDLINE else "newline"
-        return f"(display {name}) ({endline})"
+        return f"(iorgen--display {name}) ({endline})"
     if type_.main == TypeEnum.STRUCT:
         if type_.fits_in_one_line(structs, style):
             return (
                 "(let print_OnelineAssoc ((x {})) (if (null? x) (newline) "
-                "(begin (display (cdr (car x))) (if (not (null? (cdr x))) "
+                "(begin (iorgen--display (cdr (car x))) (if (not (null? (cdr x))) "
                 "(display #\\space)) (print_OnelineAssoc (cdr x)))))"
             ).format(name)
         struct = next(x for x in structs if x.name == type_.struct_name)
@@ -73,12 +122,12 @@ def print_var_content(
     assert type_.main == TypeEnum.LIST
     assert type_.encapsulated
     if type_.fits_in_one_line(structs, style):
-        if type_.encapsulated.main == TypeEnum.INT:
+        if type_.encapsulated.main in (TypeEnum.INT, TypeEnum.FLOAT):
             return (
-                "(let print_IntList ((x {})) (if (null? x) (newline) "
-                "(begin (display (car x)) (if (not (null? (cdr x))) "
-                "(display #\\space)) (print_IntList (cdr x)))))"
-            ).format(name)
+                f"(let print_NumList ((x {name})) (if (null? x) (newline) "
+                "(begin (iorgen--display (car x)) (if (not (null? (cdr x))) "
+                "(display #\\space)) (print_NumList (cdr x)))))"
+            )
         return "(display (list->string {})) (newline)".format(name)
     inner = (
         name.replace("(", "p").replace(")", "P").replace(" ", "_").replace("'", "Q")
@@ -140,6 +189,8 @@ class ParserScheme:
             if style == FormatStyle.NO_ENDLINE:
                 return "let ((i (read))) (begin (read-char) i)"
             return "string->number (read-line)"
+        if type_.main == TypeEnum.FLOAT:
+            return "exact->inexact (string->number (read-line))"
         if type_.main == TypeEnum.CHAR:
             return "string-ref (read-line) 0"
         if type_.main == TypeEnum.STR:
@@ -149,6 +200,11 @@ class ParserScheme:
             if type_.encapsulated.main == TypeEnum.INT:
                 self.parse_int_list = True
                 return "parse-int-list (read-line)"
+            if type_.encapsulated.main == TypeEnum.FLOAT:
+                return (
+                    "map exact->inexact (read (open-input-string "
+                    '(string-append "(" (read-line) ")")))'
+                )
             assert type_.encapsulated.main == TypeEnum.CHAR
             return "string->list (read-line)"
         assert type_.main == TypeEnum.STRUCT
@@ -168,7 +224,12 @@ class ParserScheme:
         return "make-assoc-list-oneline '({}) '({})".format(
             " ".join(var_name(i.name) for i in struct.fields),
             " ".join(
-                "#t" if i.type.main == TypeEnum.INT else "#f" for i in struct.fields
+                {
+                    TypeEnum.INT: "int",
+                    TypeEnum.FLOAT: "float",
+                    TypeEnum.CHAR: "char",
+                }[i.type.main]
+                for i in struct.fields
             ),
         )
 
@@ -252,6 +313,8 @@ class ParserScheme:
             for var in self.input.input
         ]
         output = ""
+        if reprint:
+            output += PRINT_FLOAT + "\n"
         for line in self.method(reprint):
             output += line + "\n"
 

@@ -33,6 +33,8 @@ def type_str(type_: Type, input_data: Input) -> str:
     """Transform a type into a string description for documentation"""
     if type_.main == TypeEnum.INT:
         return "int"
+    if type_.main == TypeEnum.FLOAT:
+        return "double"
     if type_.main == TypeEnum.CHAR:
         return "string"
     if type_.main == TypeEnum.STR:
@@ -54,28 +56,42 @@ def type_str(type_: Type, input_data: Input) -> str:
 
 def read_line(type_: Type, input_data: Input) -> str:
     """Generate the PHP code to read a line of given type"""
+
+    def cast_type(type_: Type) -> str:
+        return {
+            TypeEnum.INT: "intval",
+            TypeEnum.FLOAT: "floatval",
+            TypeEnum.CHAR: "strval",
+        }[type_.main]
+
     assert type_.fits_in_one_line(input_data.structs)
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
         if type_.encapsulated.main == TypeEnum.CHAR:
             return "preg_split('//', trim(fgets(STDIN)), -1, PREG_SPLIT_NO_EMPTY)"
-        assert type_.encapsulated.main == TypeEnum.INT
+        assert type_.encapsulated.main in (TypeEnum.INT, TypeEnum.FLOAT)
         return (
-            "array_map('intval', preg_split('/ /', "
+            f"array_map('{cast_type(type_.encapsulated)}', preg_split('/ /', "
             "trim(fgets(STDIN)), -1, PREG_SPLIT_NO_EMPTY))"
         )
     if type_.main == TypeEnum.STRUCT:
         struct = input_data.get_struct(type_.struct_name)
-        begin = "array_combine([{}], ".format(
-            ", ".join('"{}"'.format(i.name) for i in struct.fields)
-        )
         if all(i.type.main == TypeEnum.INT for i in struct.fields):
-            return begin + "array_map('intval', explode(' ', fgets(STDIN))))"
-        # Treat them all as char. It would be best to cast the integers, if
-        # they are any, but this is painful to write as a one liner.
-        return begin + "explode(' ', trim(fgets(STDIN))))"
+            cast = "array_map('intval', explode(' ', fgets(STDIN)))"
+        elif all(i.type.main == TypeEnum.FLOAT for i in struct.fields):
+            cast = "array_map('floatval', explode(' ', fgets(STDIN)))"
+        elif all(i.type.main == TypeEnum.CHAR for i in struct.fields):
+            cast = "explode(' ', trim(fgets(STDIN)))"
+        else:
+            fields = ", ".join(f"'{cast_type(f.type)}'" for f in struct.fields)
+            func = "fn($f, $x) => $f($x)"
+            cast = f"array_map({func}, [{fields}], explode(' ', trim(fgets(STDIN))))"
+        return "array_combine([{}], {})".format(
+            ", ".join(f'"{i.name}"' for i in struct.fields), cast
+        )
     return {
         TypeEnum.INT: "intval(trim(fgets(STDIN)))",
+        TypeEnum.FLOAT: "floatval(trim(fgets(STDIN)))",
         TypeEnum.CHAR: "fgets(STDIN)[0]",
         TypeEnum.STR: "trim(fgets(STDIN))",
     }[type_.main]
@@ -159,19 +175,34 @@ class ParserPHP:
 def print_line(name: str, type_: Type, input_data: Input, style: FormatStyle) -> str:
     """Print the content of a var in one line"""
     assert type_.fits_in_one_line(input_data.structs, style)
-    if type_.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.STR):
+
+    def print_type(name: str, type_: Type) -> str:
+        """Print the content of a variable (with a special case for float)"""
+        if type_.main != TypeEnum.FLOAT:
+            return name
+        return (
+            "preg_replace('/e-([1-9])$/', 'e-0$1', "
+            f"str_replace('.0e', 'e', sprintf('%.15g', {name})))"
+        )
+
+    if type_.main in (TypeEnum.INT, TypeEnum.FLOAT, TypeEnum.CHAR, TypeEnum.STR):
         endline = " " if style == FormatStyle.NO_ENDLINE else r"\n"
-        return f'echo {name}, "{endline}";'
+        return f'echo {print_type(name, type_)}, "{endline}";'
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
         if type_.encapsulated.main == TypeEnum.CHAR:
-            return 'echo join("", {}), "\\n";'.format(name)
-        assert type_.encapsulated.main == TypeEnum.INT
-        return 'echo join(" ", {}), "\\n";'.format(name)
+            return f'echo join("", {name}), "\\n";'
+        if type_.encapsulated.main == TypeEnum.INT:
+            return f'echo join(" ", {name}), "\\n";'
+        assert type_.encapsulated.main == TypeEnum.FLOAT
+        return (
+            'echo join(" ", array_map(fn($x) => '
+            f'{print_type("$x", type_.encapsulated)}, {name})), "\\n";'
+        )
     assert type_.main == TypeEnum.STRUCT
     struct = input_data.get_struct(type_.struct_name)
     return 'echo {}, "\\n";'.format(
-        ", ' ', ".join('{}["{}"]'.format(name, i.name) for i in struct.fields)
+        ", ' ', ".join(print_type(f'{name}["{i.name}"]', i.type) for i in struct.fields)
     )
 
 
@@ -220,7 +251,11 @@ def call(input_data: Input, reprint: bool) -> List[str]:
         "function {}({}) {{".format(
             function_name(input_data.name),
             ", ".join(
-                ("" if i.type.main in (TypeEnum.INT, TypeEnum.CHAR) else "&")
+                (
+                    ""
+                    if i.type.main in (TypeEnum.INT, TypeEnum.FLOAT, TypeEnum.CHAR)
+                    else "&"
+                )
                 + var_name(i.name)
                 for i in input_data.input
             ),

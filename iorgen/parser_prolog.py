@@ -37,18 +37,27 @@ def call_goal(goal: str, var: str) -> str:
 
 def print_line(name: str, type_: Type, input_data: Input, style: FormatStyle) -> str:
     """Print a variable that fits in one line"""
+
+    def check_predicate(type_: TypeEnum) -> str:
+        """Return the prolog predicate to check that a variable has the correct type"""
+        return {
+            TypeEnum.INT: "integer",
+            TypeEnum.CHAR: "atom",
+            TypeEnum.STR: "string",
+            TypeEnum.FLOAT: "number",
+        }[type_]
+
     assert type_.fits_in_one_line(input_data.structs, style)
     write = (
         f'write({name}), write(" ")'
         if style == FormatStyle.NO_ENDLINE
         else f"writeln({name})"
     )
-    if type_.main == TypeEnum.INT:
-        return f"integer({name}), {write}"
-    if type_.main == TypeEnum.CHAR:
-        return f"atom({name}), {write}"
-    if type_.main == TypeEnum.STR:
-        return f"string({name}), {write}"
+    if type_.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.STR):
+        return f"{check_predicate(type_.main)}({name}), {write}"
+    if type_.main == TypeEnum.FLOAT:
+        end = " " if style == FormatStyle.NO_ENDLINE else "\\n"
+        return f"number({name}), format('~15g{end}', [{name}])"
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
         if type_.encapsulated.main == TypeEnum.INT:
@@ -56,6 +65,10 @@ def print_line(name: str, type_: Type, input_data: Input, style: FormatStyle) ->
                 "is_list({0}), maplist(integer, {0}), atomic_list_concat("
                 "{0}, ' ', {0}_S), writeln({0}_S)"
             ).format(name)
+        if type_.encapsulated.main == TypeEnum.FLOAT:
+            return (
+                f"is_list({name}), maplist(number, {name}), iorgen__floats({name}), nl"
+            )
         assert type_.encapsulated.main == TypeEnum.CHAR
         return (
             "is_list({0}), maplist(atom, {0}), string_chars({0}_S, {0}),"
@@ -63,19 +76,16 @@ def print_line(name: str, type_: Type, input_data: Input, style: FormatStyle) ->
         ).format(name)
     assert type_.main == TypeEnum.STRUCT
     struct = input_data.get_struct(type_.struct_name)
-    fields = []
+    fields_predicates = []
     for i, field in enumerate(struct.fields):
         f_name = name + "_" + var_name(field.name)
-        fields.append(
-            'get_assoc("{0}", {1}, {2}), {3}({2}), write({2}), {4}'.format(
-                field.name,
-                name,
-                name + "_" + f_name,
-                "integer" if field.type.main == TypeEnum.INT else "atom",
-                'write(" ")' if i < len(struct.fields) - 1 else "nl",
-            )
-        )
-    return "is_assoc({}), {}".format(name, ", ".join(fields))
+        type_check = check_predicate(field.type.main)
+        write = "write(" if field.type.main != TypeEnum.FLOAT else "format('~15g', "
+        fields_predicates.append(f'get_assoc("{field.name}", {name}, {name}_{f_name})')
+        fields_predicates.append(f"{type_check}({name}_{f_name})")
+        fields_predicates.append(f"{write}{name}_{f_name})")
+        fields_predicates.append('write(" ")' if i < len(struct.fields) - 1 else "nl")
+    return "is_assoc({}), {}".format(name, ", ".join(fields_predicates))
 
 
 # I'd love to use lambda, but they come with swig 7.4, not in debian 9
@@ -126,10 +136,12 @@ class ParserProlog:
             if Type(TypeEnum.STRUCT, struct_name=struct.name).fits_in_one_line(
                 self.input.structs
             ):
-                if all(i.type.main == TypeEnum.INT for i in struct.fields):
+                if all(
+                    i.type.main in (TypeEnum.INT, TypeEnum.FLOAT) for i in struct.fields
+                ):
                     self.read.add("List[int]")
                     output += (
-                        "{} read_int_list(L), pairs_keys_values(P, "
+                        "{} read_number_list(L), pairs_keys_values(P, "
                         "[{}], L), list_to_assoc(P, X).\n"
                     ).format(name, keys)
                 elif all(i.type.main == TypeEnum.CHAR for i in struct.fields):
@@ -155,7 +167,7 @@ class ParserProlog:
                             i + 1,
                             (
                                 "number_string(C{0}, L{0})"
-                                if field.type.main == TypeEnum.INT
+                                if field.type.main in (TypeEnum.INT, TypeEnum.FLOAT)
                                 else "sub_atom(L{0}, 0, 1, _, C{0})"
                             ).format(i),
                         )
@@ -184,9 +196,9 @@ class ParserProlog:
     def read_line(self, type_: Type) -> str:
         """Read an entire line and parse it"""
         assert type_.fits_in_one_line(self.input.structs)
-        if type_.main == TypeEnum.INT:
+        if type_.main in (TypeEnum.INT, TypeEnum.FLOAT):
             self.read.add("int")
-            return "read_int"
+            return "read_number"
         if type_.main == TypeEnum.CHAR:
             self.read.add("char")
             return "read_char"
@@ -195,9 +207,9 @@ class ParserProlog:
             return "read_line"
         if type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
-            if type_.encapsulated.main == TypeEnum.INT:
+            if type_.encapsulated.main in (TypeEnum.INT, TypeEnum.FLOAT):
                 self.read.add("List[int]")
-                return "read_int_list"
+                return "read_number_list"
             assert type_.encapsulated.main == TypeEnum.CHAR
             self.read.add("List[char]")
             return "read_char_list"
@@ -230,7 +242,7 @@ class ParserProlog:
             else:
                 self.read.add("List[int]")
                 lines.append(
-                    f"read_int_list([{', '.join(var_name(i.name) for i in variables)}]),"
+                    f"read_number_list([{', '.join(var_name(i.name) for i in variables)}]),"
                 )
         return lines
 
@@ -239,6 +251,12 @@ class ParserProlog:
         lines = []
         reprint_code = []
         if reprint:
+            if self.input.contains_float():
+                lines += [
+                    "iorgen__floats([]).",
+                    "iorgen__floats([A|[]]) :- format('~15g', A).",
+                    "iorgen__floats([A|B]) :- format('~15g ', A), iorgen__floats(B).",
+                ]
             for var in self.input.input:
                 (decl, code) = print_lines(
                     var_name(var.name), var.type, self.input, var.format_style
@@ -282,9 +300,9 @@ class ParserProlog:
             output += "read_char_list(X) :- "
             output += "read_line(S), string_chars(S, X).\n"
         if "int" in self.read:
-            output += "read_int(X) :- read_line(S), number_string(X, S).\n"
+            output += "read_number(X) :- read_line(S), number_string(X, S).\n"
         if "List[int]" in self.read:
-            output += "string_number(X, Y) :- number_string(Y, X).\nread_int_"
+            output += "string_number(X, Y) :- number_string(Y, X).\nread_number_"
             output += (
                 "list(X) :- read_line_to_codes(user_input, C), " "(C == [] -> X = []\n"
             )
@@ -395,11 +413,11 @@ USED_PROCEDURES = [
     "put_assoc",
     "read_char",
     "read_char_list",
-    "read_int",
-    "read_int_list",
     "read_line",
     "read_line_to_codes",
     "read_list",
+    "read_number",
+    "read_number_list",
     "read_string",
     "split_string",
     "string",

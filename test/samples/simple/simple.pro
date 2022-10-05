@@ -5,9 +5,9 @@ simple(N, OtherNumber) :-
     nl.
 
 read_line(X) :- read_string(user_input, "\n", "\r", _, X).
-read_int(X) :- read_line(S), number_string(X, S).
+read_number(X) :- read_line(S), number_string(X, S).
 :-
     prompt(_, ''),
-    read_int(N),
-    read_int(OtherNumber),
+    read_number(N),
+    read_number(OtherNumber),
     simple(N, OtherNumber).

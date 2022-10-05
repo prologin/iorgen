@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright 2018-2022 Sacha Delanoue
+# Copyright 2022 Marc Schmitt
 """Generate a Go parser"""
 
 import textwrap
@@ -47,11 +48,11 @@ def type_str(type_: Type) -> str:
     if type_.main == TypeEnum.INT:
         return "int"
     if type_.main == TypeEnum.FLOAT:
-        return "float32"
-    if type_.main == TypeEnum.STR:
-        return "string"
+        return "float64"
     if type_.main == TypeEnum.CHAR:
         return "byte"
+    if type_.main == TypeEnum.STR:
+        return "string"
     if type_.main == TypeEnum.STRUCT:
         return struct_name(type_.struct_name)
     assert type_.encapsulated
@@ -66,20 +67,19 @@ def max_size(
     style: FormatStyle = FormatStyle.DEFAULT,
 ) -> int:
     """Computes the maximum number of bytes the type can take on stdin"""
+    # pylint: disable=too-many-return-statements
     if type_.main == TypeEnum.INT:
         assert constraints
         return max(
             len(str(constraints.min_possible())), len(str(constraints.max_possible()))
         )
     if type_.main == TypeEnum.FLOAT:
+        # The constrains on iorgen float system is to have only 15 digits on a float.
+        # To that we add the eventual "-" and "." signs, for a total of 17
+        # We can have exponential notation, but it can by design, only lower the size.
+        # Constrains don't help much: they do not involve any precision limitiation
         assert constraints
-        return (
-            max(
-                len(str(constraints.min_possible())),
-                len(str(constraints.max_possible())),
-            )
-            + 1
-        )
+        return 17 if constraints.min_possible() < 0 else 16  # presence of "-"
     if type_.main == TypeEnum.CHAR:
         return 1
     if type_.main == TypeEnum.STRUCT:
@@ -97,7 +97,9 @@ def max_size(
     if size_vars:
         varconstraints = size_vars[0].constraints
         assert varconstraints
-        size = varconstraints.max_possible()
+        max_possible = varconstraints.max_possible()
+        assert isinstance(max_possible, int)
+        size = max_possible
     else:
         size = int(type_.size)
     if type_.main == TypeEnum.STR:
@@ -127,24 +129,23 @@ class ParserGo:
         # pylint: disable=too-many-return-statements
 
         assert type_.fits_in_one_line(self.input.structs)
-        if type_.main == TypeEnum.INT:
-            self.imports.add("strconv")
+
+        def parse_type(name: str, type_: Type) -> str:
+            if type_.main == TypeEnum.INT:
+                self.imports.add("strconv")
+                return f", _ = strconv.Atoi({name})"
+            if type_.main == TypeEnum.FLOAT:
+                self.imports.add("strconv")
+                return f", _ = strconv.ParseFloat({name}, 64)"
+            if type_.main == TypeEnum.CHAR:
+                return f" = {name}[0]"
+            assert type_.main == TypeEnum.STR
+            return f" = {name}"
+
+        if type_.main in (TypeEnum.INT, TypeEnum.FLOAT, TypeEnum.CHAR, TypeEnum.STR):
             return [
                 "scanner.Scan()",
-                f"{name}, _ = strconv.Atoi(scanner.Text())",
-            ]
-        if type_.main == TypeEnum.FLOAT:
-            self.imports.add("strconv")
-            return [
-                "scanner.Scan()",
-                f"{name}, _ = strconv.ParseFloat(scanner.Text(), 64)",
-            ]
-        if type_.main == TypeEnum.CHAR:
-            return ["scanner.Scan()", f"{name} = scanner.Text()[0]"]
-        if type_.main == TypeEnum.STR:
-            return [
-                "scanner.Scan()",
-                f"{name} = scanner.Text()",
+                f"{name}{parse_type('scanner.Text()', type_)}",
             ]
         if type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
@@ -155,7 +156,6 @@ class ParserGo:
                 ]
             inner_name = self.iterator.new_it()
             self.imports.add("strings")
-            self.imports.add("strconv")
             lines = [
                 "scanner.Scan()",
                 f"for {inner_name}, {inner_name}Value "
@@ -163,7 +163,8 @@ class ParserGo:
             ]
             lines.append(
                 INDENTATION
-                + f"{name}[{inner_name}], _ = strconv.Atoi({inner_name}Value)"
+                + f"{name}[{inner_name}]"
+                + parse_type(inner_name + "Value", type_.encapsulated)
             )
             self.iterator.pop_it()
             return lines + ["}"]
@@ -174,11 +175,9 @@ class ParserGo:
             "scanner.Scan()",
             'fmt.Sscanf(scanner.Text(), "{}", {})'.format(
                 " ".join(
-                    "%d"
-                    if f.type.main == TypeEnum.INT
-                    else "%g"
-                    if f.type.main == TypeEnum.FLOAT
-                    else "%c"
+                    {TypeEnum.INT: "%d", TypeEnum.FLOAT: "%g", TypeEnum.CHAR: "%c"}[
+                        f.type.main
+                    ]
                     for f in struct.fields
                 ),
                 ", ".join(
@@ -279,7 +278,7 @@ class ParserGo:
         assert type_.fits_in_one_line(self.input.structs, style)
         indent = INDENTATION * indent_lvl
         self.imports.add("fmt")
-        if type_.main in (TypeEnum.INT, TypeEnum.FLOAT, TypeEnum.STR):
+        if type_.main in (TypeEnum.INT, TypeEnum.STR):
             return [
                 indent
                 + (
@@ -288,6 +287,8 @@ class ParserGo:
                     else f"fmt.Println({name});"
                 )
             ]
+        if type_.main == TypeEnum.FLOAT:
+            return [indent + f'fmt.Printf("%.15g\\n", {name});']
         if type_.main == TypeEnum.CHAR:
             return [indent + 'fmt.Printf("%c\\n", {});'.format(name)]
         if type_.main == TypeEnum.LIST:
@@ -295,9 +296,10 @@ class ParserGo:
             if type_.encapsulated.main == TypeEnum.CHAR:
                 return [indent + "fmt.Println(string({}));".format(name)]
             index = self.iterator.new_it()
+            specifier = "%d" if type_.encapsulated.main == TypeEnum.INT else "%.15g"
             lines = [
-                indent + "for {} := range {} {{".format(index, name),
-                indent + INDENTATION + "fmt.Print({}[{}])".format(name, index),
+                indent + f"for {index} := range {name} {{",
+                indent + INDENTATION + f'fmt.Printf("{specifier}", {name}[{index}])',
             ]
             lines.extend(
                 [
@@ -314,11 +316,9 @@ class ParserGo:
             indent
             + 'fmt.Printf("{}\\n", {})'.format(
                 " ".join(
-                    "%d"
-                    if x.type.main == TypeEnum.INT
-                    else "%g"
-                    if x.type.main == TypeEnum.FLOAT
-                    else "%c"
+                    {TypeEnum.INT: "%d", TypeEnum.FLOAT: "%.15g", TypeEnum.CHAR: "%c"}[
+                        x.type.main
+                    ]
                     for x in struct.fields
                 ),
                 ", ".join(
@@ -381,8 +381,8 @@ class ParserGo:
         )
         if max_line_length > 64 * 1024:  # bufio.MaxScanTokenSize
             output += INDENTATION + (
-                "scanner.Buffer(make([]byte, 0, " "64 * 1024), {})\n"
-            ).format(max_line_length + 1)
+                f"scanner.Buffer(make([]byte, 0, 64 * 1024), {max_line_length + 1})\n"
+            )
         for variables in self.input.get_all_vars():
             if len(variables) == 1:
                 for line in self.read_var(variables[0]):

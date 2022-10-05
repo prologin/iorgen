@@ -9,6 +9,7 @@ import re
 from iorgen.types import Constraints, FormatStyle, Input, Type, TypeEnum, Variable
 
 INTEGER_REGEX = re.compile("^-?[0-9]+$")
+FLOAT_REGEX = re.compile("^-?[0-9]+(\\.[0-9]+)?(e[-+]?[0-9]+)?$")
 
 
 class ValidatorException(Exception):
@@ -26,7 +27,7 @@ class Validator:
         self.input = input_data
         self.current_line = 0
         self.lines = lines
-        self.integers = {}  # type: Dict[str, int]
+        self.numbers = {}  # type: Dict[str, Union[int, float]]
         self.valid_for_perf_only = False
 
     def next_line(self) -> str:
@@ -37,26 +38,20 @@ class Validator:
         self.current_line += 1
         return line
 
-    def eval_var(self, var: Union[int, Variable]) -> int:
-        """Eval an integer, that can be a variable"""
-        if isinstance(var, int):
+    def eval_var(self, var: Union[int, float, Variable]) -> Union[int, float]:
+        """Eval an number, that can be a variable"""
+        if isinstance(var, (int, float)):
             return var
-        if var.name not in self.integers:
+        if var.name not in self.numbers:
             raise ValidatorException(
                 f"No variable named '{var.name}' found to be used as a constraint"
             )
-        return self.integers[var.name]
+        return self.numbers[var.name]
 
-    def check_integer(self, string: str, constraints: Constraints, name: str) -> None:
-        """Check that the input is a correct integer"""
-        if not INTEGER_REGEX.match(string):
-            raise ValidatorException(
-                "Line {}: '{}' is not an integer".format(self.current_line, string)
-            )
-        value = int(string)
-        if name:
-            self.integers[name] = value
-
+    def check_number_constraints(
+        self, value: Union[int, float], constraints: Constraints
+    ) -> None:
+        """Check that a number respects its constraints"""
         min_value = self.eval_var(constraints.min)
         if value < min_value:
             if value < self.eval_var(constraints.min_perf):
@@ -79,10 +74,52 @@ class Validator:
                     ", ".join(str(i) for i in sorted(constraints.choices)),
                 )
             )
+
+    def check_integer(self, string: str, constraints: Constraints, name: str) -> None:
+        """Check that the input is a correct integer"""
+        if not INTEGER_REGEX.match(string):
+            raise ValidatorException(
+                "Line {}: '{}' is not an integer".format(self.current_line, string)
+            )
+        value = int(string)
+        if name:
+            self.numbers[name] = value
+
+        self.check_number_constraints(value, constraints)
+
         if constraints.is_size and value < 0:
             raise ValidatorException(
                 f"Line {self.current_line}: {value} is negative but used as a size"
             )
+
+    def check_float(self, string: str, constraints: Constraints, name: str) -> None:
+        """Check that the input is a correct floating number"""
+        if not FLOAT_REGEX.match(string):
+            raise ValidatorException(
+                "Line {}: '{}' is not a float".format(self.current_line, string)
+            )
+        value = float(string)
+        if name:
+            self.numbers[name] = value
+        if string != f"{value:.15g}":
+            raise ValidatorException(
+                f"Line {self.current_line}: '{string}' should be written '{value:.15g}'"
+            )
+        if string == "-0":
+            raise ValidatorException(
+                f"Line {self.current_line}: '{string}' should be written '0'"
+            )
+        if value > 1e15 - 1 or value < -1e15 + 1:
+            raise ValidatorException(
+                f"Line {self.current_line}: '{string}' is too big (max 15 digits)"
+            )
+        if abs(value) < 1 and float(format(value, ".14f")) != value:
+            raise ValidatorException(
+                f"Line {self.current_line}: '{string}' is too precise "
+                "(max 14 digits after the dot)"
+            )
+
+        self.check_number_constraints(value, constraints)
 
     def check_char(self, string: str, constraints: Constraints, use_ws: bool) -> None:
         """Check that the input is a correct string"""
@@ -114,9 +151,13 @@ class Validator:
 
     def get_size(self, size: str) -> Tuple[int, str]:
         """Get the integer size, and a string description of it"""
-        if size in self.integers:
-            value = self.integers[size]
-            return (value, "{} ({})".format(value, size))
+        if size in self.numbers:
+            value = self.numbers[size]
+            if isinstance(value, float):
+                raise ValidatorException(
+                    "Line {self.current_line}: '{size}' can not be a float since it is a size"
+                )
+            return (value, f"{value} ({size})")
         return (int(size), size)
 
     def read_type(
@@ -131,6 +172,9 @@ class Validator:
         if type_.main == TypeEnum.INT:
             assert constraints is not None
             self.check_integer(self.next_line(), constraints, name)
+        elif type_.main == TypeEnum.FLOAT:
+            assert constraints is not None
+            self.check_float(self.next_line(), constraints, name)
         elif type_.main == TypeEnum.CHAR:
             assert constraints is not None
             self.check_char(self.next_line(), constraints, use_ws=False)
@@ -171,7 +215,7 @@ class Validator:
                     )
                 for i in line:
                     self.check_char(i, constraints, use_ws=False)
-            elif type_.encapsulated.main == TypeEnum.INT:
+            elif type_.encapsulated.main in (TypeEnum.INT, TypeEnum.FLOAT):
                 assert constraints is not None
                 line = self.next_line()
                 words = line.split()
@@ -189,7 +233,10 @@ class Validator:
                         ).format(self.current_line, line)
                     )
                 for i in words:
-                    self.check_integer(i, constraints, "")
+                    if type_.encapsulated.main == TypeEnum.INT:
+                        self.check_integer(i, constraints, "")
+                    else:
+                        self.check_float(i, constraints, name)
         elif type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)
             if not type_.fits_in_one_line(self.input.structs, style):
@@ -215,6 +262,8 @@ class Validator:
                     assert var.constraints is not None
                     if var.type.main == TypeEnum.INT:
                         self.check_integer(word, var.constraints, var.name)
+                    elif var.type.main == TypeEnum.FLOAT:
+                        self.check_float(word, var.constraints, var.name)
                     else:
                         assert var.type.main == TypeEnum.CHAR
                         self.check_char(word, var.constraints, use_ws=False)

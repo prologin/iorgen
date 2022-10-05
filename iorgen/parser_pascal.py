@@ -14,7 +14,7 @@ INDENTATION = "    "
 def var_name(name: str) -> str:
     """Transform a variable name into a valid one for Pascal"""
     candidate = pascal_case(name)
-    if candidate.lower() in KEYWORDS:
+    if candidate.lower() in KEYWORDS or candidate.lower() == "sysutils":
         return candidate + "_"
     return candidate
 
@@ -24,6 +24,8 @@ def type_str(var: Variable, decl: bool = False) -> str:
     # pylint: disable=too-many-return-statements
     if var.type.main == TypeEnum.INT:
         return "longint"
+    if var.type.main == TypeEnum.FLOAT:
+        return "double"
     if var.type.main == TypeEnum.CHAR:
         return "char"
     if var.type.main == TypeEnum.STR:
@@ -88,18 +90,14 @@ class ParserPascal:
         """Read an entire line and store it into the right place(s)"""
         assert type_.fits_in_one_line(self.input.structs)
         indent = INDENTATION * self.indent_lvl
-        if type_.main == TypeEnum.INT:
-            self.main.append(indent + "readln({});".format(name))
-        elif type_.main == TypeEnum.CHAR:
-            self.main.append(indent + "readln({});".format(name))
-        elif type_.main == TypeEnum.STR:
-            self.main.append(indent + "readln({});".format(name))
+        if type_.main in (TypeEnum.INT, TypeEnum.FLOAT, TypeEnum.CHAR, TypeEnum.STR):
+            self.main.append(f"{indent}readln({name});")
         elif type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
             if type_.encapsulated.main == TypeEnum.CHAR:
                 self.main.append(indent + "readln({});".format(name))
             else:
-                assert type_.encapsulated.main == TypeEnum.INT
+                assert type_.encapsulated.main in (TypeEnum.INT, TypeEnum.FLOAT)
                 index = self.iterator.new_it()
                 self.local_integers.add(index)
                 self.main.append(
@@ -171,7 +169,11 @@ class ParserPascal:
         for arg in self.input.input:
             arg_name = var_name(arg.name)
             method.append("{{ @param {} {} }}".format(arg_name, arg.comment))
-            const = "" if arg.type.main in (TypeEnum.INT, TypeEnum.CHAR) else "const "
+            const = (
+                ""
+                if arg.type.main in (TypeEnum.INT, TypeEnum.FLOAT, TypeEnum.CHAR)
+                else "const "
+            )
             arguments.append("{}{}: {}".format(const, arg_name, type_str(arg)))
         method.append("procedure {}({});".format(name, "; ".join(arguments)))
         if reprint and self.local_integers:
@@ -209,15 +211,30 @@ class ParserPascal:
         self, name: str, type_: Type, size: str, style: FormatStyle
     ) -> List[str]:
         """Print the content of a var that holds in one line"""
+
+        def print_type(name: str, type_: Type) -> str:
+            """Print the content of a variable (with a special case for float)"""
+            if type_.main != TypeEnum.FLOAT:
+                return name
+            return (
+                # This is an ungly one. It's the best I found to convert e-X to e-0X
+                # as a one-liner. The good thing is reprint mode is not meant to be seen
+                "LowerCase(StringReplace("
+                f"sysutils.FloatToStr({name}),"
+                f"copy(sysutils.FloatToStrF(Abs({name}), ffExponent, 0, 1), 4, 99),"
+                f"copy(sysutils.FloatToStrF(Abs({name}), ffExponent, 0, 2), 4, 99),"
+                "[]))"
+            )
+
         assert type_.fits_in_one_line(self.input.structs, style)
         indent = INDENTATION * self.indent_lvl
-        if type_.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.STR):
+        if type_.main in (TypeEnum.INT, TypeEnum.FLOAT, TypeEnum.CHAR, TypeEnum.STR):
             return [
                 indent
                 + (
-                    f"write({name}, ' ');"
+                    f"write({print_type(name, type_)}, ' ');"
                     if style == FormatStyle.NO_ENDLINE
-                    else f"writeln({name});"
+                    else f"writeln({print_type(name, type_)});"
                 )
             ]
         if type_.main == TypeEnum.LIST:
@@ -227,14 +244,15 @@ class ParserPascal:
             lines = []
             index = self.iterator.new_it()
             lines.append(indent + f"for {index} := 0 to {size} - 2 do")
-            lines.append(indent + INDENTATION + f"write({name}[{index}], ' ');")
+            print_idx = print_type(f"{name}[{{0}}]", type_.encapsulated).format
+            lines.append(f"{indent}{INDENTATION}write({print_idx(index)}, ' ');")
             try:
                 size_int = int(size)
                 if size_int > 0:
-                    lines.append(indent + f"write({name}[{size_int - 1}]);")
+                    lines.append(f"{indent}write({print_idx(size_int - 1)});")
             except ValueError:
                 lines.append(
-                    indent + f"if ({size} > 0) then write({name}[{size} - 1]);"
+                    f"{indent}if ({size} > 0) then write({print_idx(f'{size} - 1')});"
                 )
             lines.append(indent + "writeln();")
             self.iterator.pop_it()
@@ -242,7 +260,9 @@ class ParserPascal:
         assert type_.main == TypeEnum.STRUCT
         struct = self.input.get_struct(type_.struct_name)
         args = ["' '"] * (2 * len(struct.fields) - 1)
-        args[::2] = [name + "." + var_name(i.name) for i in struct.fields]
+        args[::2] = [
+            print_type(f"{name}.{var_name(i.name)}", i.type) for i in struct.fields
+        ]
         return [indent + f"writeln({', '.join(args)});"]
 
     def print_lines(
@@ -303,6 +323,8 @@ class ParserPascal:
                 )
         method = self.call(reprint)
         output = "program {};\n\n".format(var_name(self.input.name))
+        if reprint and self.input.contains_float():
+            output += "uses sysutils;\n"
         types = decl_types(self.input.input)
         if self.input.structs or types:
             output += "type\n"
@@ -331,8 +353,7 @@ class ParserPascal:
             output += INDENTATION + "_: char;\n"
 
         output += "begin\n"
-        for line in self.main:
-            output += INDENTATION + line + "\n"
+        output += "\n".join(INDENTATION + line for line in self.main) + "\n"
         output += INDENTATION + "{}({});\n".format(
             var_name(self.input.name),
             ", ".join([var_name(i.name) for i in self.input.input]),

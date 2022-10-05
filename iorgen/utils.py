@@ -3,7 +3,7 @@
 # Copyright 2021 Kenji Gaillac
 """Helpers used by several modules"""
 
-from typing import List, Set
+from typing import List, Set, Union
 
 
 def snake_case(name: str) -> str:
@@ -30,8 +30,8 @@ def int_to_iterator_name(value: int) -> str:
     return chr((value - 1) % 18 + 105) * int((value - 1) / 18 + 1)
 
 
-def str_int(value: int) -> str:
-    """Return integer mathjax representation"""
+def number_int(value: Union[int, float]) -> str:
+    """Return integer or float mathjax representation"""
     return f"{value:,}".replace(",", r"\,")
 
 

@@ -22,8 +22,8 @@ def var_name(name: str) -> str:
 
 def type_str(type_: Type, input_data: Input) -> str:
     """Return the Javascript name for a type"""
-    # http://usejsdoc.org/tags-type.html
-    if type_.main == TypeEnum.INT:
+    # https://jsdoc.app/tags-type.html
+    if type_.main in (TypeEnum.INT, TypeEnum.FLOAT):
         return "number"
     if type_.main == TypeEnum.CHAR:
         return "string"
@@ -68,7 +68,7 @@ class ParserJS:
             assert type_.encapsulated is not None
             if type_.encapsulated.main == TypeEnum.CHAR:
                 return [start + 'stdin[line++].split("");']
-            assert type_.encapsulated.main == TypeEnum.INT
+            assert type_.encapsulated.main in (TypeEnum.INT, TypeEnum.FLOAT)
             return [start + 'stdin[line++].split(" ", {}).map(Number);'.format(size)]
         if type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)
@@ -94,6 +94,7 @@ class ParserJS:
             start
             + {
                 TypeEnum.INT: "Number(stdin[line++]);",
+                TypeEnum.FLOAT: "Number(stdin[line++]);",
                 TypeEnum.CHAR: "stdin[line++];",
                 TypeEnum.STR: "stdin[line++];",
             }[type_.main]
@@ -166,19 +167,30 @@ class ParserJS:
 
 def print_line(name: str, type_: Type, input_data: Input) -> str:
     """Print the content of a var in one line"""
+
+    def print_type(type_: Type, name: str) -> str:
+        if type_.main == TypeEnum.FLOAT:
+            return f"{name}.toString().replace(/e-([1-9])$/,'e-0$1')"
+        return name
+
     assert type_.fits_in_one_line(input_data.structs)
-    if type_.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.STR):
-        return "console.log({});".format(name)
+    if type_.main in (TypeEnum.INT, TypeEnum.FLOAT, TypeEnum.CHAR, TypeEnum.STR):
+        return f"console.log({print_type(type_, name)});"
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
         if type_.encapsulated.main == TypeEnum.CHAR:
             return 'console.log({}.join(""));'.format(name)
-        assert type_.encapsulated.main == TypeEnum.INT
-        return 'console.log({}.join(" "));'.format(name)
+        assert type_.encapsulated.main in (TypeEnum.INT, TypeEnum.FLOAT)
+        return (
+            f"console.log({name}.map("
+            f'x => {print_type(type_.encapsulated, "x")}).join(" "));'
+        )
     assert type_.main == TypeEnum.STRUCT
     struct = input_data.get_struct(type_.struct_name)
     return 'console.log([{}].join(" "));'.format(
-        ", ".join("{}.{}".format(name, var_name(i.name)) for i in struct.fields)
+        ", ".join(
+            print_type(i.type, f"{name}.{var_name(i.name)}") for i in struct.fields
+        )
     )
 
 

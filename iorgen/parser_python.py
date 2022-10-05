@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright 2018-2022 Sacha Delanoue
+# Copyright 2022 Quentin Rataud
 """Generate a Python 3 parser"""
 
 import textwrap
@@ -107,28 +108,22 @@ def read_line(type_: Type, input_data: Input) -> str:
     assert type_.fits_in_one_line(input_data.structs)
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
-        assert type_.encapsulated.main in (TypeEnum.INT, TypeEnum.FLOAT, TypeEnum.CHAR)
+        if type_.encapsulated.main == TypeEnum.CHAR:
+            return "list(input())"
+        assert type_.encapsulated.main in (TypeEnum.INT, TypeEnum.FLOAT)
         return f"list(map({type_str(type_.encapsulated)}, input().split()))"
     if type_.main == TypeEnum.STRUCT:
         struct = input_data.get_struct(type_.struct_name)
         if all(i.type.main == TypeEnum.INT for i in struct.fields):
-            return f"{class_name(struct.name)}(*map(int, input().split()))"
-        if all(i.type.main == TypeEnum.CHAR for i in struct.fields):
-            return f"{class_name(struct.name)}(*input().split())"
-        if all(i.type.main == TypeEnum.FLOAT for i in struct.fields):
-            return f"{class_name(struct.name)}(*map(float, input().split()))"
-        return "{}(*map({}, ({}), input().split()))".format(
-            class_name(struct.name),
-            "lambda x, y: [str, int, float][x](y)",
-            ", ".join(
-                "1"
-                if i.type.main == TypeEnum.INT
-                else "2"
-                if i.type.main == TypeEnum.FLOAT
-                else "0"
-                for i in struct.fields
-            ),
-        )
+            cast_input = "map(int, input().split())"
+        elif all(i.type.main == TypeEnum.FLOAT for i in struct.fields):
+            cast_input = "map(float, input().split())"
+        elif all(i.type.main == TypeEnum.CHAR for i in struct.fields):
+            cast_input = "input().split()"
+        else:
+            fields = ", ".join(type_str(i.type) for i in struct.fields)
+            cast_input = f"map(lambda f, x: f(x), ({fields}), input().split())"
+        return f"{class_name(struct.name)}(*{cast_input})"
     return {
         TypeEnum.INT: "int(input())",
         TypeEnum.FLOAT: "float(input())",
@@ -199,20 +194,30 @@ def read_vars(input_data: Input) -> List[str]:
 
 def print_line(name: str, type_: Type, input_data: Input, style: FormatStyle) -> str:
     """Print the content of a var in one line"""
+
+    def print_type(name: str, type_: Type) -> str:
+        """Print the content of a variable (with a special case for float)"""
+        if type_.main != TypeEnum.FLOAT:
+            return f"str({name})"
+        return f'format({name}, ".15g")'
+
     assert type_.fits_in_one_line(input_data.structs, style)
-    if type_.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.STR):
+    if type_.main in (TypeEnum.INT, TypeEnum.FLOAT, TypeEnum.CHAR, TypeEnum.STR):
         end = ", end=' '" if style == FormatStyle.NO_ENDLINE else ""
-        return f"print({name}{end})"
+        return f"print({print_type(name, type_)}{end})"
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
         if type_.encapsulated.main == TypeEnum.CHAR:
             return "print(''.join({}))".format(name)
-        assert type_.encapsulated.main == TypeEnum.INT
-        return "print(' '.join(map(str, {})))".format(name)
+        assert type_.encapsulated.main in (TypeEnum.INT, TypeEnum.FLOAT)
+        return f'print(" ".join({print_type("i", type_.encapsulated)} for i in {name}))'
     assert type_.main == TypeEnum.STRUCT
     struct = input_data.get_struct(type_.struct_name)
     return "print({})".format(
-        ", ".join(f"{name}.{var_name(field.name)}" for field in struct.fields)
+        ", ".join(
+            print_type(f"{name}.{var_name(field.name)}", field.type)
+            for field in struct.fields
+        )
     )
 
 

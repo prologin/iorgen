@@ -11,6 +11,6 @@ function example($n, &$list) {
 $n = intval(trim(fgets(STDIN)));
 $list = new SplFixedArray($n);
 for ($i = 0; $i < $n; $i++) {
-    $list[$i] = array_combine(["integer", "character"], explode(' ', trim(fgets(STDIN))));
+    $list[$i] = array_combine(["integer", "character"], array_map(fn($f, $x) => $f($x), ['intval', 'strval'], explode(' ', trim(fgets(STDIN)))));
 }
 example($n, $list);

@@ -102,6 +102,18 @@ If you want to run the tests for one language only (because you do not have all
 the compilers installed, or simply because it is much faster), run
 `./test -l {language_extension}`.
 
+Note that because we are working with floats, the behavior in some languages
+may be dependent of the language of the system running the parser. If you are
+not careful, you might change the code so that it works on your machine, but
+will not work if your machine were set to a different language. For example,
+in C#, `double.Parse("3.5")` will work fine on an English computer, but will
+crash on a French one. So to really run the tests completely, one should in
+theory run the tests with an English locale (or any language that uses a dot as
+a decimal separator) and with a French locale (or any language that uses a
+comma as a decimal separator). This might be tedious, as you might not want to
+install extra languages on your computer. Luckily, the CI will run all that for
+you.
+
 Contributing code
 -----------------
 

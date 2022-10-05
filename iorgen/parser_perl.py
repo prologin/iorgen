@@ -53,43 +53,53 @@ def read_line(
 ) -> List[str]:
     """Generate the Ruby code to read a line of given type"""
     assert type_.fits_in_one_line(input_data.structs)
-    if type_.main == TypeEnum.INT:
-        return [decl.format("int <>")]
-    if type_.main == TypeEnum.CHAR:
-        return [decl.format("substr <>, 0, 1")]
     if type_.main == TypeEnum.STR:
         read = "<>" if decl.startswith("my") else "scalar(<>)"
-        return [decl.format(read), "chomp {};".format(name)]
+        return [decl.format(read), f"chomp {name};"]
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
         decl2 = decl
         if not decl.startswith("my"):
             decl2 = format_keep_braces(decl, "\\@{{[{}]}}")
-        if type_.encapsulated.main == TypeEnum.INT:
-            return [decl2.format("map { int } split(/[ \\n]/, <>)")]
+        if type_.encapsulated.main in (TypeEnum.INT, TypeEnum.FLOAT):
+            cast = "map { int } " if type_.encapsulated.main == TypeEnum.INT else ""
+            return [decl2.format(f"{cast}split(/[ \\n]/, <>)")]
         assert type_.encapsulated.main == TypeEnum.CHAR
         return [decl2.format("split /\\n?/, <>")]
-    assert type_.main == TypeEnum.STRUCT
-    struct = input_data.get_struct(type_.struct_name)
-    decl2 = decl
-    if not decl.startswith("my"):
-        decl2 = format_keep_braces(decl, "\\%{{{{{}}}}}")
-    split = words.next_name()
-    fields = (
-        '"{}" => {}'.format(
-            f.name,
-            (
-                "int(${}[{}])"
-                if f.type.main == TypeEnum.INT
-                else "substr(${}[{}], 0, 1)"
-            ).format(split, i),
+    if type_.main == TypeEnum.STRUCT:
+        struct = input_data.get_struct(type_.struct_name)
+        decl2 = decl
+        if not decl.startswith("my"):
+            decl2 = format_keep_braces(decl, "\\%{{{{{}}}}}")
+        split = words.next_name()
+        fields = (
+            '"{}" => {}'.format(
+                f.name,
+                (
+                    "int(${}[{}])"
+                    if f.type.main == TypeEnum.INT
+                    else "${}[{}]"
+                    if f.type.main == TypeEnum.FLOAT
+                    else "substr(${}[{}], 0, 1)"
+                ).format(split, i),
+            )
+            for i, f in enumerate(struct.fields)
         )
-        for i, f in enumerate(struct.fields)
-    )
-    return [
-        "my @{} = split /[ \\n]/, <>;".format(split),
-        decl2.format("({})".format(", ".join(fields))),
-    ]
+        return [
+            f"my @{split} = split /[ \\n]/, <>;",
+            decl2.format(f"({', '.join(fields)})"),
+        ]
+    return {
+        TypeEnum.INT: [decl.format("int <>")],
+        # Note about the "+ 0": there is no function in perl to convert a string into
+        # a float. They tell you not to care about those things, and that everything
+        # will be converted automatically. Sadly here <> will return a string with the
+        # endline marker (\n) still present. The simpliest removing it without having
+        # to declare a intermediary variable (hello 'chomp' and its stupid signature)
+        # seems to do "+ 0". Maybe there is a better solution.
+        TypeEnum.FLOAT: [decl.format("<> + 0")],
+        TypeEnum.CHAR: [decl.format("substr <>, 0, 1")],
+    }[type_.main]
 
 
 def read_lines(
@@ -170,14 +180,14 @@ def print_line(varname: str, type_: Type, input_data: Input, style: FormatStyle)
     """Print the content of a var in one line"""
     assert type_.fits_in_one_line(input_data.structs, style)
     name = "$" + varname[1:]
-    if type_.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.STR):
+    if type_.main in (TypeEnum.INT, TypeEnum.FLOAT, TypeEnum.CHAR, TypeEnum.STR):
         endline = " " if style == FormatStyle.NO_ENDLINE else r"\n"
         return f'print "{name}{endline}";'
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
         if type_.encapsulated.main == TypeEnum.CHAR:
             return f'print join("", @{{{name}}}) . "\\n";'
-        assert type_.encapsulated.main == TypeEnum.INT
+        assert type_.encapsulated.main in (TypeEnum.INT, TypeEnum.FLOAT)
         return 'print "{}\\n";'.format("@{" + name + "}")
     assert type_.main == TypeEnum.STRUCT
     struct = input_data.get_struct(type_.struct_name)
