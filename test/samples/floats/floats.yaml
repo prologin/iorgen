@@ -1,0 +1,72 @@
+function_name: floats
+subject: This will generate a program reading floats.
+structs:
+    - name: coordinates
+      comment: Represents coordinates
+      fields:
+          - type: float
+            name: x
+            comment: X
+            choices: [0.3, 4.0, 8.0]
+          - type: float
+            name: y
+            comment: Y
+            min: 0
+          - type: float
+            name: z
+            comment: Z
+            max: 12
+    - name: inlined mix
+      comment: Mix of fields that go on one line
+      fields:
+          - type: int
+            name: integer
+            comment: an integer
+          - type: char
+            name: char
+            comment: a char
+          - type: float
+            name: float
+            comment: a float
+    - name: multiline mix
+      comment: a struct of chars
+      fields:
+          - type: int
+            name: integer 2
+            comment: an other integer
+          - type: str(5)
+            name: string
+            comment: a string of size 5
+          - type: float
+            name: float 2
+            comment: an other float
+input:
+    - type: float
+      name: f
+      comment: a float
+      min: -3.70
+      max: 38.9e5
+    - type: float
+      name: g
+      comment: a float, greater than f
+      min: f
+    - type: "@coordinates"
+      name: point
+      comment: some coordinates
+    - type: int
+      name: n
+      comment: a number
+      max: 10
+    - type: List[float](n)
+      name: float list
+      comment: a list of floats
+    - type: List[float](9)
+      name: other list
+      comment: a list of floats
+    - type: List[@inlined mix](3)
+      name: inlined
+      comment: some inlined structs
+    - type: "@multiline mix"
+      name: multiline
+      comment: a multiline struct
+output: Parsing is often easy, reprint mode is harder
