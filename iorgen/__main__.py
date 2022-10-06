@@ -82,6 +82,8 @@ def command_gen_stubs(
                 LANGUAGES_MAPPING[language].generate(yaml_input_data), encoding="utf-8"
             )
 
+        print("Skeletons have been generated")
+
         # Generate the markdown subject stub
         if markdown != "None":
             path = skeleton_dir.parent / (

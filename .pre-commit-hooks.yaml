@@ -1,0 +1,15 @@
+- id: iorgen-gen-skel
+  name: iorgen-gen-skel
+  description: "Iorgen pre-commit hook that will generate code skeleton"
+
+  language: python
+  language_version: python3
+
+  # This hook is supposed to generate skeletons only (to ensure they match the .iorgen file)
+  # Therefore we do not want to generate subject-io-stub.md
+  entry: iorgen gen-stubs -m None --same_dir
+
+  # Match files with iorgen or YAML extensions
+  files: \.(iorgen|yml|yaml)$
+
+  pass_filenames: true
