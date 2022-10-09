@@ -107,6 +107,7 @@ compile:
     - pip3 install dist/iorgen-*.whl
   script:
     - ./test/test.py --no_missing
+    - env LC_ALL=fr_FR.UTF8 ./test/test.py --no_missing
 
 test:
   stage: test
