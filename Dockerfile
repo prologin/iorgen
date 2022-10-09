@@ -42,7 +42,10 @@ RUN if [ $INCLUDE_DEV_DEPS = "true" ]; then \
         php \
         ruby \
         rustc \
-        swi-prolog-nox; \
+        swi-prolog-nox && \
+      apt-get install -y --no-install-recommends locales && \
+      sed -i -e 's/# fr_FR.UTF-8 UTF-8/fr_FR.UTF-8 UTF-8/' /etc/locale.gen && \
+      locale-gen; \
     fi
 
 FROM base as builder
