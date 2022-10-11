@@ -172,7 +172,6 @@ deploy:
 
 deploy container:
   stage: deploy
-  needs: []
   image:
     name: moby/buildkit:latest
     entrypoint: [""]
@@ -188,6 +187,6 @@ deploy container:
           --frontend=dockerfile.v0 \
           --local context=. \
           --local dockerfile=. \
-          --output type=image,\"name=$CI_COMMIT_SHA,$CI_REGISTRY_IMAGE:${CI_COMMIT_TAG:-latest}\",push=true \
+          --output type=image,\"name=$CI_REGISTRY_IMAGE:${CI_COMMIT_TAG:-latest}\",push=true \
           --import-cache type=registry,ref=$CI_REGISTRY_IMAGE:buildcache-python-3.10 \
           --export-cache type=registry,ref=$CI_REGISTRY_IMAGE:buildcache-python-3.10,mode=max
