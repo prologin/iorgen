@@ -60,6 +60,12 @@ RUN --mount=type=bind,target=./pyproject.toml,src=./pyproject.toml \
     pip3 install poetry && \
     poetry install $(if [ $INCLUDE_DEV_DEPS = "false" ]; then echo "--no-dev"; fi)
 
+COPY ./ /iorgen
+WORKDIR /iorgen
+RUN poetry install
+
 FROM base
 
 COPY --from=builder /opt/venv/ /opt/venv/
+COPY --from=builder /iorgen/ /iorgen/
+WORKDIR /
