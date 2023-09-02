@@ -9,6 +9,7 @@ from difflib import unified_diff
 from pathlib import Path
 from typing import Callable, Iterator, List, Optional
 
+from iorgen.parser_kotlin import gen_kotlin
 from iorgen.types import Input
 from iorgen.markdown import gen_markdown
 from iorgen.parser_c import gen_c
@@ -115,6 +116,7 @@ ALL_LANGUAGES = [
     Language("rb", gen_ruby, [], ["ruby"]),
     Language("rs", gen_rust, ["rustc", "-W", "warnings", "-O"]),
     Language("scm", gen_scheme, [], ["gsi"]),
+    Language("kts", gen_kotlin, [], ["kotlinc", "-script"]),
 ]
 
 ALL_MARKDOWN = [
