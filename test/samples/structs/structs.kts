@@ -138,3 +138,5 @@ fun main() {
 
     structs(struct, n, structList, triangle, structChars, bigListStruct)
 }
+
+main()

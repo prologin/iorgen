@@ -98,3 +98,5 @@ fun main() {
 
     floats(f, g, point, n, floatList, otherList, inlined, multiline)
 }
+
+main()

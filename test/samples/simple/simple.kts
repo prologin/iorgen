@@ -19,3 +19,5 @@ fun main() {
 
     simple(n, otherNumber)
 }
+
+main()

@@ -85,3 +85,5 @@ fun main() {
 
     keywords(`if`, `class`, i, `in`, `for`, words, words1)
 }
+
+main()

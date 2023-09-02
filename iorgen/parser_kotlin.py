@@ -294,7 +294,7 @@ class ParserKotlin:
 
         output += "\n".join(self.call(reprint)) + "\n\n"
 
-        output += "fun main() {{\n"
+        output += "fun main() {\n"
         output += INDENTATION + (
             "val reader = " "BufferedReader(InputStreamReader(System.`in`))\n"
         )
@@ -325,7 +325,8 @@ class ParserKotlin:
         output += "\n{}{}({})\n".format(
             INDENTATION, var_name(self.input.name), ", ".join(args)
         )
-        output += "}\n"
+        output += "}\n\n"
+        output += "main()"
         return "".join(f"import {i}\n" for i in sorted(self.imports)) + "\n" + output
 
 

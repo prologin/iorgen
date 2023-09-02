@@ -39,3 +39,5 @@ fun main() {
 
     example(n, list)
 }
+
+main()

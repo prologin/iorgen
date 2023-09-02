@@ -94,3 +94,5 @@ fun main() {
 
     emptyLines(emptyList, bufferString, n, emptyInSample, emptyString, main, emptyCharList, nonEmptyCharList, structWithEmptyLine, aSizedStruct, finish)
 }
+
+main()

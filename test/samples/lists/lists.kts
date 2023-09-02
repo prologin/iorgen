@@ -49,3 +49,5 @@ fun main() {
 
     lists(n, listInt, size, listChar, string, listString4, listListString2, matrix)
 }
+
+main()

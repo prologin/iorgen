@@ -107,3 +107,5 @@ fun main() {
 
     sizedStruct(n, lists, strings, matrices, same)
 }
+
+main()

@@ -32,3 +32,5 @@ fun main() {
 
     manualFormat(a, b, c, n, onePerLine)
 }
+
+main()
