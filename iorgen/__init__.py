@@ -14,6 +14,7 @@ from iorgen.parser_haskell import gen_haskell
 from iorgen.parser_java import gen_java
 from iorgen.parser_javascript import gen_javascript
 from iorgen.parser_julia import gen_julia
+from iorgen.parser_kotlin import gen_kotlin
 from iorgen.parser_lua import gen_lua
 from iorgen.parser_ocaml import gen_ocaml
 from iorgen.parser_pascal import gen_pascal
