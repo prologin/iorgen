@@ -64,7 +64,7 @@ RUN --mount=type=bind,target=./pyproject.toml,src=./pyproject.toml \
     python -m venv /opt/venv && \
     pip3 install --upgrade pip && \
     pip3 install poetry && \
-    poetry install $(if [ $INCLUDE_DEV_DEPS = "false" ]; then echo "--no-dev"; fi)
+    poetry install $(if [ $INCLUDE_DEV_DEPS = "false" ]; then echo "--only main"; fi)
 
 COPY ./ /iorgen
 WORKDIR /iorgen
