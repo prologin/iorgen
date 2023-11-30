@@ -39,12 +39,16 @@ pacman -S --needed python-yaml fpc gambit-c gcc gdc ghc go jdk-openjdk julia \
     lua mono nodejs ocaml perl php ruby rust swi-prolog
 ```
 
-For Debian based distros (tested on Debian 10, Ubuntu 18.04 and 20.04):
+For Debian based distros (tested on Debian 10, 11, 12 and Ubuntu 18.04, 20.04,
+22.04):
 ```shell
-sudo apt install python3-yaml default-jdk-headless fp-compiler gambc gcc gdc \
-    ghc golang julia lua5.3 mono-mcs nodejs ocaml-nox perl php-cli ruby rustc \
-    swi-prolog-nox
+sudo apt install python3-yaml default-jdk-headless fp-compiler g++ gambc gcc \
+    gdc ghc golang-go julia lua5.3 mono-mcs nodejs ocaml-nox perl php-cli ruby \
+    rustc swi-prolog-nox
 ```
+
+For Debian based distro, there might not be a `julia` package. You’ll have to
+install it [from their website](https://julialang.org/downloads/).
 
 The compilers must not be too old. For instance for Ocaml you need at least
 version 4.06, which is more recent that the default version in Ubuntu 18.04

@@ -24,8 +24,12 @@ RUN apt-get update && \
 ARG INCLUDE_DEV_DEPS=false
 
 RUN if [ $INCLUDE_DEV_DEPS = "true" ]; then \
-      curl -sL https://deb.nodesource.com/setup_17.x | bash - && \
+      # julia is no longer packaged in Debian 12
+      # this curl install should be enough for a container:
+      curl -s https://julialang-s3.julialang.org/bin/linux/x64/1.9/julia-1.9.4-linux-x86_64.tar.gz \
+        | tar --strip-components=1 -xz -C /usr/local && \
       apt-get install -y --no-install-recommends \
+        default-jdk-headless \
         fp-compiler \
         g++ \
         gambc \
@@ -33,13 +37,12 @@ RUN if [ $INCLUDE_DEV_DEPS = "true" ]; then \
         gdc \
         ghc \
         golang-go \
-        julia \
         lua5.3 \
         mono-mcs \
         nodejs \
         ocaml-nox \
-        openjdk-11-jdk \
-        php \
+        perl \
+        php-cli \
         ruby \
         rustc \
         swi-prolog-nox && \
@@ -53,7 +56,7 @@ FROM base as builder
 ARG INCLUDE_DEV_DEPS=false
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends gcc python-dev git
+    apt-get install -y --no-install-recommends gcc git
 
 RUN --mount=type=bind,target=./pyproject.toml,src=./pyproject.toml \
     --mount=type=bind,target=./poetry.lock,src=./poetry.lock \
