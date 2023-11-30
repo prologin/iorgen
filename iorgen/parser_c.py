@@ -195,7 +195,7 @@ class ParserC:
             assert type_.encapsulated is not None
             self.includes.add("stdlib.h")
             array_size = (
-                "({} + 1)".format(size) if type_.main == TypeEnum.CHAR else size
+                f"({size} + 1)" if type_.encapsulated.main == TypeEnum.CHAR else size
             )
             self.main.append(
                 "{0}{1} = ({3}*)malloc({2} * sizeof({3}));".format(
