@@ -138,7 +138,7 @@ def read_lines(
     if struct.is_sized_struct():
         sizes = ["", f"{var.name}{{'{struct.fields[0].name}'}}"]
     lines = [decl.format("()" if var.name[0] == "%" else "{}")]
-    for (field, f_size) in zip(struct.fields, sizes):
+    for field, f_size in zip(struct.fields, sizes):
         f_name = f"${var.name[1:]}{{'{field.name}'}}"
         lines.extend(
             read_lines(
