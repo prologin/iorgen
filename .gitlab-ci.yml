@@ -55,14 +55,15 @@ container build:
     matrix:
       - PYTHON_IMAGE: python
         PYTHON_VERSION:
-          - "3.7"
           - "3.8"
           - "3.9"
           - "3.10"
+          - "3.11"
+          - "3.12"
       - PYTHON_IMAGE: pypy
         PYTHON_VERSION:
-          - "3.8"
           - "3.9"
+          - "3.10"
 
 container build ci:
   stage: container build
@@ -125,14 +126,15 @@ test:
     matrix:
       - PYTHON_IMAGE: python
         PYTHON_VERSION:
-          - "3.7"
           - "3.8"
           - "3.9"
           - "3.10"
+          - "3.11"
+          - "3.12"
       - PYTHON_IMAGE: pypy
         PYTHON_VERSION:
-          - "3.8"
           - "3.9"
+          - "3.10"
 
 lint:
   stage: qa
