@@ -7,10 +7,7 @@ import java.io.InputStreamReader
  * @property foo a field
  * @property bar a field
  */
-data class Struct1(
-    var foo: Int,
-    var bar: Int,
-)
+data class Struct1(val foo: Int, val bar: Int)
 
 /**
  * Represents a position
@@ -19,11 +16,7 @@ data class Struct1(
  * @property y Y
  * @property z Z
  */
-data class Position(
-    var x: Int,
-    var y: Int,
-    var z: Int,
-)
+data class Position(val x: Int, val y: Int, val z: Int)
 
 /**
  * A point's name and position
@@ -32,11 +25,7 @@ data class Position(
  * @property description the point's description
  * @property pos the point's position
  */
-data class Point(
-    var name: Char,
-    var description: String,
-    var pos: Position,
-)
+data class Point(val name: Char, val description: String, val pos: Position)
 
 /**
  * a struct of chars
@@ -45,11 +34,7 @@ data class Point(
  * @property secondChar a second char
  * @property thirdChar a third char
  */
-data class Chars(
-    var firstChar: Char,
-    var secondChar: Char,
-    var thirdChar: Char,
-)
+data class Chars(val firstChar: Char, val secondChar: Char, val thirdChar: Char)
 
 /**
  * contains a big list inside
@@ -57,10 +42,7 @@ data class Chars(
  * @property int int
  * @property bigList list nested 3 times!
  */
-data class WithList(
-    var int: Int,
-    var bigList: List<List<List<Int>>>,
-)
+data class WithList(val int: Int, val bigList: List<List<List<Int>>>)
 
 /**
  * @param struct a struct 1 instance
@@ -76,7 +58,7 @@ fun structs(
     structList: List<Struct1>,
     triangle: List<Point>,
     structChars: Chars,
-    bigListStruct: WithList,
+    bigListStruct: WithList
 ) {
     /* TODO: Look at them structs. */
 }
@@ -86,7 +68,7 @@ fun main() {
     var struct: Struct1 = reader.readLine().split(" ").let { 
         Struct1(
             foo = it[0].toInt(),
-            bar = it[1].toInt(),
+            bar = it[1].toInt()
         )
     }
     var n: Int = reader.readLine().toInt()
@@ -94,7 +76,7 @@ fun main() {
         var words1: Struct1 = reader.readLine().split(" ").let { 
             Struct1(
                 foo = it[0].toInt(),
-                bar = it[1].toInt(),
+                bar = it[1].toInt()
             )
         }
         words1
@@ -106,13 +88,13 @@ fun main() {
             Position(
                 x = it[0].toInt(),
                 y = it[1].toInt(),
-                z = it[2].toInt(),
+                z = it[2].toInt()
             )
         }
         var words3: Point = Point(
             name = name,
             description = description,
-            pos = pos,
+            pos = pos
         )
         words3
     }
@@ -120,7 +102,7 @@ fun main() {
         Chars(
             firstChar = it[0][0],
             secondChar = it[1][0],
-            thirdChar = it[2][0],
+            thirdChar = it[2][0]
         )
     }
     var int: Int = reader.readLine().toInt()
@@ -133,7 +115,7 @@ fun main() {
     }
     var bigListStruct: WithList = WithList(
         int = int,
-        bigList = bigList,
+        bigList = bigList
     )
 
     structs(struct, n, structList, triangle, structChars, bigListStruct)

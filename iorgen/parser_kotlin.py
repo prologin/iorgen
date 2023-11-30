@@ -86,6 +86,7 @@ class ParserKotlin:
                 f"{parse_type(f.type, f'it[{i}]')},"
                 for i, f in enumerate(struct.fields)
             )
+            lines[-1] = lines[-1].removesuffix(",")  # no trailing comma in kotlin < 1.4
 
             lines.append(indent + INDENTATION + ")")
             lines.append(indent + "}")
@@ -141,7 +142,8 @@ class ParserKotlin:
             )
 
             for f_name, f_type, f_size in struct.fields_name_type_size("{}", var_name):
-                lines.append("{0}{1} = {1},".format(indent + INDENTATION, f_name))
+                lines.append(f"{indent + INDENTATION}{f_name} = {f_name},")
+            lines[-1] = lines[-1].removesuffix(",")  # no trailing comma in kotlin < 1.4
 
             lines.append(f"{indent})")
             return lines
@@ -188,6 +190,7 @@ class ParserKotlin:
 
         for arg in self.input.input:
             lines.append(f"{INDENTATION}{var_name(arg.name)}: {type_str(arg.type)},")
+        lines[-1] = lines[-1].removesuffix(",")  # no trailing comma in kotlin < 1.4
 
         lines.append(") {")
 
@@ -301,9 +304,11 @@ class ParserKotlin:
             for field in struct.fields:
                 output += f" * @property {var_name(field.name)} {field.comment}\n"
             output += " */\n"
-            output += f"data class {class_name(struct.name)}(\n"
-            for field in struct.fields:
-                output += f"{INDENTATION}var {var_name(field.name)}: {type_str(field.type)},\n"
+            output += f"data class {class_name(struct.name)}("
+            output += ", ".join(
+                f"val {var_name(field.name)}: {type_str(field.type)}"
+                for field in struct.fields
+            )
             output += ")\n\n"
 
         output += "\n".join(self.call(reprint)) + "\n\n"
@@ -353,7 +358,7 @@ class ParserKotlin:
             INDENTATION, var_name(self.input.name), ", ".join(args)
         )
         output += "}\n\n"
-        output += "main()"
+        output += "main()\n"
         return "".join(f"import {i}\n" for i in sorted(self.imports)) + "\n" + output
 
 

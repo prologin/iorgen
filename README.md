@@ -8,9 +8,9 @@ template. The user writes a YAML describing the input, and *Iorgen* will
 generate the code to read this input from stdin, in all supported languages.
 
 The list of currently supported languages is: C, C++, C#, D, Go, Haskell, Java,
-Javascript, Julia, Lua, Ocaml, Pascal, Perl, PHP, Prolog, Python, Ruby, Rust,
-Scheme. A Markdown description of the input in English and French can also be
-generated.
+Javascript, Julia, Kotlin, Lua, Ocaml, Pascal, Perl, PHP, Prolog, Python, Ruby,
+Rust, Scheme. A Markdown description of the input in English and French can also
+be generated.
 
 ## Installation
 
@@ -36,23 +36,24 @@ for instance, you will have to install lots of compilers.
 The complete dependencies for Archlinux are:
 ```shell
 pacman -S --needed python-yaml fpc gambit-c gcc gdc ghc go jdk-openjdk julia \
-    lua mono nodejs ocaml perl php ruby rust swi-prolog
+    kotlin lua mono nodejs ocaml perl php ruby rust swi-prolog
 ```
 
 For Debian based distros (tested on Debian 10, 11, 12 and Ubuntu 18.04, 20.04,
-22.04):
+22.04) (see limitations below):
 ```shell
 sudo apt install python3-yaml default-jdk-headless fp-compiler g++ gambc gcc \
-    gdc ghc golang-go julia lua5.3 mono-mcs nodejs ocaml-nox perl php-cli ruby \
-    rustc swi-prolog-nox
+    gdc ghc golang-go julia kotlin lua5.3 mono-mcs nodejs ocaml-nox perl \
+    php-cli ruby rustc swi-prolog-nox
 ```
 
-For Debian based distro, there might not be a `julia` package. You’ll have to
-install it [from their website](https://julialang.org/downloads/).
-
-The compilers must not be too old. For instance for Ocaml you need at least
-version 4.06, which is more recent that the default version in Ubuntu 18.04
-and Debian 10.
+Issues with some Debian/Ubuntu versions:
+- There might not be a `julia` package. You’ll have to install it
+  [from their website](https://julialang.org/downloads/).
+- The `kotlin` package only exists starting from Debian 12 and Ubuntu 22.04.
+- The compilers must not be too old. For instance for Ocaml you need at least
+  version 4.06, which is more recent that the default version in Ubuntu 18.04
+  and Debian 10.
 
 ## Usage
 

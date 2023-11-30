@@ -7,10 +7,7 @@ import java.io.InputStreamReader
  * @property a the first letter of the alphabet
  * @property static an integer
  */
-data class Console(
-    var a: Int,
-    var static: Int,
-)
+data class Console(val a: Int, val static: Int)
 
 /**
  * may conflict in c#
@@ -18,10 +15,7 @@ data class Console(
  * @property `return` not the end of the function
  * @property void not nothing
  */
-data class System_(
-    var `return`: Int,
-    var void: List<Int>,
-)
+data class System_(val `return`: Int, val void: List<Int>)
 
 /**
  * not the main function
@@ -29,10 +23,7 @@ data class System_(
  * @property int not an integer
  * @property ifTrue should not cause conflict
  */
-data class Main(
-    var int: System_,
-    var ifTrue: Int,
-)
+data class Main(val int: System_, val ifTrue: Int)
 
 /**
  * @param `if` not a condition
@@ -50,7 +41,7 @@ fun keywords(
     `in`: Console,
     `for`: List<Int>,
     words: List<Main>,
-    words1: Int,
+    words1: Int
 ) {
     /* TODO: If this compiles, it is already a good step! */
 }
@@ -63,7 +54,7 @@ fun main() {
     var `in`: Console = reader.readLine().split(" ").let { 
         Console(
             a = it[0].toInt(),
-            static = it[1].toInt(),
+            static = it[1].toInt()
         )
     }
     var `for`: List<Int> = reader.readLine().split(" ").filter { !it.isBlank() }.map(String::toInt)
@@ -72,12 +63,12 @@ fun main() {
         var void: List<Int> = reader.readLine().split(" ").filter { !it.isBlank() }.map(String::toInt)
         var int: System_ = System_(
             `return` = `return`,
-            void = void,
+            void = void
         )
         var ifTrue: Int = reader.readLine().toInt()
         var words3: Main = Main(
             int = int,
-            ifTrue = ifTrue,
+            ifTrue = ifTrue
         )
         words3
     }

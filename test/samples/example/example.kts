@@ -7,10 +7,7 @@ import java.io.InputStreamReader
  * @property integer an integer
  * @property character a char
  */
-data class AStruct(
-    var integer: Int,
-    var character: Char,
-)
+data class AStruct(val integer: Int, val character: Char)
 
 /**
  * @param n a number, used as a size
@@ -18,7 +15,7 @@ data class AStruct(
  */
 fun example(
     n: Int,
-    list: List<AStruct>,
+    list: List<AStruct>
 ) {
     /* TODO: In a real life scenario, you will describe here what you want
     the end user to do with this generated code */
@@ -31,7 +28,7 @@ fun main() {
         var words: AStruct = reader.readLine().split(" ").let { 
             AStruct(
                 integer = it[0].toInt(),
-                character = it[1][0],
+                character = it[1][0]
             )
         }
         words

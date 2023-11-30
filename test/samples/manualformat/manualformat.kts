@@ -13,7 +13,7 @@ fun manualFormat(
     b: Int,
     c: Int,
     n: Int,
-    onePerLine: List<Int>,
+    onePerLine: List<Int>
 ) {
     /* TODO: From the function perspective, this is just 4 integers */
 }

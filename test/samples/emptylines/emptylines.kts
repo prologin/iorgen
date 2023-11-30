@@ -7,10 +7,7 @@ import java.io.InputStreamReader
  * @property char1 a char
  * @property int2 an integer
  */
-data class StructWithAChar(
-    var char1: Char,
-    var int2: Int,
-)
+data class StructWithAChar(val char1: Char, val int2: Int)
 
 /**
  * a struct
@@ -18,10 +15,7 @@ data class StructWithAChar(
  * @property listInStruct a list in a struct
  * @property structInStruct a struct in a struct
  */
-data class A(
-    var listInStruct: List<Int>,
-    var structInStruct: StructWithAChar,
-)
+data class A(val listInStruct: List<Int>, val structInStruct: StructWithAChar)
 
 /**
  * a sized struct
@@ -29,10 +23,7 @@ data class A(
  * @property size the size
  * @property stringInStruct the string
  */
-data class SizedStruct(
-    var size: Int,
-    var stringInStruct: String,
-)
+data class SizedStruct(val size: Int, val stringInStruct: String)
 
 /**
  * @param emptyList an empty list
@@ -58,7 +49,7 @@ fun emptyLines(
     nonEmptyCharList: List<Char>,
     structWithEmptyLine: A,
     aSizedStruct: SizedStruct,
-    finish: String,
+    finish: String
 ) {
     /* TODO: Wow, lots of empty lines! */
 }
@@ -77,18 +68,18 @@ fun main() {
     var structInStruct: StructWithAChar = reader.readLine().split(" ").let { 
         StructWithAChar(
             char1 = it[0][0],
-            int2 = it[1].toInt(),
+            int2 = it[1].toInt()
         )
     }
     var structWithEmptyLine: A = A(
         listInStruct = listInStruct,
-        structInStruct = structInStruct,
+        structInStruct = structInStruct
     )
     var size: Int = reader.readLine().toInt()
     var stringInStruct: String = reader.readLine()
     var aSizedStruct: SizedStruct = SizedStruct(
         size = size,
-        stringInStruct = stringInStruct,
+        stringInStruct = stringInStruct
     )
     var finish: String = reader.readLine()
 

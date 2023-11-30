@@ -37,6 +37,7 @@ RUN if [ $INCLUDE_DEV_DEPS = "true" ]; then \
         gdc \
         ghc \
         golang-go \
+        kotlin \
         lua5.3 \
         mono-mcs \
         nodejs \

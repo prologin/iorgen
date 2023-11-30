@@ -7,10 +7,7 @@ import java.io.InputStreamReader
  * @property size1 the list's size
  * @property intList the integer list
  */
-data class List_(
-    var size1: Int,
-    var intList: List<Int>,
-)
+data class List_(val size1: Int, val intList: List<Int>)
 
 /**
  * contains a string
@@ -18,10 +15,7 @@ data class List_(
  * @property size2 the list's size
  * @property stringList the string list
  */
-data class String_(
-    var size2: Int,
-    var stringList: String,
-)
+data class String_(val size2: Int, val stringList: String)
 
 /**
  * contains a matrix
@@ -29,10 +23,7 @@ data class String_(
  * @property size3 the list's size
  * @property listList the list list
  */
-data class Matrix(
-    var size3: Int,
-    var listList: List<List<Int>>,
-)
+data class Matrix(val size3: Int, val listList: List<List<Int>>)
 
 /**
  * this is not a 'sized struct', but a regular one!
@@ -40,10 +31,7 @@ data class Matrix(
  * @property size4 not the list's size
  * @property intListN the integer list
  */
-data class NotASizedStruct(
-    var size4: Int,
-    var intListN: List<Int>,
-)
+data class NotASizedStruct(val size4: Int, val intListN: List<Int>)
 
 /**
  * @param n the size of the lists
@@ -57,7 +45,7 @@ fun sizedStruct(
     lists: List<List_>,
     strings: List<String_>,
     matrices: List<Matrix>,
-    same: List<NotASizedStruct>,
+    same: List<NotASizedStruct>
 ) {
     /* TODO: The is a special case. */
 }
@@ -70,7 +58,7 @@ fun main() {
         var intList: List<Int> = reader.readLine().split(" ").filter { !it.isBlank() }.map(String::toInt)
         var words: List_ = List_(
             size1 = size1,
-            intList = intList,
+            intList = intList
         )
         words
     }
@@ -79,7 +67,7 @@ fun main() {
         var stringList: String = reader.readLine()
         var words1: String_ = String_(
             size2 = size2,
-            stringList = stringList,
+            stringList = stringList
         )
         words1
     }
@@ -91,7 +79,7 @@ fun main() {
         }
         var words2: Matrix = Matrix(
             size3 = size3,
-            listList = listList,
+            listList = listList
         )
         words2
     }
@@ -100,7 +88,7 @@ fun main() {
         var intListN: List<Int> = reader.readLine().split(" ").filter { !it.isBlank() }.map(String::toInt)
         var words4: NotASizedStruct = NotASizedStruct(
             size4 = size4,
-            intListN = intListN,
+            intListN = intListN
         )
         words4
     }
