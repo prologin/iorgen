@@ -38,6 +38,7 @@ def type_str(type_: Type) -> str:
     if type_.main == TypeEnum.STRUCT:
         return class_name(type_.struct_name)
     assert type_.main == TypeEnum.LIST
+    assert type_.encapsulated
 
     return f"List<{type_str(type_.encapsulated)}>"
 
@@ -74,13 +75,12 @@ class ParserKotlin:
         if type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)
             words = self.words.next_name()
-            lines = [indent
-                     + f'{f"var {name}: {type_str(type_)}" if decl else words}'
-                     + f' = reader.readLine().split(" ").let {{ ', indent
-                     + INDENTATION
-                     + "{}(".format(
-                class_name(type_.struct_name),
-            )]
+            lines = [
+                indent
+                + f'{f"var {name}: {type_str(type_)}" if decl else words}'
+                + ' = reader.readLine().split(" ").let { ',
+                indent + INDENTATION + class_name(type_.struct_name) + "(",
+            ]
             lines.extend(
                 f"{indent + INDENTATION * 2}{var_name(f.name)} = "
                 f"{parse_type(f.type, f'it[{i}]')},"
@@ -102,8 +102,13 @@ class ParserKotlin:
                 command = "reader.readLine().toList()"
             else:
                 assert type_.encapsulated.main in (TypeEnum.INT, TypeEnum.FLOAT)
-                command = 'reader.readLine().split(" ").filter {{ !it.isBlank() }}.map(String::{})'.format(
-                    "toInt" if type_.encapsulated.main == TypeEnum.INT else "toDouble"
+                command = (
+                    'reader.readLine().split(" ").filter {{ !it.isBlank() }}'
+                    ".map(String::{})".format(
+                        "toInt"
+                        if type_.encapsulated.main == TypeEnum.INT
+                        else "toDouble"
+                    )
                 )
 
         assert command
@@ -200,11 +205,11 @@ class ParserKotlin:
                         )
                     )
                 else:
+
                     def get_print_format(printed: Variable) -> str:
-                        if printed.type == TypeEnum.FLOAT:
+                        if printed.type.main == TypeEnum.FLOAT:
                             return "${" + var_name(printed.name) + ".iorgenFormat() }"
-                        else:
-                            return "${" + var_name(printed.name) + "}"
+                        return "${" + var_name(printed.name) + "}"
 
                     lines.append(
                         INDENTATION
@@ -227,9 +232,9 @@ class ParserKotlin:
         """Print the content of a var that holds in one line"""
         assert type_.fits_in_one_line(self.input.structs)
         if type_.main == TypeEnum.FLOAT:
-            return f'println({name}.iorgenFormat())'
+            return f"println({name}.iorgenFormat())"
         if type_.main in (TypeEnum.INT, TypeEnum.CHAR, TypeEnum.STR):
-            return f'println({name})'
+            return f"println({name})"
         if type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
             if type_.encapsulated.main == TypeEnum.CHAR:
@@ -237,21 +242,18 @@ class ParserKotlin:
             assert type_.encapsulated.main in (TypeEnum.INT, TypeEnum.FLOAT)
             if type_.encapsulated.main == TypeEnum.FLOAT:
                 return f'println({name}.joinToString(" ") {{ it.iorgenFormat() }})'
-            else:
-                return f'println({name}.joinToString(" "))'
+            return f'println({name}.joinToString(" "))'
         assert type_.main == TypeEnum.STRUCT
         fields = self.input.get_struct(type_.struct_name).fields
         struct_print_patterns = []
         for field in fields:
             if field.type.main == TypeEnum.FLOAT:
-                struct_print_patterns.append(f"${{{name}.{var_name(field.name)}.iorgenFormat()}}")
+                struct_print_patterns.append(
+                    f"${{{name}.{var_name(field.name)}.iorgenFormat()}}"
+                )
             else:
                 struct_print_patterns.append(f"${{{name}.{var_name(field.name)}}}")
-        return (
-            f'println("'
-            + " ".join(struct_print_patterns)
-            + '")'
-        )
+        return f'println("{" ".join(struct_print_patterns)}")'
 
     def print_lines(
         self,
