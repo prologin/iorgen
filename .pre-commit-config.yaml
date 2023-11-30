@@ -14,14 +14,15 @@ repos:
         additional_dependencies:
           - types-pyyaml
         exclude: ^test/
-  - repo: https://github.com/pre-commit/mirrors-pylint
-    rev: v2.7.4
+  - repo: https://github.com/pylint-dev/pylint
+    rev: v3.0.2
     hooks:
       - id: pylint
         args:
           - --jobs=0
           - --disable=R0801
           - --disable=C0209
+          - --disable=W0719 # broad-exception-raised (to activate back later)
         additional_dependencies:
           - pyyaml
         exclude: ^test/samples/
