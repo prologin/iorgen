@@ -48,31 +48,30 @@ fun keywords(
 
 fun main() {
     val reader = BufferedReader(InputStreamReader(System.`in`))
-    var `if`: Int = reader.readLine().toInt()
-    var `class`: Char = reader.readLine()[0]
-    var i: String = reader.readLine()
-    var `in`: Console = reader.readLine().split(" ").let { 
+    val `if`: Int = reader.readLine().toInt()
+    val `class`: Char = reader.readLine()[0]
+    val i: String = reader.readLine()
+    val `in`: Console = reader.readLine().split(" ").let { 
         Console(
             a = it[0].toInt(),
             static = it[1].toInt()
         )
     }
-    var `for`: List<Int> = reader.readLine().split(" ").filter { !it.isBlank() }.map(String::toInt)
-    var words: List<Main> = List(2) { _ ->
-        var `return`: Int = reader.readLine().toInt()
-        var void: List<Int> = reader.readLine().split(" ").filter { !it.isBlank() }.map(String::toInt)
-        var int: System_ = System_(
+    val `for`: List<Int> = reader.readLine().split(" ").filter { !it.isBlank() }.map(String::toInt)
+    val words: List<Main> = List(2) { _ ->
+        val `return`: Int = reader.readLine().toInt()
+        val void: List<Int> = reader.readLine().split(" ").filter { !it.isBlank() }.map(String::toInt)
+        val int: System_ = System_(
             `return` = `return`,
             void = void
         )
-        var ifTrue: Int = reader.readLine().toInt()
-        var words3: Main = Main(
+        val ifTrue: Int = reader.readLine().toInt()
+        Main(
             int = int,
             ifTrue = ifTrue
         )
-        words3
     }
-    var words1: Int = reader.readLine().toInt()
+    val words1: Int = reader.readLine().toInt()
 
     keywords(`if`, `class`, i, `in`, `for`, words, words1)
 }

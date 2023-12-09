@@ -52,45 +52,40 @@ fun sizedStruct(
 
 fun main() {
     val reader = BufferedReader(InputStreamReader(System.`in`))
-    var n: Int = reader.readLine().toInt()
-    var lists: List<List_> = List(n) { _ ->
-        var size1: Int = reader.readLine().toInt()
-        var intList: List<Int> = reader.readLine().split(" ").filter { !it.isBlank() }.map(String::toInt)
-        var words: List_ = List_(
+    val n: Int = reader.readLine().toInt()
+    val lists: List<List_> = List(n) { _ ->
+        val size1: Int = reader.readLine().toInt()
+        val intList: List<Int> = reader.readLine().split(" ").filter { !it.isBlank() }.map(String::toInt)
+        List_(
             size1 = size1,
             intList = intList
         )
-        words
     }
-    var strings: List<String_> = List(n) { _ ->
-        var size2: Int = reader.readLine().toInt()
-        var stringList: String = reader.readLine()
-        var words1: String_ = String_(
+    val strings: List<String_> = List(n) { _ ->
+        val size2: Int = reader.readLine().toInt()
+        val stringList: String = reader.readLine()
+        String_(
             size2 = size2,
             stringList = stringList
         )
-        words1
     }
-    var matrices: List<Matrix> = List(2) { _ ->
-        var size3: Int = reader.readLine().toInt()
-        var listList: List<List<Int>> = List(size3) { _ ->
-            var words3: List<Int> = reader.readLine().split(" ").filter { !it.isBlank() }.map(String::toInt)
-            words3
+    val matrices: List<Matrix> = List(2) { _ ->
+        val size3: Int = reader.readLine().toInt()
+        val listList: List<List<Int>> = List(size3) { _ ->
+            reader.readLine().split(" ").filter { !it.isBlank() }.map(String::toInt)
         }
-        var words2: Matrix = Matrix(
+        Matrix(
             size3 = size3,
             listList = listList
         )
-        words2
     }
-    var same: List<NotASizedStruct> = List(n) { _ ->
-        var size4: Int = reader.readLine().toInt()
-        var intListN: List<Int> = reader.readLine().split(" ").filter { !it.isBlank() }.map(String::toInt)
-        var words4: NotASizedStruct = NotASizedStruct(
+    val same: List<NotASizedStruct> = List(n) { _ ->
+        val size4: Int = reader.readLine().toInt()
+        val intListN: List<Int> = reader.readLine().split(" ").filter { !it.isBlank() }.map(String::toInt)
+        NotASizedStruct(
             size4 = size4,
             intListN = intListN
         )
-        words4
     }
 
     sizedStruct(n, lists, strings, matrices, same)

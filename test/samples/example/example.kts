@@ -23,15 +23,14 @@ fun example(
 
 fun main() {
     val reader = BufferedReader(InputStreamReader(System.`in`))
-    var n: Int = reader.readLine().toInt()
-    var list: List<AStruct> = List(n) { _ ->
-        var words: AStruct = reader.readLine().split(" ").let { 
+    val n: Int = reader.readLine().toInt()
+    val list: List<AStruct> = List(n) { _ ->
+        reader.readLine().split(" ").let { 
             AStruct(
                 integer = it[0].toInt(),
                 character = it[1][0]
             )
         }
-        words
     }
 
     example(n, list)

@@ -65,55 +65,51 @@ fun structs(
 
 fun main() {
     val reader = BufferedReader(InputStreamReader(System.`in`))
-    var struct: Struct1 = reader.readLine().split(" ").let { 
+    val struct: Struct1 = reader.readLine().split(" ").let { 
         Struct1(
             foo = it[0].toInt(),
             bar = it[1].toInt()
         )
     }
-    var n: Int = reader.readLine().toInt()
-    var structList: List<Struct1> = List(n) { _ ->
-        var words1: Struct1 = reader.readLine().split(" ").let { 
+    val n: Int = reader.readLine().toInt()
+    val structList: List<Struct1> = List(n) { _ ->
+        reader.readLine().split(" ").let { 
             Struct1(
                 foo = it[0].toInt(),
                 bar = it[1].toInt()
             )
         }
-        words1
     }
-    var triangle: List<Point> = List(3) { _ ->
-        var name: Char = reader.readLine()[0]
-        var description: String = reader.readLine()
-        var pos: Position = reader.readLine().split(" ").let { 
+    val triangle: List<Point> = List(3) { _ ->
+        val name: Char = reader.readLine()[0]
+        val description: String = reader.readLine()
+        val pos: Position = reader.readLine().split(" ").let { 
             Position(
                 x = it[0].toInt(),
                 y = it[1].toInt(),
                 z = it[2].toInt()
             )
         }
-        var words3: Point = Point(
+        Point(
             name = name,
             description = description,
             pos = pos
         )
-        words3
     }
-    var structChars: Chars = reader.readLine().split(" ").let { 
+    val structChars: Chars = reader.readLine().split(" ").let { 
         Chars(
             firstChar = it[0][0],
             secondChar = it[1][0],
             thirdChar = it[2][0]
         )
     }
-    var int: Int = reader.readLine().toInt()
-    var bigList: List<List<List<Int>>> = List(2) { _ ->
-        var words6: List<List<Int>> = List(2) { _ ->
-            var words7: List<Int> = reader.readLine().split(" ").filter { !it.isBlank() }.map(String::toInt)
-            words7
+    val int: Int = reader.readLine().toInt()
+    val bigList: List<List<List<Int>>> = List(2) { _ ->
+        List(2) { _ ->
+            reader.readLine().split(" ").filter { !it.isBlank() }.map(String::toInt)
         }
-        words6
     }
-    var bigListStruct: WithList = WithList(
+    val bigListStruct: WithList = WithList(
         int = int,
         bigList = bigList
     )

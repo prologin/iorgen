@@ -4,7 +4,7 @@ import textwrap
 from typing import List
 
 from iorgen.types import TypeEnum, Type, Variable, Input
-from iorgen.utils import camel_case, pascal_case, IteratorName, WordsName
+from iorgen.utils import camel_case, pascal_case, WordsName
 
 INDENTATION = "    "
 
@@ -12,7 +12,7 @@ INDENTATION = "    "
 def var_name(name: str) -> str:
     """Transform a variable name into a valid one for Kotlin"""
     candidate = camel_case(name)
-    if candidate == "reader":
+    if candidate in ["reader", "main"]:
         return candidate + "_"
     return f"`{candidate}`" if candidate in KEYWORDS else candidate
 
@@ -63,24 +63,31 @@ class ParserKotlin:
         existing_names = [var.name for var in input_data.input] + [
             var_name(input_data.name)
         ]
-        self.iterator = IteratorName(existing_names)
         self.words = WordsName(existing_names)
 
     def read_line(
-        self, decl: bool, name: str, type_: Type, indent_lvl: int
+        self, decl: bool, name: str, type_: Type, indent_lvl: int, assign: bool = True
     ) -> List[str]:
         """Read an entire line and store it into the right place(s)"""
         assert type_.fits_in_one_line(self.input.structs)
         indent = INDENTATION * indent_lvl
         if type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)
-            words = self.words.next_name()
-            lines = [
-                indent
-                + f'{f"var {name}: {type_str(type_)}" if decl else words}'
-                + ' = reader.readLine().split(" ").let { ',
-                indent + INDENTATION + class_name(type_.struct_name) + "(",
-            ]
+            if assign:
+                self.words.push_scope()
+                words = self.words.next_name()
+                lines = [
+                    indent
+                    + f'{f"val {name}: {type_str(type_)}" if decl else words}'
+                    + ' = reader.readLine().split(" ").let { ',
+                    indent + INDENTATION + class_name(type_.struct_name) + "(",
+                ]
+                self.words.pop_scope()
+            else:
+                lines = [
+                    indent + 'reader.readLine().split(" ").let { ',
+                    indent + INDENTATION + class_name(type_.struct_name) + "(",
+                ]
             lines.extend(
                 f"{indent + INDENTATION * 2}{var_name(f.name)} = "
                 f"{parse_type(f.type, f'it[{i}]')},"
@@ -91,7 +98,8 @@ class ParserKotlin:
             lines.append(indent + INDENTATION + ")")
             lines.append(indent + "}")
             return lines
-        variable_decl = indent + f"var {name}: {type_str(type_)}" if decl else name
+
+        variable_decl = indent + f"val {name}: {type_str(type_)}" if decl else name
 
         command = ""
         if type_.main in (TypeEnum.INT, TypeEnum.FLOAT, TypeEnum.CHAR, TypeEnum.STR):
@@ -113,16 +121,14 @@ class ParserKotlin:
                 )
 
         assert command
-        return [f"{variable_decl} = {command}"]
+        return [f"{variable_decl} = {command}"] if assign else [indent + command]
 
     def read_lines(
-        self, decl: bool, var: Variable, size: str, indent_lvl: int
+        self, decl: bool, var: Variable, size: str, indent_lvl: int, assign: bool = True
     ) -> List[str]:
-        # pylint: disable=too-many-arguments
-        # pylint: disable=too-many-locals
         """Read one or several lines and store them into the right place(s)"""
         if var.fits_in_one_line(self.input.structs):
-            return self.read_line(decl, var.name, var.type, indent_lvl)
+            return self.read_line(decl, var.name, var.type, indent_lvl, assign)
         indent = INDENTATION * indent_lvl
         if var.type.main == TypeEnum.STRUCT:
             lines = []
@@ -130,16 +136,25 @@ class ParserKotlin:
             for f_name, f_type, f_size in struct.fields_name_type_size("{}", var_name):
                 lines.extend(
                     self.read_lines(
-                        True, Variable(f_name, "", f_type), f_size, indent_lvl
+                        True, Variable(f_name, "", f_type), f_size, indent_lvl, True
                     )
                 )
-            lines.append(
-                indent
-                + "{} = {}(".format(
-                    f"var {var.name}: {type_str(var.type)}" if decl else var.name,
-                    class_name(var.type.struct_name),
+
+            if assign:
+                lines.append(
+                    indent
+                    + "{} = {}(".format(
+                        f"val {var.name}: {type_str(var.type)}" if decl else var.name,
+                        class_name(var.type.struct_name),
+                    )
                 )
-            )
+            else:
+                lines.append(
+                    indent
+                    + "{}(".format(
+                        class_name(var.type.struct_name),
+                    )
+                )
 
             for f_name, f_type, f_size in struct.fields_name_type_size("{}", var_name):
                 lines.append(f"{indent + INDENTATION}{f_name} = {f_name},")
@@ -154,14 +169,18 @@ class ParserKotlin:
             assert far_inner_type.encapsulated is not None
             far_inner_type = far_inner_type.encapsulated
 
-        lines = [
-            "{}{} = List({}) {{ _ ->".format(
-                indent,
-                f"var {var.name}: {type_str(var.type)}" if decl else var.name,
-                size,
-            )
-        ]
+        if assign:
+            lines = [
+                "{}{} = List({}) {{ _ ->".format(
+                    indent,
+                    f"val {var.name}: {type_str(var.type)}" if decl else var.name,
+                    size,
+                )
+            ]
+        else:
+            lines = ["{}List({}) {{ _ ->".format(indent, size)]
 
+        # This variable is not used, but is here to avoid passing an empty variable name. May be removed if it does not create errors.
         temporary_variable_name = self.words.next_name()
 
         lines.extend(
@@ -170,10 +189,11 @@ class ParserKotlin:
                 Variable(temporary_variable_name, "", var.type.encapsulated),
                 var_name(var.type.encapsulated.size),
                 indent_lvl + 1,
+                False,
             )
         )
 
-        lines.append(f"{indent + INDENTATION}{temporary_variable_name}")
+        # lines.append(f"{indent + INDENTATION}{temporary_variable_name}")
 
         return lines + [indent + "}"]
 
@@ -344,13 +364,13 @@ class ParserKotlin:
             else:
                 words = self.words.next_name()
                 output += (
-                    f"{INDENTATION}var {words}" ' = reader.readLine().split(" ")\n'
+                    f"{INDENTATION}val {words}" + ' = reader.readLine().split(" ")\n'
                 )
                 for i, var in enumerate(variables):
                     assert var.type.main == TypeEnum.INT
                     output += (
                         INDENTATION
-                        + f"var {var_name(var.name)} = {words}[{i}].toInt()\n"
+                        + f"val {var_name(var.name)} = {words}[{i}].toInt()\n"
                     )
 
         args = (var_name(var.name) for var in self.input.input)
@@ -363,7 +383,7 @@ class ParserKotlin:
 
 
 def gen_kotlin(input_data: Input, reprint: bool = False) -> str:
-    """Generate a Java code to parse input"""
+    """Generate a Kotlin code to parse input"""
     return ParserKotlin(input_data).content(reprint)
 
 
@@ -385,6 +405,9 @@ BUILT_IN_CLASSNAMES = [
     "System",
     "Nothing",
     "Object",
+    "Exception",
+    "BufferedReader",
+    "InputStreamReader",
 ]
 
 KEYWORDS = [
@@ -452,4 +475,5 @@ KEYWORDS = [
     "it",
     "data",
     "value",
+    "main",
 ]

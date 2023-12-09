@@ -26,25 +26,21 @@ fun lists(
 
 fun main() {
     val reader = BufferedReader(InputStreamReader(System.`in`))
-    var n: Int = reader.readLine().toInt()
-    var listInt: List<Int> = reader.readLine().split(" ").filter { !it.isBlank() }.map(String::toInt)
-    var size: Int = reader.readLine().toInt()
-    var listChar: List<Char> = reader.readLine().toList()
-    var string: String = reader.readLine()
-    var listString4: List<String> = List(size) { _ ->
-        var words: String = reader.readLine()
-        words
+    val n: Int = reader.readLine().toInt()
+    val listInt: List<Int> = reader.readLine().split(" ").filter { !it.isBlank() }.map(String::toInt)
+    val size: Int = reader.readLine().toInt()
+    val listChar: List<Char> = reader.readLine().toList()
+    val string: String = reader.readLine()
+    val listString4: List<String> = List(size) { _ ->
+        reader.readLine()
     }
-    var listListString2: List<List<String>> = List(2) { _ ->
-        var words1: List<String> = List(2) { _ ->
-            var words2: String = reader.readLine()
-            words2
+    val listListString2: List<List<String>> = List(2) { _ ->
+        List(2) { _ ->
+            reader.readLine()
         }
-        words1
     }
-    var matrix: List<List<Int>> = List(size) { _ ->
-        var words3: List<Int> = reader.readLine().split(" ").filter { !it.isBlank() }.map(String::toInt)
-        words3
+    val matrix: List<List<Int>> = List(size) { _ ->
+        reader.readLine().split(" ").filter { !it.isBlank() }.map(String::toInt)
     }
 
     lists(n, listInt, size, listChar, string, listString4, listListString2, matrix)

@@ -53,32 +53,31 @@ fun floats(
 
 fun main() {
     val reader = BufferedReader(InputStreamReader(System.`in`))
-    var f: Double = reader.readLine().toDouble()
-    var g: Double = reader.readLine().toDouble()
-    var point: Coordinates = reader.readLine().split(" ").let { 
+    val f: Double = reader.readLine().toDouble()
+    val g: Double = reader.readLine().toDouble()
+    val point: Coordinates = reader.readLine().split(" ").let { 
         Coordinates(
             x = it[0].toDouble(),
             y = it[1].toDouble(),
             z = it[2].toDouble()
         )
     }
-    var n: Int = reader.readLine().toInt()
-    var floatList: List<Double> = reader.readLine().split(" ").filter { !it.isBlank() }.map(String::toDouble)
-    var otherList: List<Double> = reader.readLine().split(" ").filter { !it.isBlank() }.map(String::toDouble)
-    var inlined: List<InlinedMix> = List(3) { _ ->
-        var words1: InlinedMix = reader.readLine().split(" ").let { 
+    val n: Int = reader.readLine().toInt()
+    val floatList: List<Double> = reader.readLine().split(" ").filter { !it.isBlank() }.map(String::toDouble)
+    val otherList: List<Double> = reader.readLine().split(" ").filter { !it.isBlank() }.map(String::toDouble)
+    val inlined: List<InlinedMix> = List(3) { _ ->
+        reader.readLine().split(" ").let { 
             InlinedMix(
                 integer = it[0].toInt(),
                 char = it[1][0],
                 float = it[2].toDouble()
             )
         }
-        words1
     }
-    var integer2: Int = reader.readLine().toInt()
-    var string: String = reader.readLine()
-    var float2: Double = reader.readLine().toDouble()
-    var multiline: MultilineMix = MultilineMix(
+    val integer2: Int = reader.readLine().toInt()
+    val string: String = reader.readLine()
+    val float2: Double = reader.readLine().toDouble()
+    val multiline: MultilineMix = MultilineMix(
         integer2 = integer2,
         string = string,
         float2 = float2

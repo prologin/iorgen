@@ -20,14 +20,13 @@ fun manualFormat(
 
 fun main() {
     val reader = BufferedReader(InputStreamReader(System.`in`))
-    var words = reader.readLine().split(" ")
-    var a = words[0].toInt()
-    var b = words[1].toInt()
-    var c = words[2].toInt()
-    var n: Int = reader.readLine().toInt()
-    var onePerLine: List<Int> = List(3) { _ ->
-        var words1: Int = reader.readLine().toInt()
-        words1
+    val words = reader.readLine().split(" ")
+    val a = words[0].toInt()
+    val b = words[1].toInt()
+    val c = words[2].toInt()
+    val n: Int = reader.readLine().toInt()
+    val onePerLine: List<Int> = List(3) { _ ->
+        reader.readLine().toInt()
     }
 
     manualFormat(a, b, c, n, onePerLine)

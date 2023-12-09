@@ -107,6 +107,7 @@ ALL_LANGUAGES = [
     Language("java", gen_java, ["javac", "-encoding", "UTF-8"], ["java", "Main"]),
     Language("js", gen_javascript, [], ["node"]),
     Language("jl", gen_julia, [], ["julia"]),
+    Language("kts", gen_kotlin, [], ["kotlinc", "-script"]),
     Language("lua", gen_lua, [], ["lua"]),
     Language("ml", gen_ocaml, ["ocamlopt", "-w", "A-24-70", "-o", "{name}"]),
     Language("pas", gen_pascal, ["fpc", "-v0ew", "-l-"], no_stderr=True),
@@ -117,7 +118,6 @@ ALL_LANGUAGES = [
     Language("rb", gen_ruby, [], ["ruby"]),
     Language("rs", gen_rust, ["rustc", "-W", "warnings", "-O"]),
     Language("scm", gen_scheme, [], ["gsi"]),
-    Language("kts", gen_kotlin, [], ["kotlinc", "-script"]),
 ]
 
 ALL_MARKDOWN = [

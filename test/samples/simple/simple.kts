@@ -14,8 +14,8 @@ fun simple(
 
 fun main() {
     val reader = BufferedReader(InputStreamReader(System.`in`))
-    var n: Int = reader.readLine().toInt()
-    var otherNumber: Int = reader.readLine().toInt()
+    val n: Int = reader.readLine().toInt()
+    val otherNumber: Int = reader.readLine().toInt()
 
     simple(n, otherNumber)
 }

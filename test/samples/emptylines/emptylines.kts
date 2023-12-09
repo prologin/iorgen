@@ -31,7 +31,7 @@ data class SizedStruct(val size: Int, val stringInStruct: String)
  * @param n an integer, will be 0 in the sample input
  * @param emptyInSample an empty list (only in the sample)
  * @param emptyString an empty string
- * @param main an other buffer string
+ * @param main_ an other buffer string
  * @param emptyCharList an empty char list
  * @param nonEmptyCharList an char list, non empty
  * @param structWithEmptyLine a struct containing an empty line, then a struct
@@ -44,7 +44,7 @@ fun emptyLines(
     n: Int,
     emptyInSample: List<Int>,
     emptyString: String,
-    main: String,
+    main_: String,
     emptyCharList: List<Char>,
     nonEmptyCharList: List<Char>,
     structWithEmptyLine: A,
@@ -56,34 +56,34 @@ fun emptyLines(
 
 fun main() {
     val reader = BufferedReader(InputStreamReader(System.`in`))
-    var emptyList: List<Int> = reader.readLine().split(" ").filter { !it.isBlank() }.map(String::toInt)
-    var bufferString: String = reader.readLine()
-    var n: Int = reader.readLine().toInt()
-    var emptyInSample: List<Int> = reader.readLine().split(" ").filter { !it.isBlank() }.map(String::toInt)
-    var emptyString: String = reader.readLine()
-    var main: String = reader.readLine()
-    var emptyCharList: List<Char> = reader.readLine().toList()
-    var nonEmptyCharList: List<Char> = reader.readLine().toList()
-    var listInStruct: List<Int> = reader.readLine().split(" ").filter { !it.isBlank() }.map(String::toInt)
-    var structInStruct: StructWithAChar = reader.readLine().split(" ").let { 
+    val emptyList: List<Int> = reader.readLine().split(" ").filter { !it.isBlank() }.map(String::toInt)
+    val bufferString: String = reader.readLine()
+    val n: Int = reader.readLine().toInt()
+    val emptyInSample: List<Int> = reader.readLine().split(" ").filter { !it.isBlank() }.map(String::toInt)
+    val emptyString: String = reader.readLine()
+    val main_: String = reader.readLine()
+    val emptyCharList: List<Char> = reader.readLine().toList()
+    val nonEmptyCharList: List<Char> = reader.readLine().toList()
+    val listInStruct: List<Int> = reader.readLine().split(" ").filter { !it.isBlank() }.map(String::toInt)
+    val structInStruct: StructWithAChar = reader.readLine().split(" ").let { 
         StructWithAChar(
             char1 = it[0][0],
             int2 = it[1].toInt()
         )
     }
-    var structWithEmptyLine: A = A(
+    val structWithEmptyLine: A = A(
         listInStruct = listInStruct,
         structInStruct = structInStruct
     )
-    var size: Int = reader.readLine().toInt()
-    var stringInStruct: String = reader.readLine()
-    var aSizedStruct: SizedStruct = SizedStruct(
+    val size: Int = reader.readLine().toInt()
+    val stringInStruct: String = reader.readLine()
+    val aSizedStruct: SizedStruct = SizedStruct(
         size = size,
         stringInStruct = stringInStruct
     )
-    var finish: String = reader.readLine()
+    val finish: String = reader.readLine()
 
-    emptyLines(emptyList, bufferString, n, emptyInSample, emptyString, main, emptyCharList, nonEmptyCharList, structWithEmptyLine, aSizedStruct, finish)
+    emptyLines(emptyList, bufferString, n, emptyInSample, emptyString, main_, emptyCharList, nonEmptyCharList, structWithEmptyLine, aSizedStruct, finish)
 }
 
 main()
