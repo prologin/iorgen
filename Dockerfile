@@ -25,8 +25,8 @@ ARG INCLUDE_DEV_DEPS=false
 
 RUN if [ $INCLUDE_DEV_DEPS = "true" ]; then \
       # julia is no longer packaged in Debian 12
-      # this curl install should be enough for a container:
-      curl -s https://julialang-s3.julialang.org/bin/linux/x64/1.9/julia-1.9.4-linux-x86_64.tar.gz \
+      # let's download the LTS release and extract everything in /usr/local
+      curl -L -s https://julialang-s3.julialang.org/bin/linux/x64/1.6/julia-1.6.7-linux-x86_64.tar.gz \
         | tar --strip-components=1 -xz -C /usr/local && \
       apt-get install -y --no-install-recommends \
         default-jdk-headless \
