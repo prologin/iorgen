@@ -65,7 +65,7 @@ fun main() {
     val emptyCharList: List<Char> = reader.readLine().toList()
     val nonEmptyCharList: List<Char> = reader.readLine().toList()
     val listInStruct: List<Int> = reader.readLine().split(" ").filter { !it.isBlank() }.map(String::toInt)
-    val structInStruct: StructWithAChar = reader.readLine().split(" ").let { 
+    val structInStruct: StructWithAChar = reader.readLine().split(" ").let {
         StructWithAChar(
             char1 = it[0][0],
             int2 = it[1].toInt()

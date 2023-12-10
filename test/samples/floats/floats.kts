@@ -55,7 +55,7 @@ fun main() {
     val reader = BufferedReader(InputStreamReader(System.`in`))
     val f: Double = reader.readLine().toDouble()
     val g: Double = reader.readLine().toDouble()
-    val point: Coordinates = reader.readLine().split(" ").let { 
+    val point: Coordinates = reader.readLine().split(" ").let {
         Coordinates(
             x = it[0].toDouble(),
             y = it[1].toDouble(),
@@ -66,7 +66,7 @@ fun main() {
     val floatList: List<Double> = reader.readLine().split(" ").filter { !it.isBlank() }.map(String::toDouble)
     val otherList: List<Double> = reader.readLine().split(" ").filter { !it.isBlank() }.map(String::toDouble)
     val inlined: List<InlinedMix> = List(3) { _ ->
-        reader.readLine().split(" ").let { 
+        reader.readLine().split(" ").let {
             InlinedMix(
                 integer = it[0].toInt(),
                 char = it[1][0],

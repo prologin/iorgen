@@ -25,7 +25,7 @@ fun main() {
     val reader = BufferedReader(InputStreamReader(System.`in`))
     val n: Int = reader.readLine().toInt()
     val list: List<AStruct> = List(n) { _ ->
-        reader.readLine().split(" ").let { 
+        reader.readLine().split(" ").let {
             AStruct(
                 integer = it[0].toInt(),
                 character = it[1][0]

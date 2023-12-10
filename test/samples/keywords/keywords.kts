@@ -51,7 +51,7 @@ fun main() {
     val `if`: Int = reader.readLine().toInt()
     val `class`: Char = reader.readLine()[0]
     val i: String = reader.readLine()
-    val `in`: Console = reader.readLine().split(" ").let { 
+    val `in`: Console = reader.readLine().split(" ").let {
         Console(
             a = it[0].toInt(),
             static = it[1].toInt()

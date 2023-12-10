@@ -65,7 +65,7 @@ fun structs(
 
 fun main() {
     val reader = BufferedReader(InputStreamReader(System.`in`))
-    val struct: Struct1 = reader.readLine().split(" ").let { 
+    val struct: Struct1 = reader.readLine().split(" ").let {
         Struct1(
             foo = it[0].toInt(),
             bar = it[1].toInt()
@@ -73,7 +73,7 @@ fun main() {
     }
     val n: Int = reader.readLine().toInt()
     val structList: List<Struct1> = List(n) { _ ->
-        reader.readLine().split(" ").let { 
+        reader.readLine().split(" ").let {
             Struct1(
                 foo = it[0].toInt(),
                 bar = it[1].toInt()
@@ -83,7 +83,7 @@ fun main() {
     val triangle: List<Point> = List(3) { _ ->
         val name: Char = reader.readLine()[0]
         val description: String = reader.readLine()
-        val pos: Position = reader.readLine().split(" ").let { 
+        val pos: Position = reader.readLine().split(" ").let {
             Position(
                 x = it[0].toInt(),
                 y = it[1].toInt(),
@@ -96,7 +96,7 @@ fun main() {
             pos = pos
         )
     }
-    val structChars: Chars = reader.readLine().split(" ").let { 
+    val structChars: Chars = reader.readLine().split(" ").let {
         Chars(
             firstChar = it[0][0],
             secondChar = it[1][0],

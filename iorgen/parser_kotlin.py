@@ -1,3 +1,7 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright 2023 Chloé Magliulo
+# Copyright 2023 Sacha Delanoue
+
 """Generate a Kotlin parser"""
 
 import textwrap
@@ -66,26 +70,26 @@ class ParserKotlin:
         self.words = WordsName(existing_names)
 
     def read_line(
-        self, decl: bool, name: str, type_: Type, indent_lvl: int, assign: bool = True
+        self, decl: bool, name: str, type_: Type, indent_lvl: int
     ) -> List[str]:
         """Read an entire line and store it into the right place(s)"""
         assert type_.fits_in_one_line(self.input.structs)
         indent = INDENTATION * indent_lvl
         if type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)
-            if assign:
+            if name:
                 self.words.push_scope()
                 words = self.words.next_name()
                 lines = [
                     indent
                     + f'{f"val {name}: {type_str(type_)}" if decl else words}'
-                    + ' = reader.readLine().split(" ").let { ',
+                    + ' = reader.readLine().split(" ").let {',
                     indent + INDENTATION + class_name(type_.struct_name) + "(",
                 ]
                 self.words.pop_scope()
             else:
                 lines = [
-                    indent + 'reader.readLine().split(" ").let { ',
+                    indent + 'reader.readLine().split(" ").let {',
                     indent + INDENTATION + class_name(type_.struct_name) + "(",
                 ]
             lines.extend(
@@ -98,8 +102,6 @@ class ParserKotlin:
             lines.append(indent + INDENTATION + ")")
             lines.append(indent + "}")
             return lines
-
-        variable_decl = indent + f"val {name}: {type_str(type_)}" if decl else name
 
         command = ""
         if type_.main in (TypeEnum.INT, TypeEnum.FLOAT, TypeEnum.CHAR, TypeEnum.STR):
@@ -121,14 +123,17 @@ class ParserKotlin:
                 )
 
         assert command
-        return [f"{variable_decl} = {command}"] if assign else [indent + command]
+        if name:
+            decl_name = f"val {name}: {type_str(type_)}" if decl else name
+            return [f"{indent}{decl_name} = {command}"]
+        return [indent + command]
 
     def read_lines(
-        self, decl: bool, var: Variable, size: str, indent_lvl: int, assign: bool = True
+        self, decl: bool, var: Variable, size: str, indent_lvl: int
     ) -> List[str]:
         """Read one or several lines and store them into the right place(s)"""
         if var.fits_in_one_line(self.input.structs):
-            return self.read_line(decl, var.name, var.type, indent_lvl, assign)
+            return self.read_line(decl, var.name, var.type, indent_lvl)
         indent = INDENTATION * indent_lvl
         if var.type.main == TypeEnum.STRUCT:
             lines = []
@@ -136,11 +141,11 @@ class ParserKotlin:
             for f_name, f_type, f_size in struct.fields_name_type_size("{}", var_name):
                 lines.extend(
                     self.read_lines(
-                        True, Variable(f_name, "", f_type), f_size, indent_lvl, True
+                        True, Variable(f_name, "", f_type), f_size, indent_lvl
                     )
                 )
 
-            if assign:
+            if var.name:
                 lines.append(
                     indent
                     + "{} = {}(".format(
@@ -169,7 +174,7 @@ class ParserKotlin:
             assert far_inner_type.encapsulated is not None
             far_inner_type = far_inner_type.encapsulated
 
-        if assign:
+        if var.name:
             lines = [
                 "{}{} = List({}) {{ _ ->".format(
                     indent,
@@ -180,20 +185,14 @@ class ParserKotlin:
         else:
             lines = ["{}List({}) {{ _ ->".format(indent, size)]
 
-        # This variable is not used, but is here to avoid passing an empty variable name. May be removed if it does not create errors.
-        temporary_variable_name = self.words.next_name()
-
         lines.extend(
             self.read_lines(
                 True,
-                Variable(temporary_variable_name, "", var.type.encapsulated),
+                Variable("", "", var.type.encapsulated),
                 var_name(var.type.encapsulated.size),
                 indent_lvl + 1,
-                False,
             )
         )
-
-        # lines.append(f"{indent + INDENTATION}{temporary_variable_name}")
 
         return lines + [indent + "}"]
 
