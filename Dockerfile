@@ -63,7 +63,7 @@ RUN --mount=type=bind,target=./pyproject.toml,src=./pyproject.toml \
     --mount=type=cache,target=/root/.cache/pypoetry \
     python -m venv /opt/venv && \
     pip3 install --upgrade pip && \
-    pip3 install poetry && \
+    pip3 install poetry==1.7.1 && \
     poetry install $(if [ $INCLUDE_DEV_DEPS = "false" ]; then echo "--only main"; fi)
 
 COPY ./ /iorgen
