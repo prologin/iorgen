@@ -33,7 +33,7 @@ container build:
           --local dockerfile=. \
           --opt build-arg:PYTHON_IMAGE=$PYTHON_IMAGE \
           --opt build-arg:PYTHON_VERSION=$PYTHON_VERSION \
-          --output type=image,\"name=$CI_REGISTRY_IMAGE/$PYTHON_IMAGE-$PYTHON_VERSION/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHA,$CI_REGISTRY_IMAGE:${CI_COMMIT_TAG:-latest}\",push=true \
+          --output type=image,\"name=$CI_REGISTRY_IMAGE/$PYTHON_IMAGE-$PYTHON_VERSION/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHA\",push=true \
           --import-cache type=registry,ref=$CI_REGISTRY_IMAGE:buildcache-$PYTHON_IMAGE-$PYTHON_VERSION \
           --export-cache type=registry,ref=$CI_REGISTRY_IMAGE:buildcache-$PYTHON_IMAGE-$PYTHON_VERSION,mode=max
   parallel:
