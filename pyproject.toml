@@ -24,7 +24,7 @@ pyyaml = "^6"
 black = "24.10.0"
 mypy = "1.11.2"
 pre-commit = "^3"
-pylint = "3.0.2"
+pylint = "3.3.1"
 types-pyyaml = "^6"
 
 [tool.poetry.scripts]

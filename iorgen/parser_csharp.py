@@ -128,6 +128,7 @@ class ParserCS:
         style: FormatStyle = FormatStyle.DEFAULT,
     ) -> List[str]:
         # pylint: disable=too-many-arguments
+        # pylint: disable=too-many-positional-arguments
         # pylint: disable=too-many-locals
         """Read one or several lines and store them into the right place(s)"""
         if type_.fits_in_one_line(self.input.structs, style):

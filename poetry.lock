@@ -2,13 +2,13 @@
 
 [[package]]
 name = "astroid"
-version = "3.0.3"
+version = "3.3.5"
 description = "An abstract syntax tree for Python with inference support."
 optional = false
-python-versions = ">=3.8.0"
+python-versions = ">=3.9.0"
 files = [
-    {file = "astroid-3.0.3-py3-none-any.whl", hash = "sha256:92fcf218b89f449cdf9f7b39a269f8d5d617b27be68434912e11e79203963a17"},
-    {file = "astroid-3.0.3.tar.gz", hash = "sha256:4148645659b08b70d72460ed1921158027a9e53ae8b7234149b1400eddacbb93"},
+    {file = "astroid-3.3.5-py3-none-any.whl", hash = "sha256:a9d1c946ada25098d790e079ba2a1b112157278f3fb7e718ae6a9252f5835dc8"},
+    {file = "astroid-3.3.5.tar.gz", hash = "sha256:5cfc40ae9f68311075d27ef68a4841bdc5cc7f6cf86671b49f00607d30188e2d"},
 ]
 
 [package.dependencies]
@@ -304,24 +304,24 @@ virtualenv = ">=20.10.0"
 
 [[package]]
 name = "pylint"
-version = "3.0.2"
+version = "3.3.1"
 description = "python code static checker"
 optional = false
-python-versions = ">=3.8.0"
+python-versions = ">=3.9.0"
 files = [
-    {file = "pylint-3.0.2-py3-none-any.whl", hash = "sha256:60ed5f3a9ff8b61839ff0348b3624ceeb9e6c2a92c514d81c9cc273da3b6bcda"},
-    {file = "pylint-3.0.2.tar.gz", hash = "sha256:0d4c286ef6d2f66c8bfb527a7f8a629009e42c99707dec821a03e1b51a4c1496"},
+    {file = "pylint-3.3.1-py3-none-any.whl", hash = "sha256:2f846a466dd023513240bc140ad2dd73bfc080a5d85a710afdb728c420a5a2b9"},
+    {file = "pylint-3.3.1.tar.gz", hash = "sha256:9f3dcc87b1203e612b78d91a896407787e708b3f189b5fa0b307712d49ff0c6e"},
 ]
 
 [package.dependencies]
-astroid = ">=3.0.1,<=3.1.0-dev0"
+astroid = ">=3.3.4,<=3.4.0-dev0"
 colorama = {version = ">=0.4.5", markers = "sys_platform == \"win32\""}
 dill = [
     {version = ">=0.2", markers = "python_version < \"3.11\""},
     {version = ">=0.3.7", markers = "python_version >= \"3.12\""},
     {version = ">=0.3.6", markers = "python_version >= \"3.11\" and python_version < \"3.12\""},
 ]
-isort = ">=4.2.5,<6"
+isort = ">=4.2.5,<5.13.0 || >5.13.0,<6"
 mccabe = ">=0.6,<0.8"
 platformdirs = ">=2.2.0"
 tomli = {version = ">=1.1.0", markers = "python_version < \"3.11\""}
@@ -461,4 +461,4 @@ test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9"
-content-hash = "a4733af8615d32942160adaf926210d7283d774e7890c98b6732cf6a3475340a"
+content-hash = "3144713206027073c7f918fc41dc0db2d51b60294d76fdcb287597f2ef7849a1"

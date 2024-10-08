@@ -44,6 +44,7 @@ class Language:
         no_stderr: bool = False,
     ) -> None:
         # pylint: disable=too-many-arguments
+        # pylint: disable=too-many-positional-arguments
         self.extension = extension
         self.generator = generator
         self.compile_command = compile_command

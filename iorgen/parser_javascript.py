@@ -59,7 +59,8 @@ class ParserJS:
     def read_line(
         self, decl: bool, name: str, type_: Type, size: str, indent_lvl: int
     ) -> List[str]:
-        # pylint: disable = too-many-arguments
+        # pylint: disable=too-many-arguments
+        # pylint: disable=too-many-positional-arguments
         """Generate the Javascript code to read a line of given type"""
         assert type_.fits_in_one_line(self.input.structs)
         indent = INDENTATION * indent_lvl

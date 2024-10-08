@@ -470,6 +470,7 @@ class Input:
         output: str,
     ) -> None:
         # pylint: disable=too-many-arguments
+        # pylint: disable=too-many-positional-arguments
         self.name = name
         self.structs = structs
         self.input = inputs
