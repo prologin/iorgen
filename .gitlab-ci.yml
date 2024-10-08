@@ -40,14 +40,13 @@ container build:
     matrix:
       - PYTHON_IMAGE: python
         PYTHON_VERSION:
-          - "3.8"
           - "3.9"
           - "3.10"
           - "3.11"
           - "3.12"
+          - "3.13"
       - PYTHON_IMAGE: pypy
         PYTHON_VERSION:
-          - "3.9"
           - "3.10"
 
 container build ci:
@@ -111,14 +110,13 @@ test:
     matrix:
       - PYTHON_IMAGE: python
         PYTHON_VERSION:
-          - "3.8"
           - "3.9"
           - "3.10"
           - "3.11"
           - "3.12"
+          - "3.13"
       - PYTHON_IMAGE: pypy
         PYTHON_VERSION:
-          - "3.9"
           - "3.10"
 
 lint:
