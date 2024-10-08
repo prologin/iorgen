@@ -21,7 +21,7 @@ python = ">=3.9"
 pyyaml = "^6"
 
 [tool.poetry.dev-dependencies]
-black = "23.11.0"
+black = "24.10.0"
 mypy = "1.11.2"
 pre-commit = "^3"
 pylint = "3.0.2"

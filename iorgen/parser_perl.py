@@ -78,9 +78,11 @@ def read_line(
                 (
                     "int(${}[{}])"
                     if f.type.main == TypeEnum.INT
-                    else "${}[{}]"
-                    if f.type.main == TypeEnum.FLOAT
-                    else "substr(${}[{}], 0, 1)"
+                    else (
+                        "${}[{}]"
+                        if f.type.main == TypeEnum.FLOAT
+                        else "substr(${}[{}], 0, 1)"
+                    )
                 ).format(split, i),
             )
             for i, f in enumerate(struct.fields)

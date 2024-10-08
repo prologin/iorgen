@@ -106,9 +106,11 @@ class ParserJava:
                     'Arrays.stream(reader.readLine().split(" ")).{}{}.toArray()'
                 ).format(
                     "filter(x -> !x.isEmpty())." if type_.can_be_empty else "",
-                    "mapToInt(Integer::parseInt)"
-                    if type_.encapsulated.main == TypeEnum.INT
-                    else "mapToDouble(Double::parseDouble)",
+                    (
+                        "mapToInt(Integer::parseInt)"
+                        if type_.encapsulated.main == TypeEnum.INT
+                        else "mapToDouble(Double::parseDouble)"
+                    ),
                 )
         assert command
         return [f"{indent}{type_decl}{name} = {command};"]

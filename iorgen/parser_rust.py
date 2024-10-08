@@ -360,9 +360,11 @@ class ParserRust:
             struct = self.input.get_struct(type_.struct_name)
             template = " ".join("{}" * len(struct.fields))
             fields = ", ".join(
-                f"_iorgen_float(&{name}.{var_name(f.name)})"
-                if f.type.main == TypeEnum.FLOAT
-                else f"{name}.{var_name(f.name)}"
+                (
+                    f"_iorgen_float(&{name}.{var_name(f.name)})"
+                    if f.type.main == TypeEnum.FLOAT
+                    else f"{name}.{var_name(f.name)}"
+                )
                 for f in struct.fields
             )
             return f'print!("{template}\\n", {fields});'

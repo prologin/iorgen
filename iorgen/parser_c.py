@@ -163,9 +163,11 @@ class ParserC:
                     + f'("{format_specifier(type_.encapsulated)}", &{name}[{index}]);'
                 )
                 self.decl_new_read_line(
-                    IntegerOrString.UNKNOWN
-                    if type_.can_be_empty
-                    else IntegerOrString.INTEGER,
+                    (
+                        IntegerOrString.UNKNOWN
+                        if type_.can_be_empty
+                        else IntegerOrString.INTEGER
+                    ),
                     indent,
                 )
                 self.iterator.pop_it()
@@ -180,9 +182,11 @@ class ParserC:
                 )
             )
             self.decl_new_read_line(
-                IntegerOrString.STRING
-                if struct.fields[0].type.main == TypeEnum.CHAR
-                else IntegerOrString.INTEGER,
+                (
+                    IntegerOrString.STRING
+                    if struct.fields[0].type.main == TypeEnum.CHAR
+                    else IntegerOrString.INTEGER
+                ),
                 indent,
             )
 

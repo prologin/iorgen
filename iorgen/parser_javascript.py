@@ -82,9 +82,11 @@ class ParserJS:
                 + INDENTATION
                 + "{}: {}{}".format(
                     var_name(field.name),
-                    "{}[{}]".format(words, i)
-                    if field.type.main == TypeEnum.CHAR
-                    else "Number({}[{}])".format(words, i),
+                    (
+                        "{}[{}]".format(words, i)
+                        if field.type.main == TypeEnum.CHAR
+                        else "Number({}[{}])".format(words, i)
+                    ),
                     "," if i != len(struct.fields) - 1 else "",
                 )
                 for i, field in enumerate(struct.fields)
