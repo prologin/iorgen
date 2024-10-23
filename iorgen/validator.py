@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2022 Sacha Delanoue
+# Copyright 2018-2024 Sacha Delanoue
 """Check that a raw input is valid"""
 
 from string import printable, whitespace
@@ -307,7 +307,8 @@ class Validator:
 def input_errors(input_data: Input, filename: str, perf_mode: bool = False) -> str:
     """Return the first error found in a raw input, if any"""
     with open(filename, encoding="utf-8") as file_content:
-        validator = Validator(input_data, [line.rstrip("\n") for line in file_content])
+        lines = file_content.readlines()
+    validator = Validator(input_data, [line.rstrip("\n") for line in lines])
     error = validator.read_all()
     if error:
         return error
@@ -318,4 +319,12 @@ def input_errors(input_data: Input, filename: str, perf_mode: bool = False) -> s
                 "any performance constraints"
             )
         return "Input valid only for performance"
+
+    if not lines[-1].endswith("\n"):
+        # Newline at end of file is important because:
+        # - it is how a file should be according to POSIX
+        # - without it the "run" mode of iorgen will fail
+        # - some languages might have issues with that (hypothetical)
+        return "No newline at end of file"
+
     return ""
