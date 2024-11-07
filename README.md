@@ -9,7 +9,7 @@ generate the code to read this input from stdin, in all supported languages.
 
 The list of currently supported languages is: C, C++, C#, D, Go, Haskell, Java,
 Javascript, Julia, Kotlin, Lua, Ocaml, Pascal, Perl, PHP, Prolog, Python, Ruby,
-Rust, Scheme. A Markdown description of the input in English and French can also
+Rust, Scheme, Zig. A Markdown description of the input in English and French can also
 be generated.
 
 ## Installation

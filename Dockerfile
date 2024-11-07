@@ -19,7 +19,8 @@ ENV DEBIAN_FRONTEND=noninteractive \
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         git make \
-        curl ca-certificates gnupg apt-transport-https
+        curl ca-certificates gnupg apt-transport-https \
+        xz-utils
 
 ARG INCLUDE_DEV_DEPS=false
 
@@ -28,6 +29,8 @@ RUN if [ $INCLUDE_DEV_DEPS = "true" ]; then \
       # let's download the LTS release and extract everything in /usr/local
       curl -L -s https://julialang-s3.julialang.org/bin/linux/x64/1.6/julia-1.6.7-linux-x86_64.tar.gz \
         | tar --strip-components=1 -xz -C /usr/local && \
+      curl -L -s https://ziglang.org/download/0.13.0/zig-linux-x86_64-0.13.0.tar.xz \
+        | tar --strip-components=1 --wildcards -xJ -C /usr/local/bin zig-linux-x86_64-0.13.0/zig zig-linux-x86_64-0.13.0/lib/* && \
       apt-get install -y --no-install-recommends \
         default-jdk-headless \
         fp-compiler \
