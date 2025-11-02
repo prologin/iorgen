@@ -3,7 +3,8 @@
 # Copyright 2019 Matthieu Moatti
 """Generate a valid raw input"""
 
-from typing import Callable, Optional, TypeVar, Union
+from collections.abc import Callable
+from typing import TypeVar
 import random
 import string
 
@@ -27,7 +28,7 @@ class Generator:
         self, input_data: Input, specs: dict[str, str], perf_mode: bool
     ) -> None:
         self.input = input_data
-        self.numbers = {}  # type: dict[str, Union[int, float]]
+        self.numbers = {}  # type: dict[str, int | float]
         self.perf_mode = perf_mode
         self.specs = specs
 
@@ -35,8 +36,8 @@ class Generator:
 
     def eval_var(
         self,
-        cast: Callable[[Union[str, int, float]], NUM],
-        var: Union[int, float, str, Variable],
+        cast: Callable[[str | int | float], NUM],
+        var: int | float | str | Variable,
     ) -> NUM:
         """Eval an integer, that can be a variable, or a string"""
         if isinstance(var, (int, float)):
@@ -53,7 +54,7 @@ class Generator:
 
     def get_bounds(
         self,
-        cast: Callable[[Union[str, int, float]], NUM],
+        cast: Callable[[str | int | float], NUM],
         name: str,
         constraints: Constraints,
     ) -> tuple[NUM, NUM]:
@@ -106,7 +107,7 @@ class Generator:
         return value_str
 
     def generate_line(
-        self, name: str, type_: Type, constraints: Optional[Constraints]
+        self, name: str, type_: Type, constraints: Constraints | None
     ) -> str:
         # pylint: disable=too-many-return-statements
         """Generate a raw input for a line"""

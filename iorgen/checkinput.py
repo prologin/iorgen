@@ -3,7 +3,7 @@
 """Check that a YAML input is well formed"""
 
 import re
-from typing import Any, TextIO, Union
+from typing import Any, TextIO
 
 import yaml
 
@@ -80,7 +80,7 @@ def error_parse_variable(dic: dict[str, str]) -> str:
     return "unknown error"
 
 
-def error_parse_struct(dic: dict[str, Union[str, list[dict[str, str]]]]) -> str:
+def error_parse_struct(dic: dict[str, str | list[dict[str, str]]]) -> str:
     """Explain why we a struct fails to parse"""
     # pylint: disable=too-many-return-statements
     assert Struct.from_dict(dic) is None

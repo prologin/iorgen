@@ -7,9 +7,9 @@
 
 from __future__ import annotations
 import re
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from enum import Enum, unique
-from typing import Any, Callable, Optional, Union
+from typing import Any
 from typing import Type as T
 
 from .utils import number_int
@@ -43,7 +43,7 @@ class Type:
         self: Type,
         enum: TypeEnum,
         size: str = "",
-        encapsulated: Optional[Type] = None,
+        encapsulated: Type | None = None,
         struct_name: str = "",
     ) -> None:
         self.main = enum
@@ -53,7 +53,7 @@ class Type:
         self.struct_name = struct_name
 
     @classmethod
-    def from_string(cls: T[Type], string: str) -> Optional[Type]:
+    def from_string(cls: T[Type], string: str) -> Type | None:
         """Create a Type from a string"""
         if string in ("int", "float", "char"):
             return {
@@ -131,7 +131,7 @@ class Type:
         return inner.list_contained()
 
 
-def get_min_value(var: Union[int, float, Variable]) -> Union[int, float]:
+def get_min_value(var: int | float | Variable) -> int | float:
     """Get min value of an integer or a variable"""
     if isinstance(var, Variable):
         assert var.constraints is not None
@@ -140,7 +140,7 @@ def get_min_value(var: Union[int, float, Variable]) -> Union[int, float]:
     return var
 
 
-def get_max_value(var: Union[int, float, Variable]) -> Union[int, float]:
+def get_max_value(var: int | float | Variable) -> int | float:
     """Get min value of an integer or a variable"""
     if isinstance(var, Variable):
         assert var.constraints is not None
@@ -151,7 +151,7 @@ def get_max_value(var: Union[int, float, Variable]) -> Union[int, float]:
 
 def get_number_or_var(
     var_name: str, type_: TypeEnum, variables: dict[str, Variable]
-) -> Union[int, float, Variable]:
+) -> int | float | Variable:
     """From a string, return either the corresponding var or number (int or float)"""
     assert isinstance(var_name, str)
     if var_name in variables:
@@ -168,8 +168,8 @@ def get_number_or_var(
 
 def integer_bounds(
     name: str,
-    min_: Union[int, float, Variable],
-    max_: Union[int, float, Variable],
+    min_: int | float | Variable,
+    max_: int | float | Variable,
     is_size: bool,
 ) -> str:
     """Create a string to display an integer's bounds"""
@@ -224,11 +224,11 @@ class Constraints:
             if type_ == TypeEnum.FLOAT
             else (self.MIN_INT, self.MAX_INT)
         )
-        self.min = self.type_bounds[0]  # type: Union[int, float, Variable]
-        self.max = self.type_bounds[1]  # type: Union[int, float, Variable]
-        self.min_perf = self.type_bounds[0]  # type: Union[int, float, Variable]
-        self.max_perf = self.type_bounds[1]  # type: Union[int, float, Variable]
-        self.choices = set()  # type: set[Union[int, float, str]]
+        self.min = self.type_bounds[0]  # type: int | float | Variable
+        self.max = self.type_bounds[1]  # type: int | float | Variable
+        self.min_perf = self.type_bounds[0]  # type: int | float | Variable
+        self.max_perf = self.type_bounds[1]  # type: int | float | Variable
+        self.choices = set()  # type: set[int | float | str]
         self.is_size = False
 
         if "min" in dic:
@@ -249,7 +249,7 @@ class Constraints:
             else:
                 self.choices = {i[0] for i in dic["choices"]}
 
-    def min_possible(self) -> Union[int, float]:
+    def min_possible(self) -> int | float:
         """Return the minimal possible value for an integer"""
         if self.choices:
             value = min(self.choices)
@@ -260,7 +260,7 @@ class Constraints:
             value = min(value, get_min_value(min_))
         return max(0, value) if self.is_size else value
 
-    def max_possible(self) -> Union[int, float]:
+    def max_possible(self) -> int | float:
         """Return the maximal possible value for an integer"""
         if self.choices:
             value = max(self.choices)
@@ -301,11 +301,11 @@ class Variable:
         self.name = name
         self.comment = comment
         self.type = type_
-        self.constraints = None  # type: Optional[Constraints]
+        self.constraints = None  # type: Constraints | None
         self.format_style = format_style
 
     @classmethod
-    def from_dict(cls: T[Variable], dic: dict[str, str]) -> Optional[Variable]:
+    def from_dict(cls: T[Variable], dic: dict[str, str]) -> Variable | None:
         """Create a Variable from its YAML (dictionary) representation"""
         if "name" not in dic or "comment" not in dic or "type" not in dic:
             return None
@@ -377,8 +377,8 @@ class Struct:
 
     @classmethod
     def from_dict(
-        cls: T[Struct], dic: dict[str, Union[str, list[dict[str, str]]]]
-    ) -> Optional[Struct]:
+        cls: T[Struct], dic: dict[str, str | list[dict[str, str]]]
+    ) -> Struct | None:
         """Create a Struct from its YAML (dictionary) representation"""
         try:
             name = dic["name"]
@@ -479,7 +479,7 @@ class Input:
         self.output = output
 
     @classmethod
-    def from_dict(cls: T[Input], dic: dict[str, Any]) -> Optional[Input]:
+    def from_dict(cls: T[Input], dic: dict[str, Any]) -> Input | None:
         """Parse the input yaml"""
         # pylint: disable=too-many-branches
         # We'll be able to reactivate the too-many-branches check when we will

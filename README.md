@@ -57,7 +57,7 @@ Issues with some Debian/Ubuntu versions:
 
 ## Usage
 
-Make sure python (version 3.9 and above) and python-yaml are installed on your
+Make sure python (version 3.10 and above) and python-yaml are installed on your
 computer and run `python3 -m iorgen gen-stubs input.yaml`. This will generate
 all languages parsers in a `skeleton` folder, and a `input-subject-io-stub.md`
 describing the input (in French by default).

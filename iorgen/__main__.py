@@ -10,7 +10,7 @@ import glob
 import sys
 from collections.abc import Iterable
 from pathlib import Path
-from typing import NoReturn, Union
+from typing import NoReturn
 
 from iorgen.checkinput import parse_input
 from iorgen.generator import ALL_LANGUAGES, gen_compile_run_and_compare
@@ -20,7 +20,7 @@ from iorgen.types import Input
 from iorgen.validator import input_errors
 
 
-def parse_yaml_input_or_exit(yaml_path: Path) -> Union[Input, NoReturn]:
+def parse_yaml_input_or_exit(yaml_path: Path) -> Input | NoReturn:
     """Parse a YAML input file (.iorgen) or exits if an error occurred"""
     with open(yaml_path, encoding="UTF-8") as yaml_file:
         try:

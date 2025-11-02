@@ -5,7 +5,6 @@
 """Generate the markdown describing the subject"""
 
 import textwrap
-from typing import Optional
 
 from iorgen.types import FormatStyle, Input, Type, TypeEnum, Variable
 
@@ -104,8 +103,8 @@ class Markdown:
 
     def describe_oneline(
         self,
-        name: Optional[str],
-        comment: Optional[str],
+        name: str | None,
+        comment: str | None,
         type_: Type,
     ) -> list[str]:
         """Describe a line of input"""
@@ -161,8 +160,8 @@ class Markdown:
 
     def describe_multi(
         self,
-        name: Optional[str],
-        comment: Optional[str],
+        name: str | None,
+        comment: str | None,
         type_: Type,
         style: FormatStyle = FormatStyle.DEFAULT,
     ) -> list[str]:

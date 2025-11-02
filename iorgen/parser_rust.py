@@ -6,7 +6,6 @@
 """Generate a Rust parser"""
 
 import textwrap
-from typing import Optional
 from iorgen.types import FormatStyle, Input, Struct, Type, TypeEnum, Variable
 from iorgen.utils import pascal_case, snake_case
 
@@ -68,8 +67,8 @@ def parse_without_error(type_: Type) -> bool:
 def read_line(
     type_: Type,
     indent_lvl: int,
-    name: Optional[str] = None,
-    unwrap_method: Optional[str] = None,
+    name: str | None = None,
+    unwrap_method: str | None = None,
 ) -> str:
     """Return a Rust command for parsing a line into a given type"""
     if unwrap_method is None:
@@ -222,7 +221,7 @@ class ParserRust:
         name: str,
         type_: Type,
         indent_lvl: int,
-        unwrap_method: Optional[str] = None,
+        unwrap_method: str | None = None,
     ) -> list[str]:
         """Return a Rust command for parsing some lines into a given type"""
         if unwrap_method is None:

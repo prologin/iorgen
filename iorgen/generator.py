@@ -5,10 +5,9 @@
 import subprocess
 import os
 import tempfile
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from difflib import unified_diff
 from pathlib import Path
-from typing import Callable, Optional
 
 from iorgen.types import Input
 from iorgen.markdown import gen_markdown
@@ -43,7 +42,7 @@ class Language:
         extension: str,
         generator: Callable[[Input, bool], str],
         compile_command: list[str],
-        exec_command: Optional[list[str]] = None,
+        exec_command: list[str] | None = None,
         no_stderr: bool = False,
     ) -> None:
         # pylint: disable=too-many-arguments

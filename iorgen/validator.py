@@ -3,7 +3,6 @@
 """Check that a raw input is valid"""
 
 from string import printable, whitespace
-from typing import Optional, Union
 import re
 
 from iorgen.types import Constraints, FormatStyle, Input, Type, TypeEnum, Variable
@@ -27,7 +26,7 @@ class Validator:
         self.input = input_data
         self.current_line = 0
         self.lines = lines
-        self.numbers = {}  # type: dict[str, Union[int, float]]
+        self.numbers = {}  # type: dict[str, int | float]
         self.valid_for_perf_only = False
 
     def next_line(self) -> str:
@@ -38,7 +37,7 @@ class Validator:
         self.current_line += 1
         return line
 
-    def eval_var(self, var: Union[int, float, Variable]) -> Union[int, float]:
+    def eval_var(self, var: int | float | Variable) -> int | float:
         """Eval an number, that can be a variable"""
         if isinstance(var, (int, float)):
             return var
@@ -49,7 +48,7 @@ class Validator:
         return self.numbers[var.name]
 
     def check_number_constraints(
-        self, value: Union[int, float], constraints: Constraints
+        self, value: int | float, constraints: Constraints
     ) -> None:
         """Check that a number respects its constraints"""
         min_value = self.eval_var(constraints.min)
@@ -164,7 +163,7 @@ class Validator:
         self,
         name: str,
         type_: Type,
-        constraints: Optional[Constraints],
+        constraints: Constraints | None,
         style: FormatStyle = FormatStyle.DEFAULT,
     ) -> None:
         """Read a type, or throw an exception if incorrect"""

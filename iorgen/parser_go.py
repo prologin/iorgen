@@ -4,7 +4,6 @@
 """Generate a Go parser"""
 
 import textwrap
-from typing import Optional
 from iorgen.types import Constraints, FormatStyle, Input, Type, TypeEnum, Variable
 from iorgen.utils import pascal_case, camel_case, IteratorName
 
@@ -62,7 +61,7 @@ def type_str(type_: Type) -> str:
 
 def max_size(
     type_: Type,
-    constraints: Optional[Constraints],
+    constraints: Constraints | None,
     input_data: Input,
     style: FormatStyle = FormatStyle.DEFAULT,
 ) -> int:

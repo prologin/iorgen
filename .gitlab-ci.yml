@@ -40,11 +40,11 @@ container build:
     matrix:
       - PYTHON_IMAGE: python
         PYTHON_VERSION:
-          - "3.9"
           - "3.10"
           - "3.11"
           - "3.12"
           - "3.13"
+          - "3.14"
       - PYTHON_IMAGE: pypy
         PYTHON_VERSION:
           - "3.11"
@@ -110,11 +110,11 @@ test:
     matrix:
       - PYTHON_IMAGE: python
         PYTHON_VERSION:
-          - "3.9"
           - "3.10"
           - "3.11"
           - "3.12"
           - "3.13"
+          - "3.14"
       - PYTHON_IMAGE: pypy
         PYTHON_VERSION:
           - "3.11"
