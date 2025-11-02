@@ -1,10 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2022 Sacha Delanoue
+# Copyright 2018-2025 Sacha Delanoue
 """Generate a C++ parser"""
 
 import textwrap
 from enum import Enum, unique
-from typing import List, Set, Tuple
 from iorgen.types import FormatStyle, Input, Type, TypeEnum, Variable
 from iorgen.utils import snake_case, IteratorName
 
@@ -54,13 +53,13 @@ class ParserC:
     def __init__(self, input_data: Input) -> None:
         self.input = input_data
 
-        self.includes = set()  # type: Set[str]
-        self.main = []  # type: List[str]
-        self.method = []  # type: List[str]
+        self.includes = set()  # type: set[str]
+        self.main = []  # type: list[str]
+        self.method = []  # type: list[str]
         self.iterator = IteratorName([var.name for var in input_data.input])
         self.endlines = [
             (True, [], IntegerOrString.UNKNOWN)
-        ]  # type: List[Tuple[bool, List[int], IntegerOrString]]
+        ]  # type: list[tuple[bool, list[int], IntegerOrString]]
 
         self.indentation = 4
 
@@ -138,17 +137,15 @@ class ParserC:
             self.decl_new_read_line(IntegerOrString.INTEGER, indent)
         elif type_.main == TypeEnum.CHAR:
             if "." in name or "[" in name:
-                self.main.append(indent + "{} = getchar();".format(name))
+                self.main.append(indent + f"{name} = getchar();")
             self.decl_new_read_line(IntegerOrString.STRING, indent)
         elif type_.main == TypeEnum.STR:
-            self.main.append(indent + 'scanf("%[^\\n]", {});'.format(name))
+            self.main.append(indent + f'scanf("%[^\\n]", {name});')
             self.decl_new_read_line(IntegerOrString.STRING, indent)
         elif type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
             if type_.encapsulated.main == TypeEnum.CHAR:
-                self.main.append(
-                    indent + "fgets({}, {} + 1, stdin);".format(name, size)
-                )
+                self.main.append(indent + f"fgets({name}, {size} + 1, stdin);")
                 self.decl_new_read_line(IntegerOrString.STRING, indent)
             else:
                 assert type_.encapsulated.main in (TypeEnum.INT, TypeEnum.FLOAT)
@@ -222,7 +219,7 @@ class ParserC:
             if type_.main == TypeEnum.STRUCT:
                 struct = self.input.get_struct(type_.struct_name)
                 for f_name, f_type, f_size in struct.fields_name_type_size(
-                    "{}.{{}}".format(name), var_name
+                    f"{name}.{{}}", var_name
                 ):
                     self.read_lines(f_name, f_type, f_size, indent_lvl)
             else:
@@ -236,7 +233,7 @@ class ParserC:
                     )
                 )
                 self.read_lines(
-                    "{}[{}]".format(name, index),
+                    f"{name}[{index}]",
                     type_.encapsulated,
                     var_name(type_.encapsulated.size),
                     indent_lvl + 1,
@@ -260,7 +257,7 @@ class ParserC:
             assert var.type.encapsulated is not None
             self.includes.add("stdlib.h")
             array_size = (
-                "({} + 1)".format(var_name(var.type.size))
+                f"({var_name(var.type.size)} + 1)"
                 if var.type.encapsulated.main == TypeEnum.CHAR
                 else var_name(var.type.size)
             )
@@ -282,8 +279,8 @@ class ParserC:
         arguments = []
         for arg in self.input.input:
             arg_name = var_name(arg.name)
-            self.method.append("/// \\param {} {}".format(arg_name, arg.comment))
-            arguments.append("{} {}".format(self.type_str(arg.type), arg_name))
+            self.method.append(f"/// \\param {arg_name} {arg.comment}")
+            arguments.append(f"{self.type_str(arg.type)} {arg_name}")
         self.method.append("void {}({}) {{".format(name, ", ".join(arguments)))
         if reprint:
             for var in self.input.input:
@@ -332,7 +329,7 @@ class ParserC:
                         format_specifier(var.type.encapsulated, False),
                     )
                 )
-                self.method.append(indent + "if ({} == 0) putchar('\\n');".format(size))
+                self.method.append(indent + f"if ({size} == 0) putchar('\\n');")
                 self.iterator.pop_it()
         else:
             assert var.type.main == TypeEnum.STRUCT
@@ -376,14 +373,12 @@ class ParserC:
 
     def content(self) -> str:
         """Return the parser content"""
-        output = ""
-        for include in sorted(self.includes):
-            output += "#include <{}>\n".format(include)
+        output = "\n".join(f"#include <{include}>" for include in sorted(self.includes))
         if self.includes:
-            output += "\n"
+            output += "\n\n"
         for struct in self.input.structs:
-            output += "/// {}\n".format(struct.comment)
-            output += "struct {} {{\n".format(struct_name(struct.name))
+            output += f"/// {struct.comment}\n"
+            output += f"struct {struct_name(struct.name)} {{\n"
             for field in struct.fields:
                 output += " " * self.indentation + "{} {}; ///< {}\n".format(
                     self.type_str(field.type), var_name(field.name), field.comment

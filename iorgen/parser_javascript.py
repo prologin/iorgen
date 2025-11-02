@@ -1,10 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2022 Sacha Delanoue
+# Copyright 2018-2025 Sacha Delanoue
 # Copyright 2019 Victor Collod
 """Generate a Javascript parser"""
 
 import textwrap
-from typing import List
 
 from iorgen.types import FormatStyle, Input, Type, TypeEnum, Variable
 from iorgen.utils import camel_case, IteratorName, WordsName
@@ -34,7 +33,7 @@ def type_str(type_: Type, input_data: Input) -> str:
         return "{{{}}}".format(
             ", ".join(
                 "{}: {}".format(
-                    v.name if " " not in v.name else "'{}'".format(v.name),
+                    v.name if " " not in v.name else f"'{v.name}'",
                     type_str(v.type, input_data),
                 )
                 for v in struct.fields
@@ -42,7 +41,7 @@ def type_str(type_: Type, input_data: Input) -> str:
         )
     assert type_.main == TypeEnum.LIST
     assert type_.encapsulated
-    return "Array.<{}>".format(type_str(type_.encapsulated, input_data))
+    return f"Array.<{type_str(type_.encapsulated, input_data)}>"
 
 
 class ParserJS:
@@ -58,7 +57,7 @@ class ParserJS:
 
     def read_line(
         self, decl: bool, name: str, type_: Type, size: str, indent_lvl: int
-    ) -> List[str]:
+    ) -> list[str]:
         # pylint: disable=too-many-arguments
         # pylint: disable=too-many-positional-arguments
         """Generate the Javascript code to read a line of given type"""
@@ -70,12 +69,12 @@ class ParserJS:
             if type_.encapsulated.main == TypeEnum.CHAR:
                 return [start + 'stdin[line++].split("");']
             assert type_.encapsulated.main in (TypeEnum.INT, TypeEnum.FLOAT)
-            return [start + 'stdin[line++].split(" ", {}).map(Number);'.format(size)]
+            return [start + f'stdin[line++].split(" ", {size}).map(Number);']
         if type_.main == TypeEnum.STRUCT:
             struct = self.input.get_struct(type_.struct_name)
             words = self.words.next_name()
             lines = [
-                indent + 'const {} = stdin[line++].split(" ");'.format(words),
+                indent + f'const {words} = stdin[line++].split(" ");',
                 start + "{",
             ]
             lines.extend(
@@ -84,9 +83,9 @@ class ParserJS:
                 + "{}: {}{}".format(
                     var_name(field.name),
                     (
-                        "{}[{}]".format(words, i)
+                        f"{words}[{i}]"
                         if field.type.main == TypeEnum.CHAR
-                        else "Number({}[{}])".format(words, i)
+                        else f"Number({words}[{i}])"
                     ),
                     "," if i != len(struct.fields) - 1 else "",
                 )
@@ -105,7 +104,7 @@ class ParserJS:
 
     def read_lines(
         self, decl: bool, var: Variable, size: str, indent_lvl: int
-    ) -> List[str]:
+    ) -> list[str]:
         # pylint: disable=too-many-arguments
         """Generate the Javascript code to read the lines for a given type"""
         if var.fits_in_one_line(self.input.structs):
@@ -144,7 +143,7 @@ class ParserJS:
             )
         return lines
 
-    def read_vars(self) -> List[str]:
+    def read_vars(self) -> list[str]:
         """Generate the Javascript code to read all input variables"""
         lines = []
         for variables in self.input.get_all_vars():
@@ -182,7 +181,7 @@ def print_line(name: str, type_: Type, input_data: Input) -> str:
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
         if type_.encapsulated.main == TypeEnum.CHAR:
-            return 'console.log({}.join(""));'.format(name)
+            return f'console.log({name}.join(""));'
         assert type_.encapsulated.main in (TypeEnum.INT, TypeEnum.FLOAT)
         return (
             f"console.log({name}.map("
@@ -203,7 +202,7 @@ def print_lines(
     type_: Type,
     indent_lvl: int,
     style: FormatStyle = FormatStyle.DEFAULT,
-) -> List[str]:
+) -> list[str]:
     """Print the content of a var that holds in one or more lines"""
     indent = "    " * indent_lvl
     if type_.fits_in_one_line(input_data.structs, style):
@@ -212,7 +211,7 @@ def print_lines(
         assert type_.encapsulated is not None
         inner = name.replace(".", "_") + "_elem"
         return (
-            [indent + "{}.forEach(function({}) {{".format(name, inner)]
+            [indent + f"{name}.forEach(function({inner}) {{"]
             + print_lines(input_data, inner, type_.encapsulated, indent_lvl + 1)
             + [indent + "});"]
         )
@@ -220,14 +219,12 @@ def print_lines(
     lines = []
     for i in input_data.get_struct(type_.struct_name).fields:
         lines.extend(
-            print_lines(
-                input_data, "{}.{}".format(name, var_name(i.name)), i.type, indent_lvl
-            )
+            print_lines(input_data, f"{name}.{var_name(i.name)}", i.type, indent_lvl)
         )
     return lines
 
 
-def call(input_data: Input, reprint: bool) -> List[str]:
+def call(input_data: Input, reprint: bool) -> list[str]:
     """Declare the function that takes all inputs in arguments"""
     out = (
         ["/**"]

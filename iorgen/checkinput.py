@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2019 Sacha Delanoue
+# Copyright 2018-2025 Sacha Delanoue
 """Check that a YAML input is well formed"""
 
 import re
-from typing import Any, Dict, List, TextIO, Union
+from typing import Any, TextIO, Union
 
 import yaml
 
@@ -48,7 +48,7 @@ def error_parse_type(string: str) -> str:
     )
 
 
-def error_parse_variable(dic: Dict[str, str]) -> str:
+def error_parse_variable(dic: dict[str, str]) -> str:
     """Explain why we a variable fails to parse"""
     # pylint: disable=too-many-return-statements
     assert Variable.from_dict(dic) is None
@@ -80,7 +80,7 @@ def error_parse_variable(dic: Dict[str, str]) -> str:
     return "unknown error"
 
 
-def error_parse_struct(dic: Dict[str, Union[str, List[Dict[str, str]]]]) -> str:
+def error_parse_struct(dic: dict[str, Union[str, list[dict[str, str]]]]) -> str:
     """Explain why we a struct fails to parse"""
     # pylint: disable=too-many-return-statements
     assert Struct.from_dict(dic) is None
@@ -105,7 +105,7 @@ def error_parse_struct(dic: Dict[str, Union[str, List[Dict[str, str]]]]) -> str:
     return "unknown error"
 
 
-def error_parse_input(dic: Dict[str, Any]) -> str:
+def error_parse_input(dic: dict[str, Any]) -> str:
     """Explain why we an input fails to parse"""
     # pylint: disable=too-many-return-statements
     # pylint: disable=too-many-branches
@@ -137,7 +137,7 @@ def error_parse_input(dic: Dict[str, Any]) -> str:
     return "unknown error"
 
 
-def input_from_dict(dic: Dict[str, Any]) -> Input:
+def input_from_dict(dic: dict[str, Any]) -> Input:
     """Parse a input from a dict, or return a ValueError"""
     value = Input.from_dict(dic)
     if value is None:

@@ -1,11 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright 2023 Chloé Magliulo
-# Copyright 2023 Sacha Delanoue
+# Copyright 2023-2025 Sacha Delanoue
 
 """Generate a Kotlin parser"""
 
 import textwrap
-from typing import List
 
 from iorgen.types import TypeEnum, Type, Variable, Input
 from iorgen.utils import camel_case, pascal_case, WordsName
@@ -71,7 +70,7 @@ class ParserKotlin:
 
     def read_line(
         self, decl: bool, name: str, type_: Type, indent_lvl: int
-    ) -> List[str]:
+    ) -> list[str]:
         """Read an entire line and store it into the right place(s)"""
         assert type_.fits_in_one_line(self.input.structs)
         indent = INDENTATION * indent_lvl
@@ -130,7 +129,7 @@ class ParserKotlin:
 
     def read_lines(
         self, decl: bool, var: Variable, size: str, indent_lvl: int
-    ) -> List[str]:
+    ) -> list[str]:
         """Read one or several lines and store them into the right place(s)"""
         if var.fits_in_one_line(self.input.structs):
             return self.read_line(decl, var.name, var.type, indent_lvl)
@@ -183,7 +182,7 @@ class ParserKotlin:
                 )
             ]
         else:
-            lines = ["{}List({}) {{ _ ->".format(indent, size)]
+            lines = [f"{indent}List({size}) {{ _ ->"]
 
         lines.extend(
             self.read_lines(
@@ -196,14 +195,14 @@ class ParserKotlin:
 
         return lines + [indent + "}"]
 
-    def call(self, reprint: bool) -> List[str]:
+    def call(self, reprint: bool) -> list[str]:
         """Declare and call the function take all inputs in arguments"""
         lines = ["/**"]
         arguments = []
         for arg in self.input.input:
             arg_name = var_name(arg.name)
-            lines.append(" * @param {} {}".format(arg_name, arg.comment))
-            arguments.append("{}: {}".format(arg_name, type_str(arg.type)))
+            lines.append(f" * @param {arg_name} {arg.comment}")
+            arguments.append(f"{arg_name}: {type_str(arg.type)}")
         lines.append(" */")
         lines.append(f"fun {var_name(self.input.name)}(")
 
@@ -282,7 +281,7 @@ class ParserKotlin:
         var: Variable,
         _: str,
         indent_lvl: int,
-    ) -> List[str]:
+    ) -> list[str]:
         """Print the content of a var that holds in one or more lines"""
         if var.fits_in_one_line(self.input.structs):
             return [INDENTATION * indent_lvl + self.print_line(var.name, var.type)]

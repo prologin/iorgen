@@ -1,11 +1,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2022 Sacha Delanoue
+# Copyright 2018-2025 Sacha Delanoue
 # Copyright 2021 Kenji Gaillac
 # Copyright 2022 Quentin Rataud
 """Generate the markdown describing the subject"""
 
 import textwrap
-from typing import Dict, List, Optional
+from typing import Optional
 
 from iorgen.types import FormatStyle, Input, Type, TypeEnum, Variable
 
@@ -71,7 +71,7 @@ LANG = {
 }
 
 
-def wrap_item(content: str, indent: int) -> List[str]:
+def wrap_item(content: str, indent: int) -> list[str]:
     """Wrap list item to 79 characters max. Add identation and list bullet"""
     return textwrap.wrap(
         content,
@@ -107,7 +107,7 @@ class Markdown:
         name: Optional[str],
         comment: Optional[str],
         type_: Type,
-    ) -> List[str]:
+    ) -> list[str]:
         """Describe a line of input"""
         assert type_.fits_in_one_line(self.input.structs)
         type_str = ""
@@ -156,7 +156,7 @@ class Markdown:
                 self.line_description(), type_str, self.lang[":"], name, comment
             )
         else:
-            content = "{} {}.".format(self.line_description(), type_str)
+            content = f"{self.line_description()} {type_str}."
         return wrap_item(content, self.indent_lvl)
 
     def describe_multi(
@@ -165,7 +165,7 @@ class Markdown:
         comment: Optional[str],
         type_: Type,
         style: FormatStyle = FormatStyle.DEFAULT,
-    ) -> List[str]:
+    ) -> list[str]:
         """Describe a type taking several lines of input"""
         if type_.fits_in_one_line(self.input.structs, style):
             return self.describe_oneline(name, comment, type_)
@@ -235,7 +235,7 @@ class Markdown:
         return "\n".join(output) + "\n"
 
 
-def constraints(variables: List[Variable], lang: Dict[str, str]) -> str:
+def constraints(variables: list[Variable], lang: dict[str, str]) -> str:
     """Return content of constraints sections"""
     l_simple = []
     l_perf = []

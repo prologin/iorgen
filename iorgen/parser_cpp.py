@@ -1,9 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2022 Sacha Delanoue
+# Copyright 2018-2025 Sacha Delanoue
 """Generate a C++ parser"""
 
 import textwrap
-from typing import List, Set
 from iorgen.types import FormatStyle, Input, Type, TypeEnum, Variable
 from iorgen.utils import pascal_case, snake_case, IteratorName
 
@@ -27,9 +26,9 @@ class ParserCpp:
     def __init__(self, input_data: Input) -> None:
         self.input = input_data
 
-        self.includes = set()  # type: Set[str]
-        self.main = []  # type: List[str]
-        self.method = []  # type: List[str]
+        self.includes = set()  # type: set[str]
+        self.main = []  # type: list[str]
+        self.method = []  # type: list[str]
         self.iterator = IteratorName([var.name for var in input_data.input])
         self.indent_lvl = 0
 
@@ -51,7 +50,7 @@ class ParserCpp:
         assert type_.encapsulated
         assert type_.main == TypeEnum.LIST
         self.includes.add("vector")
-        return "std::vector<{}>".format(self.type_str(type_.encapsulated))
+        return f"std::vector<{self.type_str(type_.encapsulated)}>"
 
     def read_line(self, name: str, type_: Type, size: str) -> None:
         """Read an entire line and store it into the right place(s)"""
@@ -59,16 +58,16 @@ class ParserCpp:
         indent = " " * (self.indentation * self.indent_lvl)
         self.includes.add("iostream")
         if type_.main in (TypeEnum.INT, TypeEnum.FLOAT, TypeEnum.CHAR):
-            self.main.append(indent + "std::cin >> {};".format(name))
+            self.main.append(indent + f"std::cin >> {name};")
         elif type_.main == TypeEnum.STR:
             self.includes.add("string")
             self.includes.add("istream")
             if type_.can_be_empty:
-                self.main.append(indent + "if ({} > 0)".format(size))
+                self.main.append(indent + f"if ({size} > 0)")
             self.main.append(
                 indent
                 + " " * (self.indentation if type_.can_be_empty else 0)
-                + "std::getline(std::cin >> std::ws, {});".format(name)
+                + f"std::getline(std::cin >> std::ws, {name});"
             )
         elif type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
@@ -80,7 +79,7 @@ class ParserCpp:
                 )
             )
             self.main.append(
-                " " * self.indentation + indent + "std::cin >> {};".format(inner_name)
+                " " * self.indentation + indent + f"std::cin >> {inner_name};"
             )
             self.iterator.pop_it()
         else:
@@ -89,9 +88,7 @@ class ParserCpp:
             self.main.append(
                 indent
                 + "std::cin >> {};".format(
-                    " >> ".join(
-                        "{}.{}".format(name, var_name(x.name)) for x in struct.fields
-                    )
+                    " >> ".join(f"{name}.{var_name(x.name)}" for x in struct.fields)
                 )
             )
 
@@ -115,7 +112,7 @@ class ParserCpp:
             if type_.main == TypeEnum.STRUCT:
                 struct = self.input.get_struct(type_.struct_name)
                 for f_name, f_type, f_size in struct.fields_name_type_size(
-                    "{}.{{}}".format(name), var_name
+                    f"{name}.{{}}", var_name
                 ):
                     self.read_lines(f_name, f_type, f_size)
             else:
@@ -145,9 +142,9 @@ class ParserCpp:
         size = ""
         if var.type.main == TypeEnum.LIST:
             try:
-                size = "({})".format(int(var.type.size))
+                size = f"({int(var.type.size)})"
             except ValueError:
-                size = "({})".format(var_name(var.type.size))
+                size = f"({var_name(var.type.size)})"
         self.main.append(
             "{} {}{}; ///< {}".format(
                 self.type_str(var.type), var_name(var.name), size, var.comment
@@ -163,13 +160,11 @@ class ParserCpp:
         arguments = []
         for arg in self.input.input:
             arg_name = var_name(arg.name)
-            self.method.append("/// \\param {} {}".format(arg_name, arg.comment))
+            self.method.append(f"/// \\param {arg_name} {arg.comment}")
             if arg.type.main in (TypeEnum.STR, TypeEnum.LIST, TypeEnum.STRUCT):
-                arguments.append(
-                    "const {}& {}".format(self.type_str(arg.type), arg_name)
-                )
+                arguments.append(f"const {self.type_str(arg.type)}& {arg_name}")
             else:
-                arguments.append("{} {}".format(self.type_str(arg.type), arg_name))
+                arguments.append(f"{self.type_str(arg.type)} {arg_name}")
         self.method.append("void {}({}) {{".format(name, ", ".join(arguments)))
         if reprint:
             if self.input.contains_float():
@@ -219,7 +214,7 @@ class ParserCpp:
                 )
             )
             self.method.append(
-                indent + "if ({}.size() == 0) std::cout << std::endl;".format(name)
+                indent + f"if ({name}.size() == 0) std::cout << std::endl;"
             )
             self.iterator.pop_it()
         else:
@@ -229,7 +224,7 @@ class ParserCpp:
                 indent
                 + "std::cout << {} << std::endl;".format(
                     " << ' ' << ".join(
-                        "{}.{}".format(name, var_name(x.name)) for x in struct.fields
+                        f"{name}.{var_name(x.name)}" for x in struct.fields
                     )
                 )
             )
@@ -248,7 +243,7 @@ class ParserCpp:
             if type_.main == TypeEnum.STRUCT:
                 for field in self.input.get_struct(type_.struct_name).fields:
                     self.print_lines(
-                        "{}.{}".format(name, var_name(field.name)),
+                        f"{name}.{var_name(field.name)}",
                         field.type,
                         indent_lvl,
                     )
@@ -270,14 +265,12 @@ class ParserCpp:
 
     def content(self) -> str:
         """Return the parser content"""
-        output = ""
-        for include in sorted(self.includes):
-            output += "#include <{}>\n".format(include)
+        output = "\n".join(f"#include <{include}>" for include in sorted(self.includes))
         if self.includes:
-            output += "\n"
+            output += "\n\n"
         for struct in self.input.structs:
-            output += "/// {}\n".format(struct.comment)
-            output += "struct {} {{\n".format(struct_name(struct.name))
+            output += f"/// {struct.comment}\n"
+            output += f"struct {struct_name(struct.name)} {{\n"
             for field in struct.fields:
                 output += " " * self.indentation + "{} {}; ///< {}\n".format(
                     self.type_str(field.type), var_name(field.name), field.comment

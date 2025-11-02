@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2022 Sacha Delanoue
+# Copyright 2018-2025 Sacha Delanoue
 # Copyright 2022 Marc Schmitt
 """Generate a Go parser"""
 
 import textwrap
-from typing import List, Optional
+from typing import Optional
 from iorgen.types import Constraints, FormatStyle, Input, Type, TypeEnum, Variable
 from iorgen.utils import pascal_case, camel_case, IteratorName
 
@@ -57,7 +57,7 @@ def type_str(type_: Type) -> str:
         return struct_name(type_.struct_name)
     assert type_.encapsulated
     assert type_.main == TypeEnum.LIST
-    return "[]{}".format(type_str(type_.encapsulated))
+    return f"[]{type_str(type_.encapsulated)}"
 
 
 def max_size(
@@ -119,11 +119,11 @@ class ParserGo:
 
     def __init__(self, input_data: Input) -> None:
         self.input = input_data
-        self.imports = set(["bufio", "os"])
+        self.imports = {"bufio", "os"}
 
         self.iterator = IteratorName([var.name for var in input_data.input])
 
-    def read_line(self, name: str, size: str, type_: Type) -> List[str]:
+    def read_line(self, name: str, size: str, type_: Type) -> list[str]:
         """Read an entire line and store it into the right place(s)"""
 
         # pylint: disable=too-many-return-statements
@@ -180,9 +180,7 @@ class ParserGo:
                     ]
                     for f in struct.fields
                 ),
-                ", ".join(
-                    "&{}.{}".format(name, var_name(f.name)) for f in struct.fields
-                ),
+                ", ".join(f"&{name}.{var_name(f.name)}" for f in struct.fields),
             ),
         ]
 
@@ -191,7 +189,7 @@ class ParserGo:
         var: Variable,
         size: str,
         already_allocated: bool = False,
-    ) -> List[str]:
+    ) -> list[str]:
         """Read one or several lines and store them into the right place(s)"""
         lines = []
         if var.type.main == TypeEnum.LIST and not already_allocated:
@@ -220,7 +218,7 @@ class ParserGo:
         self.iterator.pop_it()
         return lines
 
-    def read_var(self, var: Variable) -> List[str]:
+    def read_var(self, var: Variable) -> list[str]:
         """Read a variable"""
         make = False
         if var.type.main == TypeEnum.LIST:
@@ -235,7 +233,7 @@ class ParserGo:
                 )
             )
         else:
-            lines.append("var {} {}".format(var_name(var.name), type_str(var.type)))
+            lines.append(f"var {var_name(var.name)} {type_str(var.type)}")
         lines.extend(
             self.read_lines(
                 Variable(var_name(var.name), "", var.type, var.format_style),
@@ -245,15 +243,15 @@ class ParserGo:
         )
         return lines
 
-    def call(self, reprint: bool) -> List[str]:
+    def call(self, reprint: bool) -> list[str]:
         """Declare and call the function take all inputs in arguments"""
         lines = []
         name = var_name(self.input.name)
         arguments = []
         for arg in self.input.input:
             arg_name = var_name(arg.name)
-            lines.append("// {}: {}".format(arg_name, arg.comment))
-            arguments.append("{} {}".format(arg_name, type_str(arg.type)))
+            lines.append(f"// {arg_name}: {arg.comment}")
+            arguments.append(f"{arg_name} {type_str(arg.type)}")
         lines.append("func {}({}) {{".format(name, ", ".join(arguments)))
         if reprint:
             for var in self.input.input:
@@ -273,7 +271,7 @@ class ParserGo:
 
     def print_line(
         self, name: str, type_: Type, indent_lvl: int, style: FormatStyle
-    ) -> List[str]:
+    ) -> list[str]:
         """Print the content of a var that holds in one line"""
         assert type_.fits_in_one_line(self.input.structs, style)
         indent = INDENTATION * indent_lvl
@@ -290,11 +288,11 @@ class ParserGo:
         if type_.main == TypeEnum.FLOAT:
             return [indent + f'fmt.Printf("%.15g\\n", {name});']
         if type_.main == TypeEnum.CHAR:
-            return [indent + 'fmt.Printf("%c\\n", {});'.format(name)]
+            return [indent + f'fmt.Printf("%c\\n", {name});']
         if type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
             if type_.encapsulated.main == TypeEnum.CHAR:
-                return [indent + "fmt.Println(string({}));".format(name)]
+                return [indent + f"fmt.Println(string({name}));"]
             index = self.iterator.new_it()
             specifier = "%d" if type_.encapsulated.main == TypeEnum.INT else "%.15g"
             lines = [
@@ -303,7 +301,7 @@ class ParserGo:
             ]
             lines.extend(
                 [
-                    indent + INDENTATION + "if {} < len({}) - 1 {{".format(index, name),
+                    indent + INDENTATION + f"if {index} < len({name}) - 1 {{",
                     indent + 2 * INDENTATION + 'fmt.Print(" ")',
                     indent + INDENTATION + "}",
                 ]
@@ -321,9 +319,7 @@ class ParserGo:
                     ]
                     for x in struct.fields
                 ),
-                ", ".join(
-                    "{}.{}".format(name, var_name(x.name)) for x in struct.fields
-                ),
+                ", ".join(f"{name}.{var_name(x.name)}" for x in struct.fields),
             )
         ]
 
@@ -333,7 +329,7 @@ class ParserGo:
         type_: Type,
         indent_lvl: int,
         style: FormatStyle = FormatStyle.DEFAULT,
-    ) -> List[str]:
+    ) -> list[str]:
         """Print the content of a var that holds in one or more lines"""
         if type_.fits_in_one_line(self.input.structs, style):
             return self.print_line(name, type_, indent_lvl, style)
@@ -342,7 +338,7 @@ class ParserGo:
             for field in self.input.get_struct(type_.struct_name).fields:
                 lines.extend(
                     self.print_lines(
-                        "{}.{}".format(name, var_name(field.name)),
+                        f"{name}.{var_name(field.name)}",
                         field.type,
                         indent_lvl,
                     )
@@ -365,8 +361,8 @@ class ParserGo:
         """Return the parser content"""
         output = ""
         for struct in self.input.structs:
-            output += "// {}\n".format(struct.comment)
-            output += "type {} struct {{\n".format(struct_name(struct.name))
+            output += f"// {struct.comment}\n"
+            output += f"type {struct_name(struct.name)} struct {{\n"
             for field in struct.fields:
                 output += INDENTATION + "{} {} // {}\n".format(
                     var_name(field.name), type_str(field.type), field.comment
@@ -409,7 +405,7 @@ class ParserGo:
         output += "}\n"
         return (
             "package main\n\n"
-            + "\n".join('import "{}"'.format(i) for i in sorted(self.imports))
+            + "\n".join(f'import "{i}"' for i in sorted(self.imports))
             + "\n\n"
             + output
         )

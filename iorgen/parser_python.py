@@ -1,11 +1,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2022 Sacha Delanoue
+# Copyright 2018-2025 Sacha Delanoue
 # Copyright 2022 Quentin Rataud
 """Generate a Python 3 parser"""
 
 import textwrap
 from keyword import iskeyword
-from typing import List
 
 from iorgen.types import FormatStyle, Input, Type, TypeEnum
 from iorgen.utils import pascal_case, snake_case
@@ -46,7 +45,7 @@ def type_str(type_: Type) -> str:
     return f"List[{type_str(type_.encapsulated)}]"
 
 
-def decl_classes(input_data: Input) -> List[str]:
+def decl_classes(input_data: Input) -> list[str]:
     """Return declarations of structs as data classes"""
     lines = []
     for struct in input_data.structs:
@@ -64,7 +63,7 @@ def decl_classes(input_data: Input) -> List[str]:
     return lines
 
 
-def decl_imports(input_data: Input) -> List[str]:
+def decl_imports(input_data: Input) -> list[str]:
     """Return import declarations"""
     lines = []
     if input_data.structs:
@@ -84,7 +83,7 @@ def decl_imports(input_data: Input) -> List[str]:
     return lines
 
 
-def wrap_line(begin: str, end: str, args: List[str], indent_lvl: int = 0) -> List[str]:
+def wrap_line(begin: str, end: str, args: list[str], indent_lvl: int = 0) -> list[str]:
     """Wrap a line of function define/call just like black would do"""
     max_chars = 88
     args_size = len(", ".join(args))
@@ -134,7 +133,7 @@ def read_line(type_: Type, input_data: Input) -> str:
 
 def read_lines(
     type_: Type, size: str, input_data: Input, style: FormatStyle = FormatStyle.DEFAULT
-) -> List[str]:
+) -> list[str]:
     """Generate the Python code to read the lines for a given type"""
     if type_.fits_in_one_line(input_data.structs, style):
         return [read_line(type_, input_data)]
@@ -144,10 +143,10 @@ def read_lines(
             type_.encapsulated, var_name(type_.encapsulated.size), input_data
         )
         if len(lines) == 1:
-            candidate = "[{} for _ in range({})]".format(lines[0], size)
+            candidate = f"[{lines[0]} for _ in range({size})]"
             if len(candidate) <= 75:
                 return [candidate]
-        lines.append("for _ in range({})".format(size))
+        lines.append(f"for _ in range({size})")
         if len(lines[0]) < 5:
             lines[0] = "[" + lines[0]
         else:
@@ -172,7 +171,7 @@ def read_lines(
     return [f"{class_name(struct.name)}("] + fields + [")"]
 
 
-def read_vars(input_data: Input) -> List[str]:
+def read_vars(input_data: Input) -> list[str]:
     """Read all input variables"""
     lines = []
     for variables in input_data.get_all_vars():
@@ -208,7 +207,7 @@ def print_line(name: str, type_: Type, input_data: Input, style: FormatStyle) ->
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
         if type_.encapsulated.main == TypeEnum.CHAR:
-            return "print(''.join({}))".format(name)
+            return f"print(''.join({name}))"
         assert type_.encapsulated.main in (TypeEnum.INT, TypeEnum.FLOAT)
         return f'print(" ".join({print_type("i", type_.encapsulated)} for i in {name}))'
     assert type_.main == TypeEnum.STRUCT
@@ -226,8 +225,8 @@ class ParserPython:
 
     def __init__(self, input_data: Input) -> None:
         self.input = input_data
-        self.main = []  # type: List[str]
-        self.method = []  # type: List[str]
+        self.main = []  # type: list[str]
+        self.method = []  # type: list[str]
 
     def call(self, reprint: bool) -> None:
         """Declare and call the function take all inputs in arguments"""
@@ -242,7 +241,7 @@ class ParserPython:
         self.method.append(INDENTATION + '"""')
         for arg in self.input.input:
             self.method.append(
-                "{}:param {}: {}".format(INDENTATION, var_name(arg.name), arg.comment)
+                f"{INDENTATION}:param {var_name(arg.name)}: {arg.comment}"
             )
         self.method.append(INDENTATION + '"""')
         if reprint:
@@ -270,7 +269,7 @@ class ParserPython:
         type_: Type,
         indent_lvl: int,
         style: FormatStyle = FormatStyle.DEFAULT,
-    ) -> List[str]:
+    ) -> list[str]:
         """Print the content of a var that holds in one or more lines"""
         indent = INDENTATION * indent_lvl
         if type_.fits_in_one_line(self.input.structs, style):
@@ -278,7 +277,7 @@ class ParserPython:
         if type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
             inner = "iT" + str(abs(hash(name)))  # unique name
-            return [indent + "for {} in {}:".format(inner, name)] + self.print_lines(
+            return [indent + f"for {inner} in {name}:"] + self.print_lines(
                 inner, type_.encapsulated, indent_lvl + 1
             )
         assert type_.main == TypeEnum.STRUCT

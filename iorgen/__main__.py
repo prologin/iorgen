@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2021 Sacha Delanoue
+# Copyright 2018-2025 Sacha Delanoue
 # Copyright 2018 Matthieu Moatti
 # Copyright 2021 Grégoire Geis
 # Copyright 2022 Kenji Gaillac
@@ -8,8 +8,9 @@
 import argparse
 import glob
 import sys
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable, List, NoReturn, Union
+from typing import NoReturn, Union
 
 from iorgen.checkinput import parse_input
 from iorgen.generator import ALL_LANGUAGES, gen_compile_run_and_compare
@@ -21,7 +22,7 @@ from iorgen.validator import input_errors
 
 def parse_yaml_input_or_exit(yaml_path: Path) -> Union[Input, NoReturn]:
     """Parse a YAML input file (.iorgen) or exits if an error occurred"""
-    with open(yaml_path, "r", encoding="UTF-8") as yaml_file:
+    with open(yaml_path, encoding="UTF-8") as yaml_file:
         try:
             return parse_input(yaml_file)
         except ValueError as error:
@@ -29,7 +30,7 @@ def parse_yaml_input_or_exit(yaml_path: Path) -> Union[Input, NoReturn]:
             sys.exit(1)
 
 
-def globs_to_paths(input_globs: Iterable[str], warn: bool = True) -> List[Path]:
+def globs_to_paths(input_globs: Iterable[str], warn: bool = True) -> list[Path]:
     """Return all paths matching the globs"""
     input_files = set()
 
@@ -51,10 +52,10 @@ LANGUAGE_EXTENSIONS = [i.extension for i in ALL_LANGUAGES]
 
 
 def command_gen_stubs(
-    yaml_list: List[Path],
+    yaml_list: list[Path],
     output_dir: Path,
     same_dir: bool,
-    languages: List[str],
+    languages: list[str],
     markdown: str,
 ) -> NoReturn:
     """
@@ -95,7 +96,7 @@ def command_gen_stubs(
 
 
 def command_gen_input(
-    yaml_input_data: Input, specs: List[str], perf_mode: bool
+    yaml_input_data: Input, specs: list[str], perf_mode: bool
 ) -> NoReturn:
     """gen-input subcommand: generate a random raw input"""
     print(generate_random_input(yaml_input_data, specs, perf_mode), end="")
@@ -123,7 +124,7 @@ def command_validate(
 
 
 def command_run(
-    yaml_input_data: Input, name: str, input_files: Iterable[Path], languages: List[str]
+    yaml_input_data: Input, name: str, input_files: Iterable[Path], languages: list[str]
 ) -> NoReturn:
     """
     run subcommand: check that generated parsers properly parse and print the

@@ -1,9 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2022 Sacha Delanoue
+# Copyright 2018-2025 Sacha Delanoue
 """Generate a Scheme parser"""
 
 import textwrap
-from typing import List
 
 from iorgen.types import FormatStyle, Input, Struct, Type, TypeEnum
 
@@ -94,7 +93,7 @@ def var_name(name: str) -> str:
 def print_var_content(
     name: str,
     type_: Type,
-    structs: List[Struct],
+    structs: list[Struct],
     style: FormatStyle = FormatStyle.DEFAULT,
 ) -> str:
     """Return Scheme function to print a variable of given type"""
@@ -112,7 +111,7 @@ def print_var_content(
         return "(begin {})".format(
             " ".join(
                 print_var_content(
-                    "(cdr (assq '{} {}))".format(var_name(f.name), name),
+                    f"(cdr (assq '{var_name(f.name)} {name}))",
                     f.type,
                     structs,
                 )
@@ -128,7 +127,7 @@ def print_var_content(
                 "(begin (iorgen--display (car x)) (if (not (null? (cdr x))) "
                 "(display #\\space)) (print_NumList (cdr x)))))"
             )
-        return "(display (list->string {})) (newline)".format(name)
+        return f"(display (list->string {name})) (newline)"
     inner = (
         name.replace("(", "p").replace(")", "P").replace(" ", "_").replace("'", "Q")
         + "_L"
@@ -268,17 +267,14 @@ class ParserScheme:
             type_.encapsulated, var_name(type_.encapsulated.size)
         )
         if " " in replicate:
-            replicate = "(lambda () ({}))".format(replicate)
-        return "make-list {} {}".format(size, replicate)
+            replicate = f"(lambda () ({replicate}))"
+        return f"make-list {size} {replicate}"
 
-    def method(self, reprint: bool) -> List[str]:
+    def method(self, reprint: bool) -> list[str]:
         """Declare and call the function take all inputs in arguments"""
         args = " ".join([var_name(i.name) for i in self.input.input])
-        lines = [
-            ";;; {}: {}".format(var_name(arg.name), arg.comment)
-            for arg in self.input.input
-        ]
-        lines.append("(define ({} {})".format(var_name(self.input.name), args))
+        lines = [f";;; {var_name(arg.name)}: {arg.comment}" for arg in self.input.input]
+        lines.append(f"(define ({var_name(self.input.name)} {args})")
         if reprint:
             for var in self.input.input:
                 lines.append(

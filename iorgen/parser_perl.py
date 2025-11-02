@@ -1,9 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2022 Sacha Delanoue
+# Copyright 2018-2025 Sacha Delanoue
 """Generate a Perl parser"""
 
 import textwrap
-from typing import List
 
 from iorgen.types import FormatStyle, Input, Type, TypeEnum, Variable
 from iorgen.utils import snake_case, WordsName
@@ -50,7 +49,7 @@ def format_keep_braces(format_spec: str, arg: str) -> str:
 
 def read_line(
     name: str, decl: str, type_: Type, input_data: Input, words: WordsName
-) -> List[str]:
+) -> list[str]:
     """Generate the Ruby code to read a line of given type"""
     assert type_.fits_in_one_line(input_data.structs)
     if type_.main == TypeEnum.STR:
@@ -106,7 +105,7 @@ def read_line(
 
 def read_lines(
     var: Variable, decl: str, size: str, input_data: Input, words: WordsName
-) -> List[str]:
+) -> list[str]:
     """Generate the Ruby code to read the lines for a given type"""
     if var.fits_in_one_line(input_data.structs):
         return read_line(var.name, decl, var.type, input_data, words)
@@ -114,7 +113,7 @@ def read_lines(
         assert var.type.encapsulated is not None
         lines = [
             decl.format("()" if var.name[0] == "@" else "[]"),
-            "for (1..{}) {{".format(size),
+            f"for (1..{size}) {{",
         ]
         words.push_scope()
         array_name = var.name.replace("{", "{{").replace("}", "}}")
@@ -125,7 +124,7 @@ def read_lines(
                 INDENTATION + i
                 for i in read_lines(
                     Variable("$" + var.name[1:] + "[-1]", "", var.type.encapsulated),
-                    "push({}, {{}});".format(array_name),
+                    f"push({array_name}, {{}});",
                     size_name(var.type.encapsulated.size),
                     input_data,
                     words,
@@ -154,7 +153,7 @@ def read_lines(
     return lines
 
 
-def read_vars(input_data: Input, words: WordsName) -> List[str]:
+def read_vars(input_data: Input, words: WordsName) -> list[str]:
     """Read all input variables"""
     lines = []
     for variables in input_data.get_all_vars():
@@ -163,7 +162,7 @@ def read_vars(input_data: Input, words: WordsName) -> List[str]:
             lines.extend(
                 read_lines(
                     Variable(var_name(var), "", var.type, var.format_style),
-                    "my {} = {{}};".format(var_name(var)),
+                    f"my {var_name(var)} = {{}};",
                     size_name(var.type.size),
                     input_data,
                     words,
@@ -194,7 +193,7 @@ def print_line(varname: str, type_: Type, input_data: Input, style: FormatStyle)
     assert type_.main == TypeEnum.STRUCT
     struct = input_data.get_struct(type_.struct_name)
     return 'print "{}\\n";'.format(
-        " ".join("{}->{{'{}'}}".format(name, i.name) for i in struct.fields)
+        " ".join(f"{name}->{{'{i.name}'}}" for i in struct.fields)
     )
 
 
@@ -204,7 +203,7 @@ def print_lines(
     input_data: Input,
     indent_lvl: int,
     style: FormatStyle = FormatStyle.DEFAULT,
-) -> List[str]:
+) -> list[str]:
     """Print the content of a var that holds in one or more lines"""
     indent = INDENTATION * indent_lvl
     if type_.fits_in_one_line(input_data.structs, style):
@@ -220,18 +219,16 @@ def print_lines(
     lines = []
     for i in input_data.get_struct(type_.struct_name).fields:
         lines.extend(
-            print_lines(
-                "{}->{{'{}'}}".format(name, i.name), i.type, input_data, indent_lvl
-            )
+            print_lines(f"{name}->{{'{i.name}'}}", i.type, input_data, indent_lvl)
         )
     return lines
 
 
-def call(input_data: Input, reprint: bool) -> List[str]:
+def call(input_data: Input, reprint: bool) -> list[str]:
     """Declare and call the function take all inputs in arguments"""
     name = sub_name(input_data.name)
-    lines = ["# {}: {}".format(var_name(arg), arg.comment) for arg in input_data.input]
-    lines.append("sub {} {{".format(name))
+    lines = [f"# {var_name(arg)}: {arg.comment}" for arg in input_data.input]
+    lines.append(f"sub {name} {{")
     lines.append(
         INDENTATION
         + "my ({}) = @_;".format(

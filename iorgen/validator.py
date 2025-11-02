@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2024 Sacha Delanoue
+# Copyright 2018-2025 Sacha Delanoue
 """Check that a raw input is valid"""
 
 from string import printable, whitespace
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Optional, Union
 import re
 
 from iorgen.types import Constraints, FormatStyle, Input, Type, TypeEnum, Variable
@@ -23,11 +23,11 @@ class ValidatorException(Exception):
 class Validator:
     """Check the format of a raw input: it should match the declaration"""
 
-    def __init__(self, input_data: Input, lines: List[str]) -> None:
+    def __init__(self, input_data: Input, lines: list[str]) -> None:
         self.input = input_data
         self.current_line = 0
         self.lines = lines
-        self.numbers = {}  # type: Dict[str, Union[int, float]]
+        self.numbers = {}  # type: dict[str, Union[int, float]]
         self.valid_for_perf_only = False
 
     def next_line(self) -> str:
@@ -79,7 +79,7 @@ class Validator:
         """Check that the input is a correct integer"""
         if not INTEGER_REGEX.match(string):
             raise ValidatorException(
-                "Line {}: '{}' is not an integer".format(self.current_line, string)
+                f"Line {self.current_line}: '{string}' is not an integer"
             )
         value = int(string)
         if name:
@@ -96,7 +96,7 @@ class Validator:
         """Check that the input is a correct floating number"""
         if not FLOAT_REGEX.match(string):
             raise ValidatorException(
-                "Line {}: '{}' is not a float".format(self.current_line, string)
+                f"Line {self.current_line}: '{string}' is not a float"
             )
         value = float(string)
         if name:
@@ -125,7 +125,7 @@ class Validator:
         """Check that the input is a correct string"""
         if len(string) != 1 or string not in printable:
             raise ValidatorException(
-                "Line {}: '{}' is not an ASCII char".format(self.current_line, string)
+                f"Line {self.current_line}: '{string}' is not an ASCII char"
             )
         if string in whitespace:
             if not use_ws:
@@ -149,7 +149,7 @@ class Validator:
                 )
             )
 
-    def get_size(self, size: str) -> Tuple[int, str]:
+    def get_size(self, size: str) -> tuple[int, str]:
         """Get the integer size, and a string description of it"""
         if size in self.numbers:
             value = self.numbers[size]
@@ -268,7 +268,7 @@ class Validator:
                         assert var.type.main == TypeEnum.CHAR
                         self.check_char(word, var.constraints, use_ws=False)
 
-    def read_ints(self, variables: List[Variable]) -> None:
+    def read_ints(self, variables: list[Variable]) -> None:
         """Read several ints on a line, or throw an exception if incorrect"""
         line = self.next_line()
         words = line.split()

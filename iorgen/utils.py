@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2022 Sacha Delanoue
+# Copyright 2018-2025 Sacha Delanoue
 # Copyright 2021 Kenji Gaillac
 """Helpers used by several modules"""
 
-from typing import List, Set, Union
+from typing import Union
 
 
 def snake_case(name: str) -> str:
@@ -38,7 +38,7 @@ def number_int(value: Union[int, float]) -> str:
 class IteratorName:
     """Give valid iterator names, like i, j, k, preventing scope conflicts"""
 
-    def __init__(self, existing_names: List[str]) -> None:
+    def __init__(self, existing_names: list[str]) -> None:
         self.existing_names = [i.strip().lower() for i in existing_names]
         self.current = 0
 
@@ -63,7 +63,7 @@ class IteratorName:
 class WordsName:
     """Give valid variable names starting with 'words'"""
 
-    def __init__(self, existing_names: List[str], cs_mode: bool = False) -> None:
+    def __init__(self, existing_names: list[str], cs_mode: bool = False) -> None:
         # In C# you can not name a variable if it was already declared in a
         # nested scope, it would cause error CS0136
         self.existing_names = [
@@ -74,8 +74,8 @@ class WordsName:
 
         # For C# mode:
         self.cs_mode = cs_mode
-        self.above_scopes = [set()]  # type: List[Set[int]]
-        self.other_scopes = [set()]  # type: List[Set[int]]
+        self.above_scopes = [set()]  # type: list[set[int]]
+        self.other_scopes = [set()]  # type: list[set[int]]
 
     def next_name(self) -> str:
         """Give the next variable name"""

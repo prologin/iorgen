@@ -1,9 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2022 Sacha Delanoue
+# Copyright 2018-2025 Sacha Delanoue
 """Generate a PHP parser"""
 
 import textwrap
-from typing import List
 
 from iorgen.types import FormatStyle, Input, Type, TypeEnum
 from iorgen.utils import snake_case, IteratorName
@@ -41,16 +40,13 @@ def type_str(type_: Type, input_data: Input) -> str:
         return "string"
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
-        return "{}[]".format(type_str(type_.encapsulated, input_data))
+        return f"{type_str(type_.encapsulated, input_data)}[]"
     assert type_.main == TypeEnum.STRUCT
     struct = input_data.get_struct(type_.struct_name)
     # the following is not PHPDoc, but it does not allow for anything more than
     # 'array'
     return "(array{{{}}})".format(
-        ", ".join(
-            '"{}": {}'.format(v.name, type_str(v.type, input_data))
-            for v in struct.fields
-        )
+        ", ".join(f'"{v.name}": {type_str(v.type, input_data)}' for v in struct.fields)
     )
 
 
@@ -108,7 +104,7 @@ class ParserPHP:
 
     def read_lines(
         self, name: str, type_: Type, size: str, style: FormatStyle
-    ) -> List[str]:
+    ) -> list[str]:
         """Generate the PHP code to read the lines for a given type"""
         if type_.fits_in_one_line(self.input.structs, style):
             return [read_line(type_, self.input)]
@@ -144,15 +140,15 @@ class ParserPHP:
         struct = self.input.get_struct(type_.struct_name)
         lines = []
         for f_name, f_type, f_size in struct.fields_name_type_size(
-            '{}["{{}}"]'.format(name), lambda x: x
+            f'{name}["{{}}"]', lambda x: x
         ):
             read = self.read_lines(f_name, f_type, f_size, FormatStyle.DEFAULT)
             if len(read) == 1:
-                read[0] = "{} = {};".format(f_name, read[0])
+                read[0] = f"{f_name} = {read[0]};"
             lines.extend(read)
-        return ["{} = [];".format(name)] + lines
+        return [f"{name} = [];"] + lines
 
-    def read_vars(self) -> List[str]:
+    def read_vars(self) -> list[str]:
         """Generate the PHP code to read all input variables"""
         lines = []
         for variables in self.input.get_all_vars():
@@ -212,7 +208,7 @@ def print_lines(
     type_: Type,
     indent_lvl: int,
     style: FormatStyle = FormatStyle.DEFAULT,
-) -> List[str]:
+) -> list[str]:
     """Print the content of a var that holds in one or more lines"""
     indent = INDENTATION * indent_lvl
     if type_.fits_in_one_line(input_data.structs, style):
@@ -228,13 +224,11 @@ def print_lines(
     assert type_.main == TypeEnum.STRUCT
     lines = []
     for i in input_data.get_struct(type_.struct_name).fields:
-        lines.extend(
-            print_lines(input_data, '{}["{}"]'.format(name, i.name), i.type, indent_lvl)
-        )
+        lines.extend(print_lines(input_data, f'{name}["{i.name}"]', i.type, indent_lvl))
     return lines
 
 
-def call(input_data: Input, reprint: bool) -> List[str]:
+def call(input_data: Input, reprint: bool) -> list[str]:
     """Declare the function that takes all inputs in arguments"""
     # https://docs.phpdoc.org/
     out = (

@@ -1,9 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2022 Sacha Delanoue
+# Copyright 2018-2025 Sacha Delanoue
 """Generate a Prolog parser"""
 
 import textwrap
-from typing import List, Tuple
 
 from iorgen.types import FormatStyle, Input, Type, TypeEnum
 from iorgen.utils import pascal_case, snake_case
@@ -32,7 +31,7 @@ def call_goal(goal: str, var: str) -> str:
         goal = goal[:-1] + ", "
     else:
         goal += "("
-    return "{}{}),".format(goal, var)
+    return f"{goal}{var}),"
 
 
 def print_line(name: str, type_: Type, input_data: Input, style: FormatStyle) -> str:
@@ -91,7 +90,7 @@ def print_line(name: str, type_: Type, input_data: Input, style: FormatStyle) ->
 # I'd love to use lambda, but they come with swig 7.4, not in debian 9
 def print_lines(
     name: str, type_: Type, input_data: Input, style: FormatStyle = FormatStyle.DEFAULT
-) -> Tuple[List[str], str]:
+) -> tuple[list[str], str]:
     """Print a variable that fits in several lines
 
     Return a list of declarations to be put before, and the actual code to
@@ -104,7 +103,7 @@ def print_lines(
         function = "print_" + name
         (decl, code) = print_lines(arg, type_.encapsulated, input_data)
         return (
-            decl + ["{}({}) :- {}.".format(function, arg, code)]
+            decl + [f"{function}({arg}) :- {code}."]
         ), "is_list({1}), maplist({0}, {1})".format(function, name)
     assert type_.main == TypeEnum.STRUCT
     struct = input_data.get_struct(type_.struct_name)
@@ -113,9 +112,7 @@ def print_lines(
     for field in struct.fields:
         f_name = name + "_" + var_name(field.name)
         decl, print_inner = print_lines(f_name, field.type, input_data)
-        fields.append(
-            'get_assoc("{}", {}, {}), {}'.format(field.name, name, f_name, print_inner)
-        )
+        fields.append(f'get_assoc("{field.name}", {name}, {f_name}), {print_inner}')
         decls.extend(decl)
     return decls, "is_assoc({}), {}".format(name, ", ".join(fields))
 
@@ -125,14 +122,14 @@ class ParserProlog:
 
     def __init__(self, input_data: Input) -> None:
         self.input = input_data
-        self.read = set(["str"])
+        self.read = {"str"}
 
     def declare_read_struct(self) -> str:
         """Declare a procedure reading a struct into a assoc"""
         output = ""
         for struct in self.input.structs:
-            name = "read_assoc_{}(X) :-".format(snake_case(struct.name))
-            keys = ", ".join('"{}"'.format(i.name) for i in struct.fields)
+            name = f"read_assoc_{snake_case(struct.name)}(X) :-"
+            keys = ", ".join(f'"{i.name}"' for i in struct.fields)
             if Type(TypeEnum.STRUCT, struct_name=struct.name).fits_in_one_line(
                 self.input.structs
             ):
@@ -152,7 +149,7 @@ class ParserProlog:
                         "list_to_assoc(P, X).\n"
                     ).format(name, keys)
                 else:
-                    output += "{}\n".format(name)
+                    output += f"{name}\n"
                     output += INDENTATION + (
                         "read_line_to_codes(user_input, C), "
                         'split_string(C, " ", "", L), empty_assoc(A0),\n'
@@ -171,9 +168,9 @@ class ParserProlog:
                                 else "sub_atom(L{0}, 0, 1, _, C{0})"
                             ).format(i),
                         )
-                    output += INDENTATION + "X = A{}.\n".format(len(struct.fields))
+                    output += INDENTATION + f"X = A{len(struct.fields)}.\n"
             else:
-                output += "{}\n".format(name)
+                output += f"{name}\n"
                 names = [var_name(f.name) for f in struct.fields]
                 var_x = "X"
                 var_p = "P"
@@ -214,21 +211,21 @@ class ParserProlog:
             self.read.add("List[char]")
             return "read_char_list"
         assert type_.main == TypeEnum.STRUCT
-        return "read_assoc_{}".format(snake_case(type_.struct_name))
+        return f"read_assoc_{snake_case(type_.struct_name)}"
 
     def read_lines(self, type_: Type, style: FormatStyle = FormatStyle.DEFAULT) -> str:
         """Read one or several lines and parse them"""
         if type_.fits_in_one_line(self.input.structs, style):
             return self.read_line(type_)
         if type_.main == TypeEnum.STRUCT:
-            return "read_assoc_{}".format(snake_case(type_.struct_name))
+            return f"read_assoc_{snake_case(type_.struct_name)}"
         assert type_.main == TypeEnum.LIST
         assert type_.encapsulated is not None
         self.read.add("List")
         replicate = self.read_lines(type_.encapsulated)
-        return "read_list({}, {})".format(replicate, var_name(type_.size))
+        return f"read_list({replicate}, {var_name(type_.size)})"
 
-    def read_vars(self) -> List[str]:
+    def read_vars(self) -> list[str]:
         """Read all input variables"""
         lines = []
         for variables in self.input.get_all_vars():
@@ -246,7 +243,7 @@ class ParserProlog:
                 )
         return lines
 
-    def method(self, reprint: bool) -> List[str]:
+    def method(self, reprint: bool) -> list[str]:
         """The method with all the parsed arguments"""
         lines = []
         reprint_code = []
@@ -265,13 +262,10 @@ class ParserProlog:
                 reprint_code.append(INDENTATION + code + ",")
             reprint_code[-1] = reprint_code[-1][:-1] + "."
         lines.extend(
-            [
-                "% {}: {}".format(var_name(arg.name), arg.comment)
-                for arg in self.input.input
-            ]
+            [f"% {var_name(arg.name)}: {arg.comment}" for arg in self.input.input]
         )
         args = ", ".join([var_name(i.name) for i in self.input.input])
-        lines.append("{}({}) :-".format(method_name(self.input.name), args))
+        lines.append(f"{method_name(self.input.name)}({args}) :-")
         lines.extend(reprint_code)
         if not reprint:
             lines.extend(

@@ -1,9 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2022 Sacha Delanoue
+# Copyright 2018-2025 Sacha Delanoue
 """Generate a Pascal parser"""
 
 import textwrap
-from typing import List, Set
 from iorgen.types import FormatStyle, Input, Type, TypeEnum, Variable
 from iorgen.utils import pascal_case, IteratorName
 
@@ -41,7 +40,7 @@ def type_str(var: Variable, decl: bool = False) -> str:
     return "T_" + var_name(var.name)
 
 
-def init_list(name: str, type_: Type, size: str = "") -> List[str]:
+def init_list(name: str, type_: Type, size: str = "") -> list[str]:
     """Initialize a (multidimentional) array by calling setLength"""
     rec = type_
     sizes = []
@@ -59,7 +58,7 @@ def init_list(name: str, type_: Type, size: str = "") -> List[str]:
     return ["setLength({}, {});".format(name, ", ".join(sizes))]
 
 
-def decl_types(variables: List[Variable]) -> List[str]:
+def decl_types(variables: list[Variable]) -> list[str]:
     """Declare the types of arary"""
     out = []
     for var in variables:
@@ -67,8 +66,7 @@ def decl_types(variables: List[Variable]) -> List[str]:
             assert var.type.encapsulated
             if var.type.encapsulated.main != TypeEnum.CHAR:
                 out.append(
-                    INDENTATION
-                    + "T_{} = {};".format(var_name(var.name), type_str(var, True))
+                    INDENTATION + f"T_{var_name(var.name)} = {type_str(var, True)};"
                 )
     return out
 
@@ -79,10 +77,10 @@ class ParserPascal:
     def __init__(self, input_data: Input) -> None:
         self.input = input_data
 
-        self.includes = set()  # type: Set[str]
-        self.main = []  # type: List[str]
+        self.includes = set()  # type: set[str]
+        self.main = []  # type: list[str]
         self.iterator = IteratorName([var.name for var in input_data.input])
-        self.local_integers = set()  # type: Set[str]
+        self.local_integers = set()  # type: set[str]
         self.local_char = False
         self.indent_lvl = 0
 
@@ -95,17 +93,13 @@ class ParserPascal:
         elif type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
             if type_.encapsulated.main == TypeEnum.CHAR:
-                self.main.append(indent + "readln({});".format(name))
+                self.main.append(indent + f"readln({name});")
             else:
                 assert type_.encapsulated.main in (TypeEnum.INT, TypeEnum.FLOAT)
                 index = self.iterator.new_it()
                 self.local_integers.add(index)
-                self.main.append(
-                    indent + "for {} := 0 to {} - 1 do".format(index, size)
-                )
-                self.main.append(
-                    INDENTATION + indent + "read({}[{}]);".format(name, index)
-                )
+                self.main.append(indent + f"for {index} := 0 to {size} - 1 do")
+                self.main.append(INDENTATION + indent + f"read({name}[{index}]);")
                 self.main.append(indent + "readln();")
                 self.iterator.pop_it()
         else:
@@ -133,7 +127,7 @@ class ParserPascal:
             if type_.main == TypeEnum.STRUCT:
                 struct = self.input.get_struct(type_.struct_name)
                 for f_name, f_type, f_size in struct.fields_name_type_size(
-                    "{}.{{}}".format(name), var_name
+                    f"{name}.{{}}", var_name
                 ):
                     self.main.extend(
                         [
@@ -161,20 +155,20 @@ class ParserPascal:
                 self.main.append(INDENTATION * self.indent_lvl + "end;")
                 self.iterator.pop_it()
 
-    def call(self, reprint: bool) -> List[str]:
+    def call(self, reprint: bool) -> list[str]:
         """Declare and call the function take all inputs in arguments"""
         name = var_name(self.input.name)
         arguments = []
         method = []
         for arg in self.input.input:
             arg_name = var_name(arg.name)
-            method.append("{{ @param {} {} }}".format(arg_name, arg.comment))
+            method.append(f"{{ @param {arg_name} {arg.comment} }}")
             const = (
                 ""
                 if arg.type.main in (TypeEnum.INT, TypeEnum.FLOAT, TypeEnum.CHAR)
                 else "const "
             )
-            arguments.append("{}{}: {}".format(const, arg_name, type_str(arg)))
+            arguments.append(f"{const}{arg_name}: {type_str(arg)}")
         method.append("procedure {}({});".format(name, "; ".join(arguments)))
         if reprint and self.local_integers:
             method.append("var")
@@ -209,7 +203,7 @@ class ParserPascal:
 
     def print_line(
         self, name: str, type_: Type, size: str, style: FormatStyle
-    ) -> List[str]:
+    ) -> list[str]:
         """Print the content of a var that holds in one line"""
 
         def print_type(name: str, type_: Type) -> str:
@@ -271,7 +265,7 @@ class ParserPascal:
         type_: Type,
         size: str,
         style: FormatStyle = FormatStyle.DEFAULT,
-    ) -> List[str]:
+    ) -> list[str]:
         """Print the content of a var that holds in one or more lines"""
         if type_.fits_in_one_line(self.input.structs, style):
             return self.print_line(name, type_, size, style)
@@ -322,15 +316,15 @@ class ParserPascal:
                     f"readln({', '.join(var_name(i.name) for i in variables)});"
                 )
         method = self.call(reprint)
-        output = "program {};\n\n".format(var_name(self.input.name))
+        output = f"program {var_name(self.input.name)};\n\n"
         if reprint and self.input.contains_float():
             output += "uses sysutils;\n"
         types = decl_types(self.input.input)
         if self.input.structs or types:
             output += "type\n"
         for struct in self.input.structs:
-            output += INDENTATION + "{{ {} }}\n".format(struct.comment)
-            output += INDENTATION + "{} = record\n".format(var_name(struct.name))
+            output += INDENTATION + f"{{ {struct.comment} }}\n"
+            output += INDENTATION + f"{var_name(struct.name)} = record\n"
             for field in struct.fields:
                 output += 2 * INDENTATION + "{}: {}; {{ {} }}\n".format(
                     var_name(field.name), type_str(field, True), field.comment

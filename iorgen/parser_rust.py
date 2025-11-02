@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2022 Sacha Delanoue
+# Copyright 2018-2025 Sacha Delanoue
 # Copyright 2020 Rémi Dupré
 # Copyright 2021 Grégoire Geis
 # Copyright 2021 Adrien Mathieu
 """Generate a Rust parser"""
 
 import textwrap
-from typing import List, Optional
+from typing import Optional
 from iorgen.types import FormatStyle, Input, Struct, Type, TypeEnum, Variable
 from iorgen.utils import pascal_case, snake_case
 
@@ -126,7 +126,7 @@ class ParserRust:
     def __init__(self, input_data: Input) -> None:
         self.input = input_data
 
-        self.call_site = []  # type: List[str]
+        self.call_site = []  # type: list[str]
 
     def struct_is_copy(self, struct: Struct) -> bool:
         """Check if the generated Rust structure can be marked as Copy"""
@@ -149,7 +149,7 @@ class ParserRust:
 
         raise Exception
 
-    def decl_struct(self, struct: Struct) -> List[str]:
+    def decl_struct(self, struct: Struct) -> list[str]:
         """Return the Rust code for declaring a struct"""
         derive = ["Clone", "Debug", "PartialEq", "PartialOrd"]
         if self.struct_is_copy(struct):
@@ -173,7 +173,7 @@ class ParserRust:
 
         return lines + ["}", ""]
 
-    def def_read_struct(self, struct: Struct) -> List[str]:
+    def def_read_struct(self, struct: Struct) -> list[str]:
         """Return a rust function reading and parsing a struct"""
         s_name = struct_name(struct.name)
 
@@ -223,7 +223,7 @@ class ParserRust:
         type_: Type,
         indent_lvl: int,
         unwrap_method: Optional[str] = None,
-    ) -> List[str]:
+    ) -> list[str]:
         """Return a Rust command for parsing some lines into a given type"""
         if unwrap_method is None:
             unwrap_method = f'.expect("invalid `{name}` parameter")'
@@ -292,7 +292,7 @@ class ParserRust:
 
         return f"    let {name} = {read_method};"
 
-    def method(self, reprint: bool) -> List[str]:
+    def method(self, reprint: bool) -> list[str]:
         """Declare and call the function take all inputs in arguments"""
         args = [
             (var_name(var.name), type_str(var.type), var.comment)
@@ -377,7 +377,7 @@ class ParserRust:
         type_: Type,
         indent_lvl: int,
         style: FormatStyle = FormatStyle.DEFAULT,
-    ) -> List[str]:
+    ) -> list[str]:
         """Print the content of a var that holds in one or more lines"""
         idt = INDENTATION * indent_lvl
 
@@ -440,7 +440,7 @@ class ParserRust:
 
         structs = [self.def_read_struct(struct) for struct in self.input.structs]
 
-        output_lines: List[str] = []
+        output_lines: list[str] = []
 
         # Structs declaration
 

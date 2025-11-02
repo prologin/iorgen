@@ -1,11 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright 2021 Léo Lanteri Thauvin
-# Copyright 2022 Sacha Delanoue
+# Copyright 2022-2025 Sacha Delanoue
 """Generate a Julia parser"""
 
 import textwrap
-from typing import List
-
 from iorgen.types import FormatStyle, Input, Struct, Type, TypeEnum, Variable
 from iorgen.utils import snake_case, pascal_case
 
@@ -41,7 +39,7 @@ def type_str(type_: Type, input_data: Input) -> str:
         return struct_name(type_.struct_name)
     assert type_.encapsulated
     assert type_.main == TypeEnum.LIST
-    return "Vector{{{}}}".format(type_str(type_.encapsulated, input_data))
+    return f"Vector{{{type_str(type_.encapsulated, input_data)}}}"
 
 
 def escape_dollar(comment: str) -> str:
@@ -72,7 +70,7 @@ def read_line(type_: Type, input_data: Input, input_str: str = "readline()") -> 
 
 def read_lines(
     type_: Type, size: str, input_data: Input, style: FormatStyle = FormatStyle.DEFAULT
-) -> List[str]:
+) -> list[str]:
     """Generate the Julia code to read the lines for a given type"""
     if type_.fits_in_one_line(input_data.structs, style):
         return [read_line(type_, input_data)]
@@ -82,13 +80,13 @@ def read_lines(
             type_.encapsulated, var_name(type_.encapsulated.size), input_data
         )
         if len(lines) == 1:
-            candidate = "[ {} for _=1:{} ]".format(lines[0], size)
+            candidate = f"[ {lines[0]} for _=1:{size} ]"
             if len(candidate) <= 75:
                 return [candidate]
         if len(lines[-1]) < 5:
-            lines[-1] += " for _=1:{} ]".format(size)
+            lines[-1] += f" for _=1:{size} ]"
         else:
-            lines.append("for _=1:{}".format(size))
+            lines.append(f"for _=1:{size}")
             lines.append("]")
         if len(lines[0]) < 5:
             lines[0] = "[ " + lines[0]
@@ -137,11 +135,11 @@ class ParserJulia:
 
     def __init__(self, input_data: Input) -> None:
         self.input = input_data
-        self.main = []  # type: List[str]
-        self.method = []  # type: List[str]
+        self.main = []  # type: list[str]
+        self.method = []  # type: list[str]
         self.import_parse = False  # whether to import Base.parse
 
-    def read_var(self, var: Variable) -> List[str]:
+    def read_var(self, var: Variable) -> list[str]:
         """Read a variable"""
         lines = read_lines(
             var.type, var_name(var.type.size), self.input, var.format_style
@@ -149,7 +147,7 @@ class ParserJulia:
         lines[0] = f"{var_name(var.name)} = {lines[0]}"
         return lines
 
-    def read_vars(self) -> List[str]:
+    def read_vars(self) -> list[str]:
         """Read all input variables"""
         lines = []
         for variables in self.input.get_all_vars():
@@ -163,7 +161,7 @@ class ParserJulia:
                 )
         return lines
 
-    def decl_struct(self, struct: Struct) -> List[str]:
+    def decl_struct(self, struct: Struct) -> list[str]:
         """Return the Julia code for declaring a struct"""
         lines = [
             '"""',
@@ -180,7 +178,7 @@ class ParserJulia:
 
         return lines + ["end", ""]
 
-    def def_read_struct(self, struct: Struct) -> List[str]:
+    def def_read_struct(self, struct: Struct) -> list[str]:
         """Generate the Julia `parse` function for a struct"""
         s_name = struct_name(struct.name)
 
@@ -228,7 +226,7 @@ class ParserJulia:
             "function {}({})".format(
                 name,
                 ", ".join(
-                    "{}::{}".format(var_name(i.name), type_str(i.type, self.input))
+                    f"{var_name(i.name)}::{type_str(i.type, self.input)}"
                     for i in self.input.input
                 ),
             )
@@ -256,7 +254,7 @@ class ParserJulia:
 
     def print_lines(
         self, name: str, type_: Type, indent_lvl: int, style: FormatStyle
-    ) -> List[str]:
+    ) -> list[str]:
         """Print the content of a var that holds in one or more lines"""
         indent = INDENTATION * indent_lvl
         if type_.fits_in_one_line(self.input.structs, style):
@@ -265,7 +263,7 @@ class ParserJulia:
             assert type_.encapsulated is not None
             inner = "iT" + str(abs(hash(name)))  # unique name
             return (
-                [indent + "for {} in {}".format(inner, name)]
+                [indent + f"for {inner} in {name}"]
                 + self.print_lines(
                     inner, type_.encapsulated, indent_lvl + 1, FormatStyle.DEFAULT
                 )
@@ -276,7 +274,7 @@ class ParserJulia:
         for i in self.input.get_struct(type_.struct_name).fields:
             lines.extend(
                 self.print_lines(
-                    "{}.{}".format(name, var_name(i.name)),
+                    f"{name}.{var_name(i.name)}",
                     i.type,
                     indent_lvl,
                     FormatStyle.DEFAULT,

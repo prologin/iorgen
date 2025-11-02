@@ -1,9 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2022 Sacha Delanoue
+# Copyright 2018-2025 Sacha Delanoue
 """Generate a Java parser"""
 
 import textwrap
-from typing import List
 from iorgen.types import Input, Type, TypeEnum, Variable
 from iorgen.utils import camel_case, pascal_case, IteratorName, WordsName
 
@@ -59,7 +58,7 @@ class ParserJava:
     def __init__(self, input_data: Input) -> None:
         self.input = input_data
 
-        self.imports = set(["java.io.BufferedReader", "java.io.InputStreamReader"])
+        self.imports = {"java.io.BufferedReader", "java.io.InputStreamReader"}
         existing_names = [var.name for var in input_data.input] + [
             var_name(input_data.name)
         ]
@@ -68,7 +67,7 @@ class ParserJava:
 
     def read_line(
         self, decl: bool, name: str, type_: Type, indent_lvl: int
-    ) -> List[str]:
+    ) -> list[str]:
         """Read an entire line and store it into the right place(s)"""
         assert type_.fits_in_one_line(self.input.structs)
         indent = INDENTATION * indent_lvl
@@ -117,7 +116,7 @@ class ParserJava:
 
     def read_lines(
         self, decl: bool, var: Variable, size: str, indent_lvl: int
-    ) -> List[str]:
+    ) -> list[str]:
         # pylint: disable=too-many-arguments
         # pylint: disable=too-many-locals
         """Read one or several lines and store them into the right place(s)"""
@@ -178,14 +177,14 @@ class ParserJava:
         self.iterator.pop_it()
         return lines + [indent + "}"]
 
-    def call(self, reprint: bool) -> List[str]:
+    def call(self, reprint: bool) -> list[str]:
         """Declare and call the function take all inputs in arguments"""
         lines = [INDENTATION + "/**"]
         arguments = []
         for arg in self.input.input:
             arg_name = var_name(arg.name)
-            lines.append(INDENTATION + " * @param {} {}".format(arg_name, arg.comment))
-            arguments.append("{} {}".format(type_str(arg.type), arg_name))
+            lines.append(INDENTATION + f" * @param {arg_name} {arg.comment}")
+            arguments.append(f"{type_str(arg.type)} {arg_name}")
         lines.append(INDENTATION + " */")
         lines.append(
             "{}static void {}({}) {{".format(
@@ -264,7 +263,7 @@ class ParserJava:
         var: Variable,
         size: str,
         indent_lvl: int,
-    ) -> List[str]:
+    ) -> list[str]:
         """Print the content of a var that holds in one or more lines"""
         if var.fits_in_one_line(self.input.structs):
             return [INDENTATION * indent_lvl + self.print_line(var.name, var.type)]
@@ -304,7 +303,7 @@ class ParserJava:
         output = ""
         for struct in self.input.structs:
             output += f"/**\n * {struct.comment}\n */\n"
-            output += "class {}\n{{\n".format(class_name(struct.name))
+            output += f"class {class_name(struct.name)}\n{{\n"
             for field in struct.fields:
                 decl_field = "{0}/**\n{0} * {1}\n{0} */\n{0}public {2} {3};\n"
                 output += decl_field.format(

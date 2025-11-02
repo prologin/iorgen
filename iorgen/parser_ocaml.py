@@ -1,10 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2022 Sacha Delanoue
+# Copyright 2018-2025 Sacha Delanoue
 # Copyright 2019 Fardale
 """Generate a OCaml parser"""
 
 import textwrap
-from typing import List
 
 from iorgen.types import FormatStyle, Input, Struct, Type, TypeEnum
 from iorgen.utils import camel_case, snake_case
@@ -41,14 +40,14 @@ def type_str(type_: Type) -> str:
         return record_name(type_.struct_name)
     assert type_.main == TypeEnum.LIST
     assert type_.encapsulated
-    return "{} list".format(type_str(type_.encapsulated))
+    return f"{type_str(type_.encapsulated)} list"
 
 
-def declare_record(struct: Struct) -> List[str]:
+def declare_record(struct: Struct) -> list[str]:
     """Declare an OCaml record"""
     out = [
-        "(** {} *)".format(struct.comment),
-        "type {} = {{".format(record_name(struct.name)),
+        f"(** {struct.comment} *)",
+        f"type {record_name(struct.name)} = {{",
     ]
     out.extend(
         INDENTATION
@@ -125,7 +124,7 @@ def read_lines(
             )
             for field in struct.fields
         ),
-        "; ".join("{0}".format(var_name(f.name)) for f in struct.fields),
+        "; ".join(f"{var_name(f.name)}" for f in struct.fields),
     )
 
 
@@ -169,7 +168,7 @@ def print_lines(
             " ".join(
                 "let () = {} in".format(
                     print_lines(
-                        "{}.{}".format(name, var_name(field.name)),
+                        f"{name}.{var_name(field.name)}",
                         field.type,
                         input_data,
                     )
@@ -185,14 +184,11 @@ def print_lines(
     )
 
 
-def method(input_data: Input, reprint: bool) -> List[str]:
+def method(input_data: Input, reprint: bool) -> list[str]:
     """Generate the method called with all inputs"""
     out = (
         ["(**"]
-        + [
-            "   @param {} {}".format(var_name(var.name), var.comment)
-            for var in input_data.input
-        ]
+        + [f"   @param {var_name(var.name)} {var.comment}" for var in input_data.input]
         + ["*)"]
     )
     out.append(

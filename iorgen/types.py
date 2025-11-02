@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2022 Sacha Delanoue
+# Copyright 2018-2025 Sacha Delanoue
 # Copyright 2019 Matthieu Moatti
 # Copyright 2021 Kenji Gaillac
 # Copyright 2022 Quentin Rataud
@@ -7,8 +7,9 @@
 
 from __future__ import annotations
 import re
+from collections.abc import Iterator
 from enum import Enum, unique
-from typing import Any, Callable, Dict, Iterator, List, Optional, Set, Tuple, Union
+from typing import Any, Callable, Optional, Union
 from typing import Type as T
 
 from .utils import number_int
@@ -105,7 +106,7 @@ class Type:
         return self.main in (TypeEnum.INT, TypeEnum.FLOAT, TypeEnum.CHAR)
 
     def fits_in_one_line(
-        self: Type, structs: List[Struct], style: FormatStyle = FormatStyle.DEFAULT
+        self: Type, structs: list[Struct], style: FormatStyle = FormatStyle.DEFAULT
     ) -> bool:
         """Return False if more than one line is needed for this type"""
         if self.main in (TypeEnum.INT, TypeEnum.FLOAT, TypeEnum.CHAR, TypeEnum.STR):
@@ -149,7 +150,7 @@ def get_max_value(var: Union[int, float, Variable]) -> Union[int, float]:
 
 
 def get_number_or_var(
-    var_name: str, type_: TypeEnum, variables: Dict[str, Variable]
+    var_name: str, type_: TypeEnum, variables: dict[str, Variable]
 ) -> Union[int, float, Variable]:
     """From a string, return either the corresponding var or number (int or float)"""
     assert isinstance(var_name, str)
@@ -216,7 +217,7 @@ class Constraints:
     MIN_FLOAT = -1e15 + 1
 
     def __init__(
-        self, type_: TypeEnum, dic: Dict[str, Any], variables: Dict[str, Variable]
+        self, type_: TypeEnum, dic: dict[str, Any], variables: dict[str, Variable]
     ) -> None:
         self.type_bounds = (
             (self.MIN_FLOAT, self.MAX_FLOAT)
@@ -227,7 +228,7 @@ class Constraints:
         self.max = self.type_bounds[1]  # type: Union[int, float, Variable]
         self.min_perf = self.type_bounds[0]  # type: Union[int, float, Variable]
         self.max_perf = self.type_bounds[1]  # type: Union[int, float, Variable]
-        self.choices = set()  # type: Set[Union[int, float, str]]
+        self.choices = set()  # type: set[Union[int, float, str]]
         self.is_size = False
 
         if "min" in dic:
@@ -246,7 +247,7 @@ class Constraints:
             elif type_ == TypeEnum.FLOAT:
                 self.choices = set(map(float, dic["choices"]))
             else:
-                self.choices = set(i[0] for i in dic["choices"])
+                self.choices = {i[0] for i in dic["choices"]}
 
     def min_possible(self) -> Union[int, float]:
         """Return the minimal possible value for an integer"""
@@ -304,7 +305,7 @@ class Variable:
         self.format_style = format_style
 
     @classmethod
-    def from_dict(cls: T[Variable], dic: Dict[str, str]) -> Optional[Variable]:
+    def from_dict(cls: T[Variable], dic: dict[str, str]) -> Optional[Variable]:
         """Create a Variable from its YAML (dictionary) representation"""
         if "name" not in dic or "comment" not in dic or "type" not in dic:
             return None
@@ -361,7 +362,7 @@ class Variable:
             return ""
         raise Exception
 
-    def fits_in_one_line(self, structs: List[Struct]) -> bool:
+    def fits_in_one_line(self, structs: list[Struct]) -> bool:
         """Return False if more than one line is needed for this variable"""
         return self.type.fits_in_one_line(structs, self.format_style)
 
@@ -369,14 +370,14 @@ class Variable:
 class Struct:
     """Represent a struct (like in C)"""
 
-    def __init__(self: Struct, name: str, comment: str, fields: List[Variable]) -> None:
+    def __init__(self: Struct, name: str, comment: str, fields: list[Variable]) -> None:
         self.name = name
         self.comment = comment
         self.fields = fields
 
     @classmethod
     def from_dict(
-        cls: T[Struct], dic: Dict[str, Union[str, List[Dict[str, str]]]]
+        cls: T[Struct], dic: dict[str, Union[str, list[dict[str, str]]]]
     ) -> Optional[Struct]:
         """Create a Struct from its YAML (dictionary) representation"""
         try:
@@ -389,7 +390,7 @@ class Struct:
                 or not isinstance(fields, list)
             ):
                 return None
-            field_list = []  # type: List[Variable]
+            field_list = []  # type: list[Variable]
             for i in fields:
                 var = Variable.from_dict(i)
                 if var is None:
@@ -410,7 +411,7 @@ class Struct:
 
     def fields_name_type_size(
         self, format_spec: str, var_name: Callable[[str], str]
-    ) -> Iterator[Tuple[str, Type, str]]:
+    ) -> Iterator[tuple[str, Type, str]]:
         """Return name, type and size for each field"""
         types = [var_name(field.type.size) for field in self.fields]
         if self.is_sized_struct():
@@ -419,7 +420,7 @@ class Struct:
             yield (format_spec.format(var_name(field[0].name)), field[0].type, field[1])
 
 
-def process_sized_type(type_: Type, variables: Dict[str, Variable]) -> None:
+def process_sized_type(type_: Type, variables: dict[str, Variable]) -> None:
     """Set 'is_size' and 'can_be_empty' booleans"""
     if type_.main not in (TypeEnum.LIST, TypeEnum.STR):
         return
@@ -441,7 +442,7 @@ def process_sized_type(type_: Type, variables: Dict[str, Variable]) -> None:
 
 
 def set_constraints(
-    variables: Dict[str, Variable], dicts: List[Dict[str, Any]]
+    variables: dict[str, Variable], dicts: list[dict[str, Any]]
 ) -> None:
     """Set constraints for all variables"""
     # First create the constraints for all variables
@@ -464,8 +465,8 @@ class Input:
     def __init__(
         self: Input,
         name: str,
-        structs: List[Struct],
-        inputs: List[Variable],
+        structs: list[Struct],
+        inputs: list[Variable],
         subject: str,
         output: str,
     ) -> None:
@@ -478,15 +479,15 @@ class Input:
         self.output = output
 
     @classmethod
-    def from_dict(cls: T[Input], dic: Dict[str, Any]) -> Optional[Input]:
+    def from_dict(cls: T[Input], dic: dict[str, Any]) -> Optional[Input]:
         """Parse the input yaml"""
         # pylint: disable=too-many-branches
         # We'll be able to reactivate the too-many-branches check when we will
         # remove the `return None` and use raise instead
         try:
             variables_lookup = {}
-            variables_dicts = []  # type: List[Dict[str, Any]]
-            structs = []  # type: List[Struct]
+            variables_dicts = []  # type: list[dict[str, Any]]
+            structs = []  # type: list[Struct]
             if "structs" in dic:
                 for node in dic["structs"]:
                     struct = Struct.from_dict(node)
@@ -500,7 +501,7 @@ class Input:
                             )
                         variables_lookup[var.name] = var
                     variables_dicts.extend(node["fields"])
-            variables = []  # type: List[Variable]
+            variables = []  # type: list[Variable]
             for node in dic["input"]:
                 variable = Variable.from_dict(node)
                 if variable is None:
@@ -537,7 +538,7 @@ class Input:
         """Get a variable by its name."""
         return next(x for x in self.input if x.name == name)
 
-    def get_all_vars(self: Input) -> List[List[Variable]]:
+    def get_all_vars(self: Input) -> list[list[Variable]]:
         """Return input variables. The difference from this method and simply the
         'input' field, is that this method will group integers that are read on the
         same line."""

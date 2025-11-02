@@ -1,13 +1,14 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2022 Sacha Delanoue
+# Copyright 2018-2025 Sacha Delanoue
 """Helpers to generate, compile and run parsers for all supported languages"""
 
 import subprocess
 import os
 import tempfile
+from collections.abc import Iterator
 from difflib import unified_diff
 from pathlib import Path
-from typing import Callable, Iterator, List, Optional
+from typing import Callable, Optional
 
 from iorgen.types import Input
 from iorgen.markdown import gen_markdown
@@ -41,8 +42,8 @@ class Language:
         self,
         extension: str,
         generator: Callable[[Input, bool], str],
-        compile_command: List[str],
-        exec_command: Optional[List[str]] = None,
+        compile_command: list[str],
+        exec_command: Optional[list[str]] = None,
         no_stderr: bool = False,
     ) -> None:
         # pylint: disable=too-many-arguments
@@ -144,7 +145,7 @@ def print_colored_diff(lines: Iterator[str]) -> None:
 
 
 def compare_files(
-    generated_content: List[str], reference_filename: str, tofile: str = "generated"
+    generated_content: list[str], reference_filename: str, tofile: str = "generated"
 ) -> bool:
     """Check if a generated result is the same as a reference file"""
     ref = Path(reference_filename).read_text(encoding="utf-8").splitlines(True)
@@ -163,7 +164,7 @@ def gen_compile_run_and_compare(
     name: str,
     language: Language,
     folder_for_generated_source: str,
-    stdin_filename: List[str],
+    stdin_filename: list[str],
 ) -> bool:
     # pylint: disable = too-many-arguments
     """Check that the generated parser prints the input it is fed in"""

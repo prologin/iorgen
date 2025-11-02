@@ -1,10 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2019-2022 Sacha Delanoue
+# Copyright 2019-2025 Sacha Delanoue
 """Generate a D parser"""
 
 import textwrap
-
-from typing import List
 
 from iorgen.types import FormatStyle, Input, Type, TypeEnum, Variable
 from iorgen.utils import camel_case, pascal_case, IteratorName
@@ -42,7 +40,7 @@ def type_str(type_: Type) -> str:
         return struct_name(type_.struct_name)
     assert type_.main == TypeEnum.LIST
     assert type_.encapsulated
-    return "{}[]".format(type_str(type_.encapsulated))
+    return f"{type_str(type_.encapsulated)}[]"
 
 
 def format_specifier(type_: Type, read: bool = True) -> str:
@@ -104,7 +102,7 @@ class ParserD:
         type_: Type,
         size: str,
         style: FormatStyle = FormatStyle.DEFAULT,
-    ) -> List[str]:
+    ) -> list[str]:
         """Read a variable in one line or several lines of stdin"""
         if type_.fits_in_one_line(self.input.structs, style):
             return [self.read_line(name, type_)]
@@ -112,7 +110,7 @@ class ParserD:
             assert type_.encapsulated
             index = self.iterator.new_it()
             lines = [
-                "{}.length = {};".format(name, size),
+                f"{name}.length = {size};",
                 "for (size_t {0} = 0; {0} < {1}.length; {0}++)".format(index, name),
                 "{",
             ]
@@ -120,7 +118,7 @@ class ParserD:
                 [
                     INDENTATION + i
                     for i in self.read_lines(
-                        "{}[{}]".format(name, index),
+                        f"{name}[{index}]",
                         type_.encapsulated,
                         var_name(type_.encapsulated.size),
                     )
@@ -132,22 +130,20 @@ class ParserD:
         struct = self.input.get_struct(type_.struct_name)
         lines = []
         for f_name, f_type, f_size in struct.fields_name_type_size(
-            "{}.{{}}".format(name), var_name
+            f"{name}.{{}}", var_name
         ):
             lines.extend(self.read_lines(f_name, f_type, f_size))
         return lines
 
-    def read_var(self, var: Variable) -> List[str]:
+    def read_var(self, var: Variable) -> list[str]:
         """Read a variable from stdin"""
-        return [
-            "{} {};".format(type_str(var.type), var_name(var.name))
-        ] + self.read_lines(
+        return [f"{type_str(var.type)} {var_name(var.name)};"] + self.read_lines(
             var_name(var.name), var.type, var_name(var.type.size), var.format_style
         )
 
     def print_lines(
         self, name: str, type_: Type, style: FormatStyle = FormatStyle.DEFAULT
-    ) -> List[str]:
+    ) -> list[str]:
         """Print a D variable"""
         if type_.main in (TypeEnum.INT, TypeEnum.STR, TypeEnum.CHAR):
             self.add_import("std.stdio", "writeln")
@@ -172,7 +168,7 @@ class ParserD:
                     convert = '(x) => format("%.15g", x)'
                 return [f'writeln(join({name}.map!({convert}), " "));']
             if type_.encapsulated.main == TypeEnum.CHAR:
-                return ["writeln({});".format(name)]
+                return [f"writeln({name});"]
             index = self.iterator.new_it()
             lines = [
                 "for (size_t {0} = 0; {0} < {1}.length; {0}++)".format(index, name),
@@ -181,9 +177,7 @@ class ParserD:
             lines.extend(
                 [
                     INDENTATION + i
-                    for i in self.print_lines(
-                        "{}[{}]".format(name, index), type_.encapsulated
-                    )
+                    for i in self.print_lines(f"{name}[{index}]", type_.encapsulated)
                 ]
             )
             self.iterator.pop_it()
@@ -206,12 +200,11 @@ class ParserD:
                 )
         return lines
 
-    def function(self, reprint: bool) -> List[str]:
+    def function(self, reprint: bool) -> list[str]:
         """Return the code of the function to complete by the end user"""
         lines = ["/**", "Params:"]
         lines.extend(
-            "{}{} = {}".format(INDENTATION, var_name(i.name), i.comment)
-            for i in self.input.input
+            f"{INDENTATION}{var_name(i.name)} = {i.comment}" for i in self.input.input
         )
         lines.append("*/")
         lines.extend(
@@ -259,8 +252,8 @@ class ParserD:
         """Return content of the D file for parsing the input"""
         output = ""
         for struct in self.input.structs:
-            output += "/// {}\n".format(struct.comment)
-            output += "struct {}\n{{\n".format(struct_name(struct.name))
+            output += f"/// {struct.comment}\n"
+            output += f"struct {struct_name(struct.name)}\n{{\n"
             for field in struct.fields:
                 output += INDENTATION + "{} {}; /// {}\n".format(
                     type_str(field.type), var_name(field.name), field.comment

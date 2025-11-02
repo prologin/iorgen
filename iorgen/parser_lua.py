@@ -1,9 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2022 Sacha Delanoue
+# Copyright 2018-2025 Sacha Delanoue
 """Generate a Lua parser"""
 
 import textwrap
-from typing import List
 
 from iorgen.types import FormatStyle, Input, Type, TypeEnum, Variable
 from iorgen.utils import snake_case, IteratorName
@@ -36,8 +35,7 @@ def type_str(type_: Type, input_data: Input, show_table: bool = True) -> str:
     return "{}{{{}}}".format(
         "table: " if show_table else "",
         ", ".join(
-            '"{}": {}'.format(v.name, type_str(v.type, input_data, False))
-            for v in struct.fields
+            f'"{v.name}": {type_str(v.type, input_data, False)}' for v in struct.fields
         ),
     )
 
@@ -53,7 +51,7 @@ def format_specifier(type_: Type, read: bool = True) -> str:
 
 def read_line(
     name: str, type_: Type, input_data: Input, iterator: IteratorName
-) -> List[str]:
+) -> list[str]:
     """Generate the Lua code to read a line of given type"""
     assert type_.fits_in_one_line(input_data.structs)
     if type_.main == TypeEnum.LIST:
@@ -62,7 +60,7 @@ def read_line(
         iterator.pop_it()
         if type_.encapsulated.main == TypeEnum.CHAR:
             return [
-                "{} = {{}}".format(name),
+                f"{name} = {{}}",
                 'io.read():gsub(".",function({0}) table.insert({1}, {0}) end)'.format(
                     inner, name
                 ),
@@ -72,7 +70,7 @@ def read_line(
         return [
             f"{name} = {{}}",
             f'for {inner} in string.gmatch(io.read(), "{specifier}") do',
-            INDENTATION + "table.insert({}, tonumber({}))".format(name, inner),
+            INDENTATION + f"table.insert({name}, tonumber({inner}))",
             "end",
         ]
     if type_.main == TypeEnum.STRUCT:
@@ -80,19 +78,17 @@ def read_line(
         words = iterator.new_it()
         iterator.pop_it()
         pattern = " ".join(f"({format_specifier(i.type)})" for i in struct.fields)
-        keys = (
-            '["{}"]'.format(i.name) if " " in i.name else i.name for i in struct.fields
-        )
+        keys = (f'["{i.name}"]' if " " in i.name else i.name for i in struct.fields)
         values = (
             (
-                "tonumber({}[{}])".format(words, i + 1)
+                f"tonumber({words}[{i + 1}])"
                 if f.type.main in (TypeEnum.INT, TypeEnum.FLOAT)
-                else "{}[{}]".format(words, i + 1)
+                else f"{words}[{i + 1}]"
             )
             for (i, f) in enumerate(struct.fields)
         )
         return [
-            'local {} = {{string.match(io.read(), "{}")}}'.format(words, pattern),
+            f'local {words} = {{string.match(io.read(), "{pattern}")}}',
             "{} = {{{}}}".format(
                 name, ", ".join(i + " = " + j for (i, j) in zip(keys, values))
             ),
@@ -111,7 +107,7 @@ def read_line(
 
 def read_lines(
     var: Variable, size: str, input_data: Input, iterator: IteratorName
-) -> List[str]:
+) -> list[str]:
     """Generate the Lua code to read the lines for a given type"""
     if var.fits_in_one_line(input_data.structs):
         return read_line(var.name, var.type, input_data, iterator)
@@ -148,7 +144,7 @@ def read_lines(
     return lines
 
 
-def read_vars(input_data: Input, iterator: IteratorName) -> List[str]:
+def read_vars(input_data: Input, iterator: IteratorName) -> list[str]:
     """Read all input variables"""
     all_lines = []
     for variables in input_data.get_all_vars():
@@ -190,7 +186,7 @@ def print_line(name: str, type_: Type, input_data: Input, style: FormatStyle) ->
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
         if type_.encapsulated.main == TypeEnum.CHAR:
-            return 'print(table.concat({}, ""))'.format(name)
+            return f'print(table.concat({name}, ""))'
         if type_.encapsulated.main == TypeEnum.INT:
             return f'print(table.concat({name}, " "))'
         assert type_.encapsulated.main == TypeEnum.FLOAT
@@ -213,29 +209,27 @@ def print_lines(
     input_data: Input,
     indent_lvl: int,
     style: FormatStyle = FormatStyle.DEFAULT,
-) -> List[str]:
+) -> list[str]:
     """Print the content of a var that holds in one or more lines"""
     indent = INDENTATION * indent_lvl
     if type_.fits_in_one_line(input_data.structs, style):
         return [indent + print_line(name, type_, input_data, style)]
     if type_.main == TypeEnum.LIST:
         assert type_.encapsulated is not None
-        inner = "iT{}".format(indent_lvl)
+        inner = f"iT{indent_lvl}"
         return (
-            [indent + "for _, {} in ipairs({}) do".format(inner, name)]
+            [indent + f"for _, {inner} in ipairs({name}) do"]
             + print_lines(inner, type_.encapsulated, input_data, indent_lvl + 1)
             + [indent + "end"]
         )
     assert type_.main == TypeEnum.STRUCT
     lines = []
     for i in input_data.get_struct(type_.struct_name).fields:
-        lines.extend(
-            print_lines('{}["{}"]'.format(name, i.name), i.type, input_data, indent_lvl)
-        )
+        lines.extend(print_lines(f'{name}["{i.name}"]', i.type, input_data, indent_lvl))
     return lines
 
 
-def call(input_data: Input, reprint: bool) -> List[str]:
+def call(input_data: Input, reprint: bool) -> list[str]:
     """Declare and call the function take all inputs in arguments"""
     name = var_name(input_data.name)
     lines = [

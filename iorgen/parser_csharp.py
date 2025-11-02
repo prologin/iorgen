@@ -1,9 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2022 Sacha Delanoue
+# Copyright 2018-2025 Sacha Delanoue
 """Generate a C# parser"""
 
 import textwrap
-from typing import List
 from iorgen.types import FormatStyle, Input, Type, TypeEnum
 from iorgen.utils import camel_case, pascal_case, IteratorName, WordsName
 
@@ -73,7 +72,7 @@ class ParserCS:
 
     def read_line(
         self, decl: bool, name: str, type_: Type, indent_lvl: int
-    ) -> List[str]:
+    ) -> list[str]:
         """Read an entire line and store it into the right place(s)"""
         assert type_.fits_in_one_line(self.input.structs)
         indent = INDENTATION * indent_lvl
@@ -126,7 +125,7 @@ class ParserCS:
         size: str,
         indent_lvl: int,
         style: FormatStyle = FormatStyle.DEFAULT,
-    ) -> List[str]:
+    ) -> list[str]:
         # pylint: disable=too-many-arguments
         # pylint: disable=too-many-positional-arguments
         # pylint: disable=too-many-locals
@@ -137,12 +136,10 @@ class ParserCS:
         if type_.main == TypeEnum.STRUCT:
             lines = []
             if decl:
-                lines.append(
-                    "{}{} {};".format(indent, pascal_name(type_.struct_name), name)
-                )
+                lines.append(f"{indent}{pascal_name(type_.struct_name)} {name};")
             struct = self.input.get_struct(type_.struct_name)
             for f_name, f_type, f_size in struct.fields_name_type_size(
-                "{}.{{}}".format(name), var_name
+                f"{name}.{{}}", var_name
             ):
                 lines.extend(self.read_lines(False, f_name, f_type, f_size, indent_lvl))
             return lines
@@ -173,7 +170,7 @@ class ParserCS:
         lines.extend(
             self.read_lines(
                 False,
-                "{}[{}]".format(name, index),
+                f"{name}[{index}]",
                 type_.encapsulated,
                 var_name(type_.encapsulated.size),
                 indent_lvl + 1,
@@ -183,16 +180,14 @@ class ParserCS:
         self.iterator.pop_it()
         return lines + [indent + "}"]
 
-    def call(self, reprint: bool) -> List[str]:
+    def call(self, reprint: bool) -> list[str]:
         """Declare and call the function take all inputs in arguments"""
         lines = []
         arguments = []
         for arg in self.input.input:
             arg_name = var_name(arg.name)
-            lines.append(
-                INDENTATION + "/// \\param {} {}".format(arg_name, arg.comment)
-            )
-            arguments.append("{} {}".format(type_str(arg.type), arg_name))
+            lines.append(INDENTATION + f"/// \\param {arg_name} {arg.comment}")
+            arguments.append(f"{type_str(arg.type)} {arg_name}")
         lines.append(
             "{0}static void {1}({2})\n{0}{{".format(
                 INDENTATION, pascal_name(self.input.name), ", ".join(arguments)
@@ -261,7 +256,7 @@ class ParserCS:
         type_: Type,
         indent_lvl: int,
         style: FormatStyle = FormatStyle.DEFAULT,
-    ) -> List[str]:
+    ) -> list[str]:
         """Print the content of a var that holds in one or more lines"""
         if type_.fits_in_one_line(self.input.structs, style):
             return [INDENTATION * indent_lvl + self.print_line(name, type_)]
@@ -271,7 +266,7 @@ class ParserCS:
             for field in struct.fields:
                 lines.extend(
                     self.print_lines(
-                        "{}.{}".format(name, var_name(field.name)),
+                        f"{name}.{var_name(field.name)}",
                         field.type,
                         indent_lvl,
                     )
@@ -299,8 +294,8 @@ class ParserCS:
         if self.input.contains_float():
             output = "using System;\nusing System.Globalization;\n\n"
         for struct in self.input.structs:
-            output += "/// {}\n".format(struct.comment)
-            output += "struct {}\n{{\n".format(pascal_name(struct.name))
+            output += f"/// {struct.comment}\n"
+            output += f"struct {pascal_name(struct.name)}\n{{\n"
             for field in struct.fields:
                 output += INDENTATION + "public {} {}; //!< {}\n".format(
                     type_str(field.type), var_name(field.name), field.comment

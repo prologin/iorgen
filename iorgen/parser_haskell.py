@@ -1,10 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2022 Sacha Delanoue
+# Copyright 2018-2025 Sacha Delanoue
 """Generate a Haskell parser"""
 
 import textwrap
 from collections import OrderedDict
-from typing import List, Set
 
 from iorgen.types import FormatStyle, Input, Struct, Type, TypeEnum
 from iorgen.utils import camel_case, pascal_case
@@ -44,10 +43,10 @@ def type_str(type_: Type) -> str:
         return data_name(type_.struct_name)
     assert type_.main == TypeEnum.LIST
     assert type_.encapsulated
-    return "[{}]".format(type_str(type_.encapsulated))
+    return f"[{type_str(type_.encapsulated)}]"
 
 
-def print_var_content(type_: Type, structs: List[Struct], style: FormatStyle) -> str:
+def print_var_content(type_: Type, structs: list[Struct], style: FormatStyle) -> str:
     """Return Haskell function to print a variable of given type"""
     if type_.main == TypeEnum.STRUCT:
         struct = next(x for x in structs if x.name == type_.struct_name)
@@ -98,10 +97,10 @@ class ParserHaskell:
     def __init__(self, input_data: Input) -> None:
         self.input = input_data
 
-        self.imports = set()  # type: Set[str]
-        self.main = []  # type: List[str]
+        self.imports = set()  # type: set[str]
+        self.main = []  # type: list[str]
         self.where = OrderedDict()  # type: OrderedDict[str, bool]
-        self.method = []  # type: List[str]
+        self.method = []  # type: list[str]
 
         self.indentation = 2
 
@@ -109,7 +108,7 @@ class ParserHaskell:
         """Declare a Haskell data"""
         output = ""
         for data in self.input.structs:
-            output += "-- | {}\n".format(data.comment)
+            output += f"-- | {data.comment}\n"
             output += "data {0} = {0}\n".format(data_name(data.name))
             length_type = max(len(type_str(i.type)) for i in data.fields)
             length_name = max(len(var_name(i.name)) for i in data.fields)
@@ -143,7 +142,7 @@ class ParserHaskell:
             return "getLine"
         assert type_.main == TypeEnum.STRUCT
         self.where[type_.struct_name] = True
-        return "read{}".format(data_name(type_.struct_name))
+        return f"read{data_name(type_.struct_name)}"
 
     def read_lines(
         self, type_: Type, size: str, style: FormatStyle = FormatStyle.DEFAULT
@@ -153,7 +152,7 @@ class ParserHaskell:
             return self.read_line(type_)
         if type_.main == TypeEnum.STRUCT:
             self.where[type_.struct_name] = False
-            return "read{}".format(data_name(type_.struct_name))
+            return f"read{data_name(type_.struct_name)}"
         assert type_.main == TypeEnum.LIST
         assert type_.encapsulated is not None
         self.imports.add("Control.Monad (replicateM)")
@@ -194,7 +193,7 @@ class ParserHaskell:
             length_type = max(len(type_str(i.type)) for i in self.input.input)
             length_type = max(length_type, len("String"))
             for i, arg in enumerate(self.input.input):
-                begin = "{} ::".format(name) if i == 0 else " " * length + " ->"
+                begin = f"{name} ::" if i == 0 else " " * length + " ->"
                 self.method.append(
                     "{} {: <{}}  -- ^ {}".format(
                         begin, type_str(arg.type), length_type, arg.comment
@@ -204,7 +203,7 @@ class ParserHaskell:
                 " " * length + " -> {: <{}}  -- ^ TODO".format("String", length_type)
             )
         else:
-            self.method.append("{} :: String  -- ^ TODO".format(name))
+            self.method.append(f"{name} :: String  -- ^ TODO")
         args = " ".join([var_name(i.name) for i in self.input.input])
         self.method.extend(["-- " + i for i in textwrap.wrap(self.input.output, 76)])
         self.method.append(
@@ -230,7 +229,7 @@ class ParserHaskell:
                 )
             self.method.append(" " * self.indentation + '""')
 
-    def read_struct(self, name: str, oneline: bool) -> List[str]:
+    def read_struct(self, name: str, oneline: bool) -> list[str]:
         """Generate the function to read a struct"""
         struct = self.input.get_struct(name)
         if oneline:
@@ -238,10 +237,10 @@ class ParserHaskell:
             parse = []
             for i, field in enumerate(struct.fields):
                 if field.type.main in (TypeEnum.INT, TypeEnum.FLOAT):
-                    parse.append("(read {})".format(chr(97 + i)))
+                    parse.append(f"(read {chr(97 + i)})")
                 else:
                     assert field.type.main == TypeEnum.CHAR
-                    parse.append("(head {})".format(chr(97 + i)))
+                    parse.append(f"(head {chr(97 + i)})")
             func = "{} {}".format(data_name(struct.name), " ".join(parse))
             return [
                 "read{} = fmap ((\\[{}] -> {}) . words) getLine".format(
@@ -265,7 +264,7 @@ class ParserHaskell:
             )
         ]
 
-    def read_structs(self) -> List[str]:
+    def read_structs(self) -> list[str]:
         """Generate the functions to read the structs"""
         out = []
         done = 0
@@ -281,7 +280,7 @@ class ParserHaskell:
         self.read_vars()
         self.call(reprint)
         where = self.read_structs()
-        output = "".join("import {}\n".format(i) for i in sorted(self.imports))
+        output = "".join(f"import {i}\n" for i in sorted(self.imports))
         if self.imports:
             output += "\n"
         if reprint and self.input.contains_float():

@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright 2024 Kamil Leys and Lebaube Gaspard (gaskam.com)
+# Copyright 2025 Sacha Delanoue
 """Generate a Zig parser"""
 
 import textwrap
-from typing import List, Set
 from iorgen.types import FormatStyle, Input, Type, TypeEnum, Variable
 from iorgen.utils import pascal_case, camel_case, snake_case, IteratorName
 
@@ -348,8 +348,8 @@ class ParserZig:
     def __init__(self, input_data: Input, reprint: bool) -> None:
         self.input = input_data
         self.allocator = False  # type: bool
-        self.templates = set()  # type: Set[str]
-        self.main = []  # type: List[str]
+        self.templates = set()  # type: set[str]
+        self.main = []  # type: list[str]
         self.reprint = reprint
         self.iterator = IteratorName([var.name for var in input_data.input])
 
@@ -477,7 +477,7 @@ class ParserZig:
             )
             self.templates.add("readType")
 
-    def get_struct_fields(self, name: str) -> List[Variable]:
+    def get_struct_fields(self, name: str) -> list[Variable]:
         """Read a struct to extract the field names"""
         for struct in self.input.structs:
             if struct.name == name:
@@ -500,7 +500,7 @@ class ParserZig:
                         + f"var {var_name(list_name)}"
                         + f" = try std.ArrayList({self.type_str(type_.encapsulated)})"
                         + f".initCapacity(allocator, @intCast({type_.size}));",
-                        indentation + "for (0..@intCast({})) |_| {{".format(type_.size),
+                        indentation + f"for (0..@intCast({type_.size})) |_| {{",
                     )
                 )
 
@@ -520,7 +520,7 @@ class ParserZig:
                 # self.iterator.pop_it() # This stays global so we cannot pop it
             else:
                 assert type_.main == TypeEnum.STRUCT
-                fields: List[Variable] = self.get_struct_fields(type_.struct_name)
+                fields: list[Variable] = self.get_struct_fields(type_.struct_name)
                 for field in fields:
                     self.read_complex(field.name, field.type, depth)
 
@@ -554,7 +554,7 @@ class ParserZig:
                         self.type_str(var.type.encapsulated),
                         var.type.size,
                     ),
-                    "for (0..@intCast({})) |_| {{".format(var.type.size),
+                    f"for (0..@intCast({var.type.size})) |_| {{",
                 )
             )
             self.read_lines(inner_name, var.type.encapsulated, depth=1)
@@ -585,7 +585,7 @@ class ParserZig:
         """Generates the function part of the content"""
         output = ""
         for var in self.input.input:
-            output += "/// '{}' {}\n".format(var_name(var.name), var.comment)
+            output += f"/// '{var_name(var.name)}' {var.comment}\n"
 
         if len(self.input.input) > 3:
             output += f"fn {camel_case(self.input.name)}(\n"
@@ -666,8 +666,8 @@ class ParserZig:
         output += 'const builtin = @import("builtin");\n\n'
 
         for struct in self.input.structs:
-            output += "/// {}\n".format(struct.comment)
-            output += "const {} = struct {{\n".format(struct_name(struct.name))
+            output += f"/// {struct.comment}\n"
+            output += f"const {struct_name(struct.name)} = struct {{\n"
             for field in struct.fields:
                 output += " " * self.indentation + f"/// {field.comment}\n"
                 output += " " * self.indentation + "{}: {},\n".format(

@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright 2018-2022 Sacha Delanoue
+# Copyright 2018-2025 Sacha Delanoue
 # Copyright 2019 Matthieu Moatti
 """Generate a valid raw input"""
 
-from typing import Callable, Dict, List, Optional, Tuple, TypeVar, Union
+from typing import Callable, Optional, TypeVar, Union
 import random
 import string
 
@@ -24,10 +24,10 @@ class Generator:
     """Generate some random valid raw_input"""
 
     def __init__(
-        self, input_data: Input, specs: Dict[str, str], perf_mode: bool
+        self, input_data: Input, specs: dict[str, str], perf_mode: bool
     ) -> None:
         self.input = input_data
-        self.numbers = {}  # type: Dict[str, Union[int, float]]
+        self.numbers = {}  # type: dict[str, Union[int, float]]
         self.perf_mode = perf_mode
         self.specs = specs
 
@@ -56,7 +56,7 @@ class Generator:
         cast: Callable[[Union[str, int, float]], NUM],
         name: str,
         constraints: Constraints,
-    ) -> Tuple[NUM, NUM]:
+    ) -> tuple[NUM, NUM]:
         """Return min and max possible values for a number (int or float)"""
         if constraints.choices:
             random_choice = random.choice(list(constraints.choices))
@@ -156,7 +156,7 @@ class Generator:
         assert False
         return ""
 
-    def generate_lines(self, var: Variable) -> List[str]:
+    def generate_lines(self, var: Variable) -> list[str]:
         """Generate the raw input for a type"""
         if var.fits_in_one_line(self.input.structs):
             return [self.generate_line(var.name, var.type, var.constraints)]
@@ -180,7 +180,7 @@ class Generator:
 
 
 def generate_random_input(
-    input_data: Input, specs: List[str], perf_mode: bool = False
+    input_data: Input, specs: list[str], perf_mode: bool = False
 ) -> str:
     """Generate a randow raw input, as described by input_data"""
     specs_dict = {}
