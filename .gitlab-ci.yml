@@ -47,7 +47,7 @@ container build:
           - "3.13"
       - PYTHON_IMAGE: pypy
         PYTHON_VERSION:
-          - "3.10"
+          - "3.11"
 
 container build ci:
   stage: container build
