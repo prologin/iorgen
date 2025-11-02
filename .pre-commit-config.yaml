@@ -1,12 +1,12 @@
 ---
 repos:
   - repo: https://github.com/psf/black
-    rev: 25.1.0
+    rev: 25.9.0
     hooks:
       - id: black
         exclude: ^test/samples/
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.17.1
+    rev: v1.18.2
     hooks:
       - id: mypy
         args:
@@ -15,7 +15,7 @@ repos:
           - types-pyyaml
         exclude: ^test/
   - repo: https://github.com/pylint-dev/pylint
-    rev: v3.3.8
+    rev: v3.3.9
     hooks:
       - id: pylint
         args:
