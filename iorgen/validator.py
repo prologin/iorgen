@@ -80,7 +80,15 @@ class Validator:
             raise ValidatorException(
                 f"Line {self.current_line}: '{string}' is not an integer"
             )
+        if string.startswith("-0") or (string.startswith("0") and string != "0"):
+            raise ValidatorException(
+                f"Line {self.current_line}: '{string}' has useless leading characters"
+            )
         value = int(string)
+        if value < Constraints.MIN_INT or value > Constraints.MAX_INT:
+            raise ValidatorException(
+                f"Line {self.current_line}: {value} is not a 32 bits integer"
+            )
         if name:
             self.numbers[name] = value
 

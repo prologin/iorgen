@@ -34,10 +34,13 @@ def error_parse_type(string: str) -> str:
     if lower[0] == "[" or (lower.startswith("list") and not string.startswith("List")):
         return "the list type is 'List[type](size)'"
     if string.startswith("List"):
-        match = re.match(r"List\[(.*)\]\((.*)\)", string)
+        match = re.fullmatch(r"List\[(.*)\]\((.*)\)", string)
         if not match:
             return "a list must specify a type and a size 'List[type](size)'"
-        if not re.match(r"[A-Za-z0-9 ]+", match.group(2)) or not match.group(2).strip():
+        if (
+            not re.fullmatch(r"[A-Za-z0-9 ]+", match.group(2))
+            or not match.group(2).strip()
+        ):
             return (
                 "invalid list size, can only be alphanumeric characters" + " and spaces"
             )
