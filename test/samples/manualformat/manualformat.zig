@@ -21,7 +21,7 @@ pub fn main() !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator); // Allocates memory to read inputs
     defer arena.deinit(); // Frees the memory at the end of the scope
     const allocator = arena.allocator();
-    const lineReader = LineReader.init(allocator); // The reader used to parse the input
+    const lineReader = try LineReader.init(allocator); // The reader used to parse the input
 
     var i = std.mem.splitScalar(u8, try lineReader.read(), ' ');
     const a = try lineReader.parseType(i32, i.next().?);
@@ -33,7 +33,7 @@ pub fn main() !void {
         const k = try lineReader.readValue(i32);
         j.appendAssumeCapacity(k);
     }
-    const one_per_line = try j.toOwnedSlice();
+    const one_per_line = try j.toOwnedSlice(allocator);
 
     try manualFormat(
         a,
@@ -47,30 +47,37 @@ pub fn main() !void {
 /// Original at: https://github.com/gaskam-com/zig-utils
 const LineReader = struct {
     allocator: std.mem.Allocator,
-    reader: std.fs.File.Reader,
+    reader: *std.fs.File.Reader,
+    stdin_buffer: []u8,
     const Self = @This();
 
-    fn init(allocator: std.mem.Allocator) Self {
-        return .{ .allocator = allocator, .reader = std.io.getStdIn().reader() };
+    fn init(allocator: std.mem.Allocator) !Self {
+        const reader = try allocator.create(std.fs.File.Reader);
+        const buffer = try allocator.alloc(u8, 1024);
+        reader.* = std.fs.File.stdin().reader(buffer);
+        return .{ .allocator = allocator, .reader = reader, .stdin_buffer = buffer };
     }
 
     /// Reads a line and removes the newline characters(\n, and \r\n for windows)
     fn read(self: Self) ![]const u8 {
-        var buffer = std.ArrayList(u8).init(self.allocator);
+        var buffer: std.Io.Writer.Allocating = .init(self.allocator);
         errdefer buffer.deinit();
-        try self.reader.streamUntilDelimiter(buffer.writer(), '\n', null);
+        var interface = &self.reader.interface;
+        _ = try interface.streamDelimiter(&buffer.writer, '\n');
+        // Remove the newline character
+        interface.toss(1);
         if (builtin.target.os.tag == .windows and buffer.getLastOrNull() == '\r') _ = buffer.pop();
         return buffer.toOwnedSlice();
     }
 
     /// Parses a level 1 type
-    /// Only accepts Int, Float and string([]const u8) types
+    /// Only accepts int, float and string([]const u8) types
     fn parseType(self: Self, comptime ReturnType: type, buf: []const u8) !ReturnType {
         return switch (@typeInfo(ReturnType)) {
-            .Int => std.fmt.parseInt(ReturnType, buf, 10),
-            .Float => std.fmt.parseFloat(ReturnType, buf),
+            .int => std.fmt.parseInt(ReturnType, buf, 10),
+            .float => std.fmt.parseFloat(ReturnType, buf),
             // Asserts the type is []const u8
-            .Pointer => blk: {
+            .pointer => blk: {
                 if (ReturnType != []const u8) return error.UnsupportedType;
                 break :blk self.allocator.dupe(u8, buf);
             },
@@ -84,5 +91,9 @@ const LineReader = struct {
         const value = try read(self);
         defer self.allocator.free(value);
         return self.parseType(ReturnType, value);
+    }
+
+    fn deinit(self: Self) void {
+        self.allocator.free(self.stdin_buffer);
     }
 };

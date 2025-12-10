@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright 2024 Kamil Leys and Lebaube Gaspard (gaskam.com)
 # Copyright 2025 Sacha Delanoue
+# Copyright 2025 Kamil Leys (gaskam.com)
 """Generate a Zig parser"""
 
 import textwrap
@@ -30,32 +31,39 @@ TEMPLATE_IO = {
 /// Original at: https://github.com/gaskam-com/zig-utils
 const LineReader = struct {
     allocator: std.mem.Allocator,
-    reader: std.fs.File.Reader,
+    reader: *std.fs.File.Reader,
+    stdin_buffer: []u8,
     const Self = @This();
 
-    fn init(allocator: std.mem.Allocator) Self {
-        return .{ .allocator = allocator, .reader = std.io.getStdIn().reader() };
+    fn init(allocator: std.mem.Allocator) !Self {
+        const reader = try allocator.create(std.fs.File.Reader);
+        const buffer = try allocator.alloc(u8, 1024);
+        reader.* = std.fs.File.stdin().reader(buffer);
+        return .{ .allocator = allocator, .reader = reader, .stdin_buffer = buffer };
     }""",
     "read": """
 
     /// Reads a line and removes the newline characters(\\n, and \\r\\n for windows)
     fn read(self: Self) ![]const u8 {
-        var buffer = std.ArrayList(u8).init(self.allocator);
+        var buffer: std.Io.Writer.Allocating = .init(self.allocator);
         errdefer buffer.deinit();
-        try self.reader.streamUntilDelimiter(buffer.writer(), '\\n', null);
+        var interface = &self.reader.interface;
+        _ = try interface.streamDelimiter(&buffer.writer, '\\n');
+        // Remove the newline character
+        interface.toss(1);
         if (builtin.target.os.tag == .windows and buffer.getLastOrNull() == '\\r') _ = buffer.pop();
         return buffer.toOwnedSlice();
     }""",
     "parseType": """
 
     /// Parses a level 1 type
-    /// Only accepts Int, Float and string([]const u8) types
+    /// Only accepts int, float and string([]const u8) types
     fn parseType(self: Self, comptime ReturnType: type, buf: []const u8) !ReturnType {
         return switch (@typeInfo(ReturnType)) {
-            .Int => std.fmt.parseInt(ReturnType, buf, 10),
-            .Float => std.fmt.parseFloat(ReturnType, buf),
+            .int => std.fmt.parseInt(ReturnType, buf, 10),
+            .float => std.fmt.parseFloat(ReturnType, buf),
             // Asserts the type is []const u8
-            .Pointer => blk: {
+            .pointer => blk: {
                 if (ReturnType != []const u8) return error.UnsupportedType;
                 break :blk self.allocator.dupe(u8, buf);
             },
@@ -79,13 +87,13 @@ const LineReader = struct {
         const line = try self.read();
         defer self.allocator.free(line);
         var values = std.mem.splitScalar(u8, line, delimiter);
-        var output = std.ArrayList(ReturnType).init(self.allocator);
+        var output: std.ArrayList(ReturnType) = .empty;
 
         while (values.next()) |v| {
-            try output.append(try self.parseType(ReturnType, v));
+            try output.append(self.allocator, try self.parseType(ReturnType, v));
         }
 
-        return try output.toOwnedSlice();
+        return try output.toOwnedSlice(self.allocator);
     }""",
     "readNElements": """
 
@@ -110,7 +118,7 @@ const LineReader = struct {
             output.appendAssumeCapacity(try self.parseType(ReturnType, v));
         }
 
-        return try output.toOwnedSlice();
+        return try output.toOwnedSlice(self.allocator);
     }""",
     "readType": """
 
@@ -126,16 +134,16 @@ const LineReader = struct {
     ) !ReturnType {
         const typeInfo = @typeInfo(ReturnType);
         switch (typeInfo) {
-            .Int, .Float => {
+            .int, .float => {
                 return self.readValue(ReturnType);
             },
-            .Pointer => {
-                const childType = typeInfo.Pointer.child;
+            .pointer => {
+                const childType = typeInfo.pointer.child;
                 if (ReturnType == []const u8) {
                     return self.read();
                 }
                 switch (@typeInfo(childType)) {
-                    .Int, .Float => {
+                    .int, .float => {
                         if (shape.len == 0) {
                             return self.readList(childType, delimiter);
                         } else return self.readNElements(
@@ -144,7 +152,7 @@ const LineReader = struct {
                             shape[0],
                         );
                     },
-                    .Pointer, .Struct => {
+                    .pointer, .@"struct" => {
                         if (ReturnType == []const u8) {
                             return try self.read();
                         }
@@ -152,28 +160,28 @@ const LineReader = struct {
                             self.allocator,
                             shape[0],
                         );
-                        for (shape[0]) |_| {
+                        for (0..shape[0]) |_| {
                             values.appendAssumeCapacity(try self.readType(
                                 childType,
                                 shape[1..],
                                 delimiter,
                             ));
                         }
-                        return values.toOwnedSlice();
+                        return values.toOwnedSlice(self.allocator);
                     },
                     else => return error.UnsupportedType,
                 }
             },
-            .Struct => {
+            .@"struct" => {
                 const s = try self.allocator.create(ReturnType);
                 var line: []const u8 = "";
                 var currentIndex: usize = 0;
                 var subShape = shape;
-                inline for (typeInfo.Struct.fields) |field| {
+                inline for (typeInfo.@"struct".fields) |field| {
                     const fieldInfo = @typeInfo(field.type);
                     switch (fieldInfo) {
-                        .Int, .Float, .Pointer, .Struct => {
-                            if (fieldInfo == .Int or fieldInfo == .Float or
+                        .int, .float, .pointer, .@"struct" => {
+                            if (fieldInfo == .int or fieldInfo == .float or
                                 (field.type == []const u8 and subShape.len > 0 and subShape[0] == 1))
                             {
                                 if (field.type == []const u8 and subShape[0] == 1)
@@ -225,7 +233,12 @@ const LineReader = struct {
             else => return error.UnsupportedType,
         }
     }""",
-    "end": "\n};",
+    "end": """
+
+    fn deinit(self: Self) void {
+        self.allocator.free(self.stdin_buffer);
+    }
+};""",
 }
 
 TEMPLATE_DEPENDENTS = {
@@ -239,13 +252,14 @@ TEMPLATE_DEPENDENTS = {
 
 # Template used to print values the appropriate way for CI/CD tests
 TEMPLATE_PRINT = """
-fn writeFlattened(allocator: std.mem.Allocator, writer: std.fs.File.Writer, values: anytype) !void {
+fn writeFlattened(allocator: std.mem.Allocator, stdout: *std.fs.File.Writer, values: anytype) !void {
+    var writer = &stdout.interface;
     const typeInfo = @typeInfo(@TypeOf(values));
     const writeFloat = struct {
         fn call(subWriter: @TypeOf(writer), value: f64) !void {
             if (value == 0) {
                 try subWriter.print("{d}", .{0});
-            }else if (std.math.approxEqAbs(f64, value, 0, 1e-4)) {
+            } else if (std.math.approxEqAbs(f64, value, 0, 1e-4)) {
                 const log =  - std.math.floor(std.math.log10(@abs(value)));
                 if (log < 10) {
                     try subWriter.print("{d}e-0{d}", .{value * std.math.pow(f64, @as(f64, 10), log), @as(i32, @intFromFloat(log))});
@@ -258,36 +272,36 @@ fn writeFlattened(allocator: std.mem.Allocator, writer: std.fs.File.Writer, valu
         }
     }.call;
     switch (typeInfo) {
-        .Int => try writer.print("{d}\\n", .{values}),
-        .Float => {
+        .int => try writer.print("{d}\\n", .{values}),
+        .float => {
             try writeFloat(writer, values);
             try writer.print("\\n", .{});
         },
-        .Pointer => {
+        .pointer => {
             if (@TypeOf(values) == []const u8) {
                 try writer.print("{s}\\n", .{values});
             } else {
-                const childTypeInfo = @typeInfo(typeInfo.Pointer.child);
-                if (childTypeInfo == .Int or childTypeInfo == .Float) {
+                const childTypeInfo = @typeInfo(typeInfo.pointer.child);
+                if (childTypeInfo == .int or childTypeInfo == .float) {
                     for (0..values.len) |i| {
-                        if (childTypeInfo == .Float) try writeFloat(writer, values[i]) else try writer.print("{d}", .{values[i]});
+                        if (childTypeInfo == .float) try writeFloat(writer, values[i]) else try writer.print("{d}", .{values[i]});
                         if (i != values.len - 1) try writer.print(" ", .{});
                     }
                     try writer.print("\\n", .{});
                 } else {
                     for (0..values.len) |i| {
-                        try writeFlattened(allocator, writer, values[i]);
+                        try writeFlattened(allocator, stdout, values[i]);
                     }
                 }
             }
         },
-        .Struct => {
-            const fields = typeInfo.Struct.fields;
+        .@"struct" => {
+            const fields = typeInfo.@"struct".fields;
             var lastFieldInline = false;
             inline for (fields) |field| {
                 const fieldTypeInfo = @typeInfo(field.type);
                 switch (fieldTypeInfo) {
-                    .Int => {
+                    .int => {
                         if (lastFieldInline) {
                             try writer.print(" {d}", .{@field(values, field.name)});
                         } else {
@@ -295,7 +309,7 @@ fn writeFlattened(allocator: std.mem.Allocator, writer: std.fs.File.Writer, valu
                             try writer.print("{d}", .{@field(values, field.name)});
                         }
                     },
-                    .Float => {
+                    .float => {
                         if (lastFieldInline) {
                             try writer.print(" ", .{});
                         } else {
@@ -303,7 +317,7 @@ fn writeFlattened(allocator: std.mem.Allocator, writer: std.fs.File.Writer, valu
                         }
                         try writeFloat(writer, @field(values, field.name));
                     },
-                    .Pointer, .Struct => {
+                    .pointer, .@"struct" => {
                         if (field.type == []const u8 and @field(values, field.name).len == 1) {
                             if (lastFieldInline) {
                                 try writer.print(" {s}", .{@field(values, field.name)});
@@ -318,7 +332,7 @@ fn writeFlattened(allocator: std.mem.Allocator, writer: std.fs.File.Writer, valu
                             }
                             if (field.type == []const u8) {
                                 try writer.print("{s}\\n", .{@field(values, field.name)});
-                            } else try writeFlattened(allocator, writer, @field(values, field.name));
+                            } else try writeFlattened(allocator, stdout, @field(values, field.name));
                         }
                     },
                     else => error.UnsupportedType,
@@ -328,6 +342,7 @@ fn writeFlattened(allocator: std.mem.Allocator, writer: std.fs.File.Writer, valu
         },
         else => error.UnsupportedType,
     }
+    try writer.flush();
 }"""
 
 # Template used to initialize the main function
@@ -335,7 +350,7 @@ TEMPLATE_MAIN = """pub fn main() !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator); // Allocates memory to read inputs
     defer arena.deinit(); // Frees the memory at the end of the scope
     const allocator = arena.allocator();
-    const lineReader = LineReader.init(allocator); // The reader used to parse the input
+    const lineReader = try LineReader.init(allocator); // The reader used to parse the input
 """
 
 
@@ -513,7 +528,8 @@ class ParserZig:
                         + f"{var_name(list_name)}.appendAssumeCapacity({inner_name});",
                         indentation + "}",
                         indentation
-                        + f"const {var_name(name)} = try {var_name(list_name)}.toOwnedSlice();",
+                        + f"const {var_name(name)} = try {var_name(list_name)}"
+                        + ".toOwnedSlice(allocator);",
                     )
                 )
                 self.iterator.pop_it()
@@ -563,7 +579,8 @@ class ParserZig:
                     " " * self.indentation
                     + f"{var_name(list_name)}.appendAssumeCapacity({inner_name});",
                     "}",
-                    f"const {var_name(var.name)} = try {var_name(list_name)}.toOwnedSlice();",
+                    f"const {var_name(var.name)} = try {var_name(list_name)}"
+                    + ".toOwnedSlice(allocator);",
                 )
             )
             self.iterator.pop_it()
@@ -615,8 +632,10 @@ class ParserZig:
         )
 
         if self.reprint:
-            output += f"{self.indentation * ' '}const stdout = std.io.getStdOut().writer();\n\n"
-            output += f"{self.indentation * ' '}const allocator = std.heap.page_allocator;\n\n"
+            indentation = self.indentation * " "
+            output += f"{indentation}var stdout_buffer: [1024]u8 = undefined;\n\n"
+            output += f"{indentation}var stdout = std.fs.File.stdout().writer(&stdout_buffer);\n\n"
+            output += f"{indentation}const allocator = std.heap.page_allocator;\n\n"
 
             no_endline_stack = []
 
@@ -630,13 +649,13 @@ class ParserZig:
                             self.indentation * " ",
                             f"for ({var_name(var.name)}) |{tmp_var_name}| {{\n",
                             self.indentation * 2 * " ",
-                            f"try writeFlattened(allocator, stdout, {tmp_var_name});\n",
+                            f"try writeFlattened(allocator, &stdout, {tmp_var_name});\n",
                             f"{self.indentation * ' '}}}\n",
                         ]
                     )
                     self.iterator.pop_it()
                 else:
-                    output += f"{self.indentation * ' '}try writeFlattened(allocator, stdout, "
+                    output += f"{self.indentation * ' '}try writeFlattened(allocator, &stdout, "
                     if len(no_endline_stack) > 0:
                         output += (
                             ".{"

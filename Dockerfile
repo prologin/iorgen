@@ -29,8 +29,8 @@ RUN if [ $INCLUDE_DEV_DEPS = "true" ]; then \
       # let's download the LTS release and extract everything in /usr/local
       curl -L -s https://julialang-s3.julialang.org/bin/linux/x64/1.6/julia-1.6.7-linux-x86_64.tar.gz \
         | tar --strip-components=1 -xz -C /usr/local && \
-      curl -L -s https://ziglang.org/download/0.13.0/zig-linux-x86_64-0.13.0.tar.xz \
-        | tar --strip-components=1 --wildcards -xJ -C /usr/local/bin zig-linux-x86_64-0.13.0/zig zig-linux-x86_64-0.13.0/lib/* && \
+      curl -L -s https://ziglang.org/download/0.15.2/zig-x86_64-linux-0.15.2.tar.xz \
+        | tar --strip-components=1 --wildcards -xJ -C /usr/local/bin zig-x86_64-linux-0.15.2/zig zig-x86_64-linux-0.15.2/lib/* && \
       apt-get install -y --no-install-recommends \
         default-jdk-headless \
         fp-compiler \
