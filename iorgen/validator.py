@@ -188,7 +188,7 @@ class Validator:
         elif type_.main == TypeEnum.STR:
             assert constraints is not None
             line = self.next_line()
-            (size, size_desc) = self.get_size(type_.size)
+            size, size_desc = self.get_size(type_.size)
             if len(line) > size:
                 raise ValidatorException(
                     "Line {}: '{}' should be of maximum size {}".format(
@@ -205,7 +205,7 @@ class Validator:
                 self.check_char(i, constraints, use_ws=True)
         elif type_.main == TypeEnum.LIST:
             assert type_.encapsulated is not None
-            (size, size_desc) = self.get_size(type_.size)
+            size, size_desc = self.get_size(type_.size)
             if style == FormatStyle.FORCE_NEWLINES or not type_.fits_in_one_line(
                 self.input.structs, style
             ):

@@ -9,7 +9,6 @@ import textwrap
 from iorgen.types import FormatStyle, Input, Struct, Type, TypeEnum, Variable
 from iorgen.utils import pascal_case, snake_case
 
-
 # Conventional indentation token
 INDENTATION = "    "
 

@@ -7,7 +7,6 @@ import textwrap
 from iorgen.types import FormatStyle, Input, Struct, Type, TypeEnum, Variable
 from iorgen.utils import snake_case, pascal_case
 
-
 INDENTATION = "    "
 
 

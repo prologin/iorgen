@@ -101,7 +101,7 @@ def print_lines(
         assert type_.encapsulated is not None
         arg = name + "_S"
         function = "print_" + name
-        (decl, code) = print_lines(arg, type_.encapsulated, input_data)
+        decl, code = print_lines(arg, type_.encapsulated, input_data)
         return (
             decl + [f"{function}({arg}) :- {code}."]
         ), "is_list({1}), maplist({0}, {1})".format(function, name)
@@ -255,7 +255,7 @@ class ParserProlog:
                     "iorgen__floats([A|B]) :- format('~15g ', A), iorgen__floats(B).",
                 ]
             for var in self.input.input:
-                (decl, code) = print_lines(
+                decl, code = print_lines(
                     var_name(var.name), var.type, self.input, var.format_style
                 )
                 lines.extend(decl)

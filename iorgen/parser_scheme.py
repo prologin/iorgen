@@ -141,7 +141,7 @@ def wrap_code(code: str, indentation: str, skip_indent: bool = False) -> str:
     """Wrap scheme code so that it does not exceed 79 characters"""
     indent = "" if skip_indent else "\n" + indentation
     if code[0] != "(" and not code.startswith("'("):
-        (begin, end) = code.split(" ", 1)
+        begin, end = code.split(" ", 1)
         return indent + begin + wrap_code(end, indentation)
     size = 0 if not code.startswith("'(") else 1
     opened = 1
@@ -165,7 +165,7 @@ def wrap_code(code: str, indentation: str, skip_indent: bool = False) -> str:
         return line + wrap_code(end.lstrip(), new_indent)
     if code[1] == "(":
         return indent + "(" + wrap_code(code[1:], indentation + " ", True)
-    (begin, end) = code.split(" ", 1)
+    begin, end = code.split(" ", 1)
     return indent + begin + wrap_code(end, indentation + INDENTATION)
 
 
