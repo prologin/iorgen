@@ -13,7 +13,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONHASHSEED=random \
     PYTHONUNBUFFERED=1 \
     POETRY_VIRTUALENVS_CREATE=false \
-    VENV_PATH="/opt/venv" \
+    VIRTUAL_ENV="/opt/venv" \
     PATH="/opt/venv/bin:$PATH"
 
 RUN apt-get update && \
@@ -67,8 +67,8 @@ RUN --mount=type=bind,target=./pyproject.toml,src=./pyproject.toml \
     --mount=type=cache,target=/root/.cache/pypoetry \
     python -m venv /opt/venv && \
     pip3 install --upgrade pip && \
-    pip3 install poetry==1.7.1 && \
-    poetry install $(if [ $INCLUDE_DEV_DEPS = "false" ]; then echo "--only main"; fi)
+    pip3 install poetry==2.1.4 && \
+    poetry install --no-root $(if [ $INCLUDE_DEV_DEPS = "false" ]; then echo "--only main"; fi)
 
 COPY ./ /iorgen
 WORKDIR /iorgen
