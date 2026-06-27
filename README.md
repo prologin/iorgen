@@ -198,7 +198,7 @@ use as integers. Here are the constrains when using floats:
   that starts with `0.0000` (or `-0.0000`), should be written in scientific
   notation instead. For example, `1e-5`, `3.924e-07`. Also, no trailing dot, no
   trailing 0, and no unnecessary 0 before the number, except in the exponent if
-  it smaller than 2 digits. Conforming to the `".15g"` C format in necessary
+  it smaller than 2 digits. Conforming to the `".15g"` C format is necessary
   for _Iorgen_ to be able to test that the parser are working properly (the
   `run` command).
 
